@@ -20,14 +20,14 @@ import java.math.BigInteger;
  * @date 01/01/2026
  */
 public class IntLiteral extends AbstractExpr {
-    private final BigInteger value;
+    private final long value;
 
-    public IntLiteral(BigInteger value) {
+    public IntLiteral(long value) {
         this.value = value;
     }
 
-    public int getValue() {
-        return value.intValue();
+    public long getValue() {
+        return value ;
     }
 
     @Override
@@ -35,12 +35,12 @@ public class IntLiteral extends AbstractExpr {
             ClassDefinition currentClass) throws ContextualError {
 
         // Verification of the the 3é signed bits limits
-        if (value.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
+        if (value > Integer.MAX_VALUE) {
             throw new ContextualError("Literal entier trop grand : " + value + 
                 " (max: " + Integer.MAX_VALUE + ")", getLocation());
         }
         // Managing of the negative case too for more security
-        if (value.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) < 0) {
+        if (value < Integer.MIN_VALUE) {
              throw new ContextualError("Literal entier trop petit : " + value + 
                 " (min: " + Integer.MIN_VALUE + ")", getLocation());
         }
@@ -51,7 +51,7 @@ public class IntLiteral extends AbstractExpr {
 
     @Override
     public String toString() {
-        return value.toString();
+        return Long.toString(value);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class IntLiteral extends AbstractExpr {
 
     @Override
     public void decompile(IndentPrintStream s) {
-        s.print(value.toString());
+        s.print(Long.toString(value));
     }
 
     @Override
@@ -78,7 +78,7 @@ public class IntLiteral extends AbstractExpr {
     protected DVal codeGenInst(DecacCompiler compiler) {
         
         // on retourne un immediate integer
-        return new ImmediateInteger(getValue());
+        return new ImmediateInteger((int) getValue());
     }
     
     @Override

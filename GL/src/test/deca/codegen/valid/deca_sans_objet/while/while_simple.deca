@@ -1,0 +1,14 @@
+// Description :
+// Test de while simple.
+//
+// Resultats :
+// 321
+
+{
+    int x;
+    x = 3;
+    while (x > 0) {
+        print(x);
+        x = x - 1;
+    }
+}

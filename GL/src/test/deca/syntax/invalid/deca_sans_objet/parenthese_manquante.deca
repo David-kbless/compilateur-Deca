@@ -1,0 +1,11 @@
+// Description :
+//  test parenthese manquante
+//
+// Resultat :
+// Erreur lexicale
+// Ligne 8 : caractère inattendu '{'
+{
+    if (true {
+        print(1);
+    }
+}

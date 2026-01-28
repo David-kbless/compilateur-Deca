@@ -1,0 +1,14 @@
+// Description :
+// Test de while avec des flottants.
+//
+// Resultats :
+// 2.50000e+002.00000e+001.50000e+001.00000e+005.00000e-01
+
+{
+    float x;
+    x = 2.5;
+    while (x > 0.0) {
+        print(x);
+        x = x - 0.5;
+    }
+}

@@ -1,0 +1,13 @@
+// Description :
+// Test de if avec une variable booléenne.
+//
+// Resultats :
+// 1
+
+{
+    boolean b;
+    b = true;
+    if (b) {
+        print(1);
+    }
+}

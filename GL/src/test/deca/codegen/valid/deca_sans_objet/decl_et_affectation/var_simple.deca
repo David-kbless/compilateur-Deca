@@ -1,0 +1,11 @@
+// Description :
+// Test avec une variable simple.
+//
+// Resultats :
+// 3
+
+{
+    int x;
+    x = 3;
+    print(x);
+}

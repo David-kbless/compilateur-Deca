@@ -1,0 +1,16 @@
+// Description :
+// affectation sur une expression non assignable
+//
+// Resultat :
+// Erreur contextuelle
+// Ligne 10 : Invalid LValue
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+void main() {
+    int a;
+    (a + 1) = 3;
+}
+}

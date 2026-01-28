@@ -1,0 +1,20 @@
+// Conversions int → float --
+// Division float répétée --
+// Mix arithmétique --
+
+{
+    int i;
+    float f;
+    float s;
+
+    i = 0;
+    s = 0.0;
+
+    while (i < 100000) {
+        f = (float) (i);
+        s = s + f / 3.14159;
+        i = i + 1;
+    }
+
+    println(s);
+}

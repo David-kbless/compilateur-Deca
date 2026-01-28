@@ -1,0 +1,21 @@
+class A {
+    int p = 2;
+    void init(int n) {
+        p = n;
+    }
+
+    void reInit(int m) {
+        init(m);
+    }
+
+    void affiche(){
+        println(p);
+    }
+}
+
+{
+    A a = new A();
+    a.init(3);
+    a.reInit(5);
+    a.affiche();
+}

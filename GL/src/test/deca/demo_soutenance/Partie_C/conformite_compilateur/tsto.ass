@@ -1,0 +1,109 @@
+;  ************************************************************
+;  *           CONSTRUCTION DES VTABLES DES CLASSES           *
+;  ************************************************************
+; Construction de la VTable de la classe Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de Demo
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+	LOAD code.Demo.calcul, R2
+	STORE R2, 5(GB)
+	LOAD code.Demo.autre, R2
+	STORE R2, 6(GB)
+	HALT
+; end main program
+;  ************************************************************
+;  *  GENERATION DES INITS ET DES BODY METHODES DES CLASSES   *
+;  ************************************************************
+init.Demo:
+	LOAD -2(LB), R4
+	LOAD -2(LB), R2
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+code.Demo.calcul:
+	TSTO #12
+	BOV stack_overflow_error
+	ADDSP #4
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	LOAD #1, R0
+	STORE R0, 1(LB)
+	LOAD #2, R0
+	STORE R0, 2(LB)
+	LOAD #3, R0
+	STORE R0, 3(LB)
+	LOAD #4, R0
+	STORE R0, 4(LB)
+	LOAD -3(LB), R2
+	LOAD -4(LB), R3
+	ADD R3, R2
+	LOAD -3(LB), R3
+	LOAD -4(LB), R4
+	SUB R4, R3
+	MUL R3, R2
+	LOAD 1(LB), R3
+	LOAD 2(LB), R4
+	MUL R4, R3
+	ADD R3, R2
+	STORE R2, 1(LB)
+	ADDSP #3
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD 1(LB), R2
+	STORE R2, -1(SP)
+	LOAD 2(LB), R2
+	STORE R2, -2(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 3(R2)
+	SUBSP #3
+	LOAD R0, R0
+	BRA fin.Demo.calcul
+	BRA absence_return_error
+fin.Demo.calcul:
+	POP R4
+	POP R3
+	POP R2
+	SUBSP #4
+	RTS
+code.Demo.autre:
+	TSTO #2
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	LOAD -3(LB), R2
+	LOAD -4(LB), R3
+	ADD R3, R2
+	LOAD R2, R0
+	BRA fin.Demo.autre
+	BRA absence_return_error
+fin.Demo.autre:
+	POP R3
+	POP R2
+	RTS
+;  ************************************************************
+;  * AJOUT DES LABELS ERREURS DEMANDÉES PAR LE PROGRAMME DECA *
+;  ************************************************************
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+absence_return_error:
+	WSTR "Erreur : Absence de return dans le corps d'une methode "
+	WNL
+	ERROR
+dereferencement.null:
+	WSTR "Erreur : Dereferencement null"
+	WNL
+	ERROR

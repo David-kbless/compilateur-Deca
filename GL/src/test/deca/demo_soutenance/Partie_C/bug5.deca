@@ -1,0 +1,25 @@
+class A{
+    int y = this.foo();
+
+    int foo() {
+        return 5;
+    }
+}
+
+
+class B extends A{
+    int x = y`ù + 7;
+
+    int foo() {
+        x = x -1;
+        return x + 3;
+    }
+}
+
+
+
+{
+    B b = new B();
+    println("b.x = ", b.x);
+    println("b.foo() = ", b.foo());
+}

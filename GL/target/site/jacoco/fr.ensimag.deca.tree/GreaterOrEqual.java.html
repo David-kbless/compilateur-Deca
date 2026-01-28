@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GreaterOrEqual.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">GreaterOrEqual.java</span></div><h1>GreaterOrEqual.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.instructions.BGE;
+import fr.ensimag.ima.pseudocode.instructions.BLT;
+import fr.ensimag.ima.pseudocode.instructions.CMP;
+import fr.ensimag.ima.pseudocode.instructions.SGE;
+
+/**
+ * Operator &quot;x &gt;= y&quot;
+ * 
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class GreaterOrEqual extends AbstractOpIneq {
+
+    public GreaterOrEqual(AbstractExpr leftOperand, AbstractExpr rightOperand) {
+<span class="fc" id="L20">        super(leftOperand, rightOperand);</span>
+<span class="fc" id="L21">    }</span>
+
+
+    @Override
+    protected String getOperatorName() {
+<span class="nc" id="L26">        return &quot;&gt;=&quot;;</span>
+    }
+
+
+    // @Override
+    // protected GPRegister codeGenOpComp(DecacCompiler compiler, GPRegister operande1, GPRegister operande2){
+
+    //     // ON va enfin pouvoir utiliser la fameuse instruction SEQ, qui est trop coool (2 en 1)
+    //     compiler.addInstruction(new SGE(operande1));
+
+    //     compiler.libererRegistre();
+
+    //     return operande1;
+    // }
+
+
+    @Override
+    protected void branchVrai(DecacCompiler compiler, Label E) {
+<span class="fc" id="L44">        compiler.addInstruction(new BGE(E));</span>
+<span class="fc" id="L45">    }</span>
+
+    @Override
+    protected void branchFaux(DecacCompiler compiler, Label E) {
+        // @Ousmane : Inverse de &gt;= est &lt;
+<span class="fc" id="L50">        compiler.addInstruction(new BLT(E));</span>
+<span class="fc" id="L51">    }</span>
+
+    protected GPRegister codeGenOpComp(DecacCompiler compiler, GPRegister operande1, GPRegister operande2) {
+<span class="nc" id="L54">        compiler.addInstruction(new SGE(operande1));</span>
+<span class="nc" id="L55">        compiler.libererRegistre();</span>
+<span class="nc" id="L56">        return operande1;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,224 @@
+; start main program
+	TSTO #17
+	BOV stack_overflow_error
+	ADDSP #14
+;  ************************************************************
+;  *           CONSTRUCTION DES VTABLES DES CLASSES           *
+;  ************************************************************
+; Construction de la VTable de la classe Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de Personne
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+	LOAD code.Personne.init, R2
+	STORE R2, 5(GB)
+	LOAD code.Personne.afficherNb, R2
+	STORE R2, 6(GB)
+; Construction de la VTable de Etudiant
+	LEA 3(GB), R2
+	STORE R2, 7(GB)
+	STORE R1, 8(GB)
+	LOAD code.Personne.init, R2
+	STORE R2, 9(GB)
+	LOAD code.Personne.afficherNb, R2
+	STORE R2, 10(GB)
+	LOAD code.Etudiant.setAge, R2
+	STORE R2, 11(GB)
+	LOAD code.Etudiant.afficherAge, R2
+	STORE R2, 12(GB)
+; Variable Declarations : 
+	NEW #3, R8
+	BOV tas_plein
+	LEA 7(GB), R9
+	STORE R9, 0(R8)
+	PUSH R8
+	BSR init.Etudiant
+	POP R8
+	STORE R8, 13(GB)
+	NEW #2, R8
+	BOV tas_plein
+	LEA 3(GB), R9
+	STORE R9, 0(R8)
+	PUSH R8
+	BSR init.Personne
+	POP R8
+	STORE R8, 14(GB)
+; Beginning of main instructions:
+	ADDSP #2
+	LOAD 14(GB), R8
+	STORE R8, 0(SP)
+	LOAD #1, R0
+	STORE R0, -1(SP)
+	LOAD 0(SP), R8
+	CMP #null, R8
+	BEQ dereferencement.null
+	LOAD 0(R8), R8
+	BSR 2(R8)
+	SUBSP #2
+	ADDSP #1
+	LOAD 13(GB), R8
+	STORE R8, 0(SP)
+	LOAD 0(SP), R8
+	CMP #null, R8
+	BEQ dereferencement.null
+	LOAD 0(R8), R8
+	BSR 3(R8)
+	SUBSP #1
+	WSTR "- David : "
+	ADDSP #2
+	LOAD 13(GB), R8
+	STORE R8, 0(SP)
+	LOAD #23, R0
+	STORE R0, -1(SP)
+	LOAD 0(SP), R8
+	CMP #null, R8
+	BEQ dereferencement.null
+	LOAD 0(R8), R8
+	BSR 4(R8)
+	SUBSP #2
+	ADDSP #1
+	LOAD 13(GB), R8
+	STORE R8, 0(SP)
+	LOAD 0(SP), R8
+	CMP #null, R8
+	BEQ dereferencement.null
+	LOAD 0(R8), R8
+	BSR 5(R8)
+	SUBSP #1
+	LOAD 13(GB), R8
+	CMP #null, R8
+	BEQ dereferencement.null
+	LOAD 1(R8), R8
+	LOAD R8, R1
+	WINT
+	WSTR "- David : "
+	LOAD 13(GB), R8
+	CMP #null, R8
+	BEQ dereferencement.null
+	LOAD 2(R8), R8
+	LOAD R8, R1
+	WINT
+	WNL
+	HALT
+; end main program
+;  ************************************************************
+;  *  GENERATION DES INITS ET DES BODY METHODES DES CLASSES   *
+;  ************************************************************
+init.Personne:
+	TSTO #0
+	BOV stack_overflow_error
+	LOAD -2(LB), R8
+	LOAD #0, R0
+	STORE R0, 1(R8)
+	LOAD -2(LB), R2
+	RTS
+init.Etudiant:
+	TSTO #2
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0, R0
+	STORE R0, 2(R2)
+	PUSH R2
+	BSR init.Personne
+	POP R2
+	LOAD -2(LB), R2
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+code.Personne.init:
+	TSTO #2
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	LOAD -3(LB), R2
+	LOAD -2(LB), R3
+	CMP #null, R3
+	BEQ dereferencement.null
+	STORE R2, 1(R3)
+fin.Personne.init:
+	POP R3
+	POP R2
+	RTS
+code.Personne.afficherNb:
+	TSTO #3
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 1(R2), R2
+	LOAD R2, R1
+	WINT
+fin.Personne.afficherNb:
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.Etudiant.setAge:
+	TSTO #5
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	PUSH R6
+	LOAD -3(LB), R2
+	LOAD -2(LB), R3
+	CMP #null, R3
+	BEQ dereferencement.null
+	STORE R2, 2(R3)
+fin.Etudiant.setAge:
+	POP R6
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.Etudiant.afficherAge:
+	TSTO #6
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	PUSH R6
+	PUSH R7
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 2(R2), R2
+	LOAD R2, R1
+	WINT
+	WNL
+fin.Etudiant.afficherAge:
+	POP R7
+	POP R6
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+;  ************************************************************
+;  * AJOUT DES LABELS ERREURS DEMANDÉES PAR LE PROGRAMME DECA *
+;  ************************************************************
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+tas_plein:
+	WSTR "Erreur : le tas est plein, impossible d'allouer de la memoire"
+	WNL
+	ERROR
+dereferencement.null:
+	WSTR "Erreur : Dereferencement null"
+	WNL
+	ERROR

@@ -1,0 +1,12 @@
+// Description :
+// Test d'affectations successives sur une variable.
+//
+// Resultats :
+// 3
+
+{
+    int x;
+    x = 1;
+    x = x + 2;
+    println(x);
+}

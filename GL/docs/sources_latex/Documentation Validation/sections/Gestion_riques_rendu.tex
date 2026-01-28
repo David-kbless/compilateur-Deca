@@ -1,0 +1,46 @@
+\section{Gestion des risques et Gestion des rendus}
+\subsection{Analyse et gestion des risques}
+
+La complexité du projet Deca impose une vigilance constante. Nous avons identifié plusieurs risques critiques, classés par impact, et défini des mesures d'atténuation concrètes.
+
+\begin{itemize}
+    \item \textbf{Régression fonctionnelle :} 
+    Lors de l'ajout de nouvelles fonctionnalités (notamment le passage à la partie Objet), le risque de briser l'existant est élevé. 
+    \textit{Action :} Nous prévoyons une  mise en place d'une \textbf{Intégration Continue (CI)} via GitLab CI. Chaque \textit{commit} déclenchera une \textit{pipeline} de tests automatisés (runners) vérifiant que le compilateur passe toujours la base de tests de non-régression.
+
+    \item \textbf{Erreurs d'interprétation de la grammaire :} 
+    Une mauvaise lecture du sujet peut mener à autoriser des syntaxes interdites ou inversement.
+    \textit{Action :} Organisation de \textbf{sessions de transfert de connaissances} hebdomadaires. L'objectif est de confronter les implémentations de chaque binôme à l'esprit critique du reste du groupe et d'enrichir mutuellement nos batteries de tests.
+
+    \item \textbf{Incohérence des fichiers de référence (\texttt{.res}) :} 
+    Un risque majeur est de valider un comportement erroné en écrivant un fichier de sortie attendue incorrect.
+    \textit{Action :} \textbf{Double vérification (Peer-review)} : les fichiers de résultats attendus pour les tests complexes doivent être validés par un membre n'ayant pas codé la fonctionnalité.
+
+    \item \textbf{Négligence de la documentation technique :} 
+    Le retard dans la documentation peut mener à une perte de connaissance interne ou à l'oubli de détails d'implémentation cruciaux pour le rapport final.
+    \textit{Action :} La documentation est utilisée comme \textbf{support des transferts de connaissances}. Une fonctionnalité n'est considérée comme "terminée" que si son paragraphe dédié dans la documentation est à jour.
+
+    \item \textbf{Défaut de synchronisation Git (Oubli de \texttt{git add}) :} 
+    Travailler sur un code qui compile localement mais qui est incomplet sur le dépôt distant.
+    \textit{Action :} Utilisation de la procédure du \textbf{"Clone de vérification"} avant chaque rendu majeur (cloner le projet dans un répertoire neutre et lancer un \texttt{mvn test}).
+
+    \item \textbf{Conflits de périmètre entre étapes (A, B et C) :} 
+    Risque de "zone grise" où chaque binôme pense que la responsabilité d'un contrôle (ex: \texttt{ConvFloat}) incombe à une autre étape.
+    \textit{Action :} \textbf{Réunions de synchronisation d'interface} lors des transferts de connaissances pour figer explicitement les responsabilités de chaque nœud de l'arbre entre l'étape B et C.
+
+    \item \textbf{Manquement aux échéances administratives :} 
+    Oubli de l'envoi des documents après un suivi ou retard de rendu.
+    \textit{Action :} Programmation systématique d'une \textbf{réunion de bouclage} 24h avant chaque échéance pour valider l'intégralité du package de rendu (code, tests et documents).
+
+    \item \textbf{Défaillance du matériel de projection :} 
+    Risque d'impossibilité de projeter la démonstration ou de panne technique durant la soutenance.
+    \textit{Action :} Mise en place d'un \textbf{dispositif de secours à deux postes} : utilisation de deux PC synchronisés, l'un pour le présentateur et l'autre pour le client, afin de garantir la visibilité de la démonstration même en l'absence de projecteur.
+
+    \item \textbf{Répercussions de modifications mineures :} 
+    Une modification simple peut introduire des régressions subtiles dans la génération de code.
+    \textit{Action :} Tout changement, même mineur, doit entraîner une \textbf{révision complète du code associé} et une analyse rigoureuse de l'assembleur généré pour s'assurer de la stabilité du comportement du compilateur.
+
+    \item \textbf{Non-conformité des tests de validation :} 
+    Risque que les tests de non-régression ne reflètent plus l'état attendu du compilateur final.
+    \textit{Action :} \textbf{Vérification croisée de la validité} : les membres de l'équipe responsables des différentes étapes (A, B et C) doivent valider systématiquement que tous les tests présents dans les répertoires \texttt{valid} passent correctement avec le compilateur final.
+\end{itemize}

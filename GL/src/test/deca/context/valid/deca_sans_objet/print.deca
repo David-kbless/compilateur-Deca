@@ -1,0 +1,14 @@
+// Description:
+//    test de print
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+    print("true");
+    println(1 + 2);
+    println(1.5);
+}

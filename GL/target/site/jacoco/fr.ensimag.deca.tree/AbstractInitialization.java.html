@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractInitialization.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">AbstractInitialization.java</span></div><h1>AbstractInitialization.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+
+/**
+ * Initialization (of variable, field, ...)
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+<span class="fc" id="L17">public abstract class AbstractInitialization extends Tree {</span>
+    
+    /**
+     * Implements non-terminal &quot;initialization&quot; of [SyntaxeContextuelle] in pass 3
+     * @param compiler contains &quot;env_types&quot; attribute
+     * @param t corresponds to the &quot;type&quot; attribute
+     * @param localEnv corresponds to the &quot;env_exp&quot; attribute
+     * @param currentClass 
+     *          corresponds to the &quot;class&quot; attribute (null in the main bloc).
+     */
+    protected abstract void verifyInitialization(DecacCompiler compiler,
+            Type t, EnvironmentExp localEnv, ClassDefinition currentClass)
+            throws ContextualError;
+
+    public abstract DVal codeGen(DecacCompiler compiler);
+    public abstract int simuleExecutionNbRegistresField(DecacCompiler compiler);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

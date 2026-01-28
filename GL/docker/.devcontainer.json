@@ -1,0 +1,30 @@
+{
+    "image" : "gitlab.ensimag.fr:5050/reigniep/dockergl",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-docker",
+                "redhat.java",
+                "VisualStudioExptTeam.vscodeintellicode",
+                "vscjava.vscode-java-debug",
+                "vscjava.vscode-java-dependency",
+                "vscjava.vscode-java-pack",
+                "vscjava.vscode-java-test",
+                "vscjava.vscode-maven",
+                "mike-lischke.vscode-antlr4",
+                "redhat.vscode-xml",
+                "ms-vscode.makefile-tools",
+                "eamodio.gitlens",
+                "mhutchie.git-graph",
+                "waderyan.gitblame",
+                "donjayamanne.git-extension-pack",
+                "vscodeemacs.emacs",
+                "janisdd.vscode-edit-csv"
+            ]        
+        }        
+    },    
+    "workspaceMount": [
+	"source=${localWorkspaceFolder}/..,target=/home/gl/projet_gl,type=bind,consistency=cached"
+    ],
+    "workspaceFolder" : "/home/gl/projet_gl"
+}

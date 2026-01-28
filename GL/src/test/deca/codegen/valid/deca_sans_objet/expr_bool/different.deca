@@ -1,0 +1,16 @@
+// Description :
+// Test de l'opérateur 'différent de'.
+//
+// Resultats :
+// ok
+
+{
+    int x;
+    x = 3;
+    
+    if(x != 4){
+        print("ok");
+    }else{
+        print("Erreur");
+    }
+}

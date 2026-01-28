@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>And.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">And.java</span></div><h1>And.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.instructions.BEQ;
+import fr.ensimag.ima.pseudocode.instructions.CMP;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+import fr.ensimag.ima.pseudocode.Label;
+
+/**
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class And extends AbstractOpBool {
+
+    public And(AbstractExpr leftOperand, AbstractExpr rightOperand) {
+<span class="fc" id="L18">        super(leftOperand, rightOperand);</span>
+<span class="fc" id="L19">    }</span>
+
+    @Override
+    protected String getOperatorName() {
+<span class="nc" id="L23">        return &quot;&amp;&amp;&quot;;</span>
+    }
+
+    // @Override
+    // protected GPRegister codeGenOperationBinaireBool(DecacCompiler compiler, GPRegister operande1) {
+    //     Label eFin = compiler.getLabelOpBool();
+
+    //     // Court-circuit : si operande1 == 0 (False), on s'arrête
+    //     compiler.addInstruction(new CMP(0, operande1)); 
+    //     compiler.addInstruction(new BEQ(eFin));
+
+    //     // Sinon, on évalue operande2
+    //     GPRegister operande2 = getRightOperand().codeGenInst(compiler);
+    //     compiler.addInstruction(new LOAD(operande2, operande1));
+
+    //     compiler.libererRegistre();
+
+    //     compiler.addLabel(eFin);
+    //     return operande1;  
+    // }
+
+
+//     protected GPRegister codeGenOperationBinaireBool(DecacCompiler compiler, GPRegister operande1){
+//     // 1. On récupère un numéro UNIQUE et on l'incrémente
+//     int num = compiler.getAndIncOpBool(); 
+//     Label eFin = new Label(&quot;E_Fin_And.&quot; + num);
+
+//     // 2. Court-circuit : si False (0), on saute à la fin
+//     compiler.addInstruction(new CMP(0, operande1));
+//     compiler.addInstruction(new BEQ(eFin));
+
+//     // 3. Sinon, on évalue la droite
+//     GPRegister operande2 = getRightOperand().codeGenInst(compiler);
+//     compiler.addInstruction(new LOAD(operande2, operande1));
+
+//     // 4. On libère le registre de droite, le résultat est dans operande1
+//     compiler.libererRegistre();
+
+//     compiler.addLabel(eFin);
+//     return operande1;  
+// }
+    
+
+    @Override
+    protected void codeGenVrai(DecacCompiler compiler, Label E) {
+        // @Ousmane : Si C1 est faux, on sort du ET (court-circuit)
+<span class="fc" id="L69">        Label eFin = new Label(&quot;E_Fin_And.&quot; + compiler.getAndIncOpBool());</span>
+<span class="fc" id="L70">        getLeftOperand().codeGenFaux(compiler, eFin);</span>
+<span class="fc" id="L71">        getRightOperand().codeGenVrai(compiler, E);</span>
+<span class="fc" id="L72">        compiler.addLabel(eFin);</span>
+<span class="fc" id="L73">    }</span>
+
+    @Override
+    protected void codeGenFaux(DecacCompiler compiler, Label E) {
+        // @Ousmane : Si C1 est faux, alors (C1 &amp;&amp; C2) est faux -&gt; branchement direct à E [cite: 80, 81]
+<span class="fc" id="L78">        getLeftOperand().codeGenFaux(compiler, E);</span>
+<span class="fc" id="L79">        getRightOperand().codeGenFaux(compiler, E);</span>
+<span class="fc" id="L80">    }</span>
+
+    @Override
+    protected GPRegister codeGenOperationBinaireBool(DecacCompiler compiler, GPRegister operande1) {
+        // Cette méthode n'est plus utile si tu utilises exclusivement le flot de contrôle
+<span class="nc" id="L85">        return operande1;</span>
+    }   
+
+    
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

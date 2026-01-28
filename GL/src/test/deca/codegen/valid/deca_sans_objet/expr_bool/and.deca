@@ -1,0 +1,17 @@
+// Description :
+// Test de l'opérateur logique 'et'.
+//
+// Resultats :
+// ok
+
+{
+    boolean b;
+    b = true && false;
+    
+    if(b){
+        print("Erreur");
+    }else{
+        print("ok");
+    }
+
+}

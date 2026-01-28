@@ -1,0 +1,18 @@
+// Description:
+//    test de déclaration et utilisation de 3 variables
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+        int x = 2 ;
+        int y = 5 ;
+        float z ;
+        z = - y ;
+        z = x - y ;
+        z = x * y / z ;
+        z = - y ;
+}

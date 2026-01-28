@@ -1,0 +1,359 @@
+\section{Optimisation et Justification des choix d'approximation}
+
+Le cœur de la bibliothèque repose sur l'approximation polynomiale des fonctions trigonométriques. Pour garantir la précision requise, nous avons procédé par étape : analyse des limites de Taylor, définition d'une métrique rigoureuse (ULP), et étude comparative des degrés et méthodes.
+
+% ==========================================================
+% 1. LE PROBLÈME DE TAYLOR
+% ==========================================================
+\subsection{Les limites des séries de Taylor}
+
+Mathématiquement, la série de Taylor au voisinage de 0 est l'approximation qui minimise l'erreur \textit{au point 0} et ses dérivées.
+\[
+P_{Taylor}(x) = \sum_{n=0}^{N} \frac{f^{(n)}(0)}{n!} x^n
+\]
+
+Cependant, cette "perfection locale" a un coût : l'erreur augmente exponentiellement à mesure que l'on s'éloigne du centre du développement. C'est le phénomène de \textbf{concentration de l'erreur aux bornes}.
+
+Comme on le voit sur les graphes théoriques, un polynôme de Taylor diverge rapidement dès que l'argument s'approche de la limite du domaine de réduction (vers $\pm \frac{\pi}{4}$), ce qui pose un risque de précision inacceptable pour une bibliothèque généraliste.
+
+% ==========================================================
+% 2. LA MÉTRIQUE : ULP
+% ==========================================================
+\subsection{Protocole de mesure : L'ULP}
+
+Pour quantifier objectivement la précision de nos approximations, l'erreur absolue n'est pas pertinente car elle dépend de l'ordre de grandeur des données. Nous utilisons l'\textbf{ULP} (Unit in the Last Place).
+
+\subsubsection{Définition en contexte IEEE 754 Single}
+Dans l'architecture cible (32-bit float uniquement), un nombre est représenté par :
+\[ x = (-1)^s \times 1.m \times 2^{e-127} \]
+où la mantisse $m$ possède 23 bits.
+
+L'ULP correspond à la valeur du bit de poids le plus faible. C'est la "distance atomique" entre deux flottants consécutifs.
+\[ \text{Erreur (ULP)} = \frac{| \text{Valeur\_Calculée} - \text{Valeur\_Exacte} |}{\text{gap}( \text{Valeur\_Exacte} )} \]
+
+\subsubsection{Critères d'acceptation}
+Contrairement au type \texttt{double} qui masque les erreurs, le type \texttt{float} est très sensible. Nos critères sont :
+\begin{itemize}
+    \item \textbf{0.5 ULP} : Arrondi correct (le résultat est le flottant le plus proche possible).
+    \item \textbf{1.0 ULP} : Arrondi fidèle (le résultat est l'un des deux flottants entourant le réel).
+    \item \textbf{> 2.0 ULP} : Précision insuffisante pour une bibliothèque système.
+\end{itemize}
+
+% ==========================================================
+% 3. ANALYSE COMPARATIVE (D'après tes graphes)
+% ==========================================================
+\subsection{Analyse expérimentale et choix du degré}
+
+Nous avons comparé les approches Taylor et Minimax pour les degrés 7 et 9 sur l'intervalle de réduction.
+
+\subsubsection{Comparaison du Degré 7 : Précision insuffisante}
+
+Les figures ci-dessous montrent l'erreur pour un polynôme de degré 7.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Documentation extension/sections/images/Taylor_degree_7_sin.png}
+        \caption{Taylor Degré 7}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Documentation extension/sections/images/Minimax_degree_7_sin.png}
+        \caption{Minimax Degré 7}
+    \end{minipage}
+    \caption*{Comparaison Degré 7 : Max Error $\approx$ 6.0 ULP}
+\end{figure}
+
+\textbf{Analyse :} Que ce soit avec Taylor ou Minimax, le degré 7 produit une erreur maximale de \textbf{6.0 ULP} aux bornes de l'intervalle. C'est inacceptable : l'approximation "décroche" trop loin de la valeur réelle. Il manque des termes pour capturer la courbure du sinus.
+
+\subsubsection{Comparaison du Degré 9 : L'optimum}
+
+En passant au degré 9, la précision s'améliore drastiquement.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Documentation extension/sections/images/Taylor_degree_9_sin.png}
+        \caption{Taylor Degré 9}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Documentation extension/sections/images/Minimax_degree_9_sin.png}
+        \caption{Minimax Degré 9}
+    \end{minipage}
+    \caption*{Comparaison Degré 9 : Max Error = 1.0 ULP}
+\end{figure}
+
+\textbf{Analyse :}
+\begin{itemize}
+    \item L'erreur maximale chute à \textbf{1.0 ULP} pour les deux méthodes. Cela correspond à un arrondi fidèle ("Faithful Rounding").
+    \item L'erreur moyenne (Avg ULP) est extrêmement faible ($\approx 0.18$ ULP).
+\end{itemize}
+
+\subsection{Conclusion : Pourquoi Minimax Degré 9 ?}
+
+Bien que Taylor Degré 9 semble offrir des performances similaires à Minimax Degré 9 dans ce cas précis (Max 1.0 ULP tous les deux), nous avons retenu l'approche \textbf{Minimax} pour deux raisons théoriques et industrielles :
+
+\begin{enumerate}
+    \item \textbf{Sécurité aux bornes :} Taylor favorise le centre ($x=0$). Si l'intervalle de réduction venait à être légèrement étendu (problème de réduction d'argument), Taylor exploserait immédiatement. Minimax garantit que l'erreur reste bornée uniformément sur tout le segment.
+    \item \textbf{Répartition de l'effort :} Comme le montre l'histogramme des erreurs, Minimax tend à égaliser les hauteurs des "marches" d'erreur (Théorème d'équioscillation), rendant la fonction plus prédictible.
+\end{enumerate}
+
+Le polynôme final implémenté est donc un \textbf{Minimax de degré 9}, garantissant une erreur $\le 1$ ULP sur tout le domaine.
+% ==========================================================
+% 4. OPTIMISATION DU COSINUS
+% ==========================================================
+\subsection{Optimisation de la fonction Cosinus}
+
+Nous avons appliqué la même méthodologie pour la fonction \texttt{cos(x)} sur l'intervalle réduit $[-\pi/4, \pi/4]$. L'objectif reste une erreur maximale inférieure à 2.0 ULP.
+
+\subsubsection{Analyse du Degré 6 : Insuffisant}
+
+Nous avons d'abord testé un polynôme de degré 6 ($x^0, x^2, x^4, x^6$).
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{sections/images/Taylor_Cos_Degree_6.png}
+        \caption{Taylor Cos Degré 6}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{sections/images/Minimax_Cos_Degree_6.png}
+        \caption{Minimax Cos Degré 6}
+    \end{minipage}
+    \caption*{Comparaison Degré 6 : Taylor diverge (61 ULP) vs Minimax (4 ULP)}
+\end{figure}
+
+\textbf{Constat :}
+\begin{itemize}
+    \item \textbf{Taylor :} L'erreur explose littéralement aux bornes (Max: \textbf{61.0 ULP}). C'est inutilisable.
+    \item \textbf{Minimax :} Bien meilleure stabilité, mais l'erreur maximale atteint \textbf{4.0 ULP}. Bien que faible, cela dépasse notre critère de "Faithful Rounding" (< 2.0 ULP).
+\end{itemize}
+Le degré 6 ne possède pas assez de termes pour épouser la courbure du cosinus avec la précision requise.
+
+\subsubsection{Analyse du Degré 8 : La précision atteinte}
+
+Nous sommes passés au degré supérieur (Degré 8 : ajout du terme en $x^8$).
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{sections/images/Taylor_Cos_Degree_8.png}
+        \caption{Taylor Cos Degré 8}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{sections/images/Minimax_Cos_Degree_8.png}
+        \caption{Minimax Cos Degré 8}
+    \end{minipage}
+    \caption*{Comparaison Degré 8 : Max Error = 1.0 ULP pour les deux}
+\end{figure}
+
+\subsubsection{Arbitrage final : L'argument du Mean ULP}
+
+À degré 8, les deux méthodes atteignent l'objectif d'une erreur maximale de \textbf{1.0 ULP}. Pour trancher, nous analysons la densité de l'erreur (Mean ULP) fournie par nos graphiques :
+
+\begin{itemize}
+    \item \textbf{Taylor Degré 8 :} Avg Error = \textbf{0.1662 ULP}
+    \item \textbf{Minimax Degré 8 :} Avg Error = \textbf{0.1384 ULP}
+\end{itemize}
+
+\textbf{Conclusion :}
+Bien que l'erreur pire-cas soit identique, le polynôme \textbf{Minimax} offre une erreur moyenne inférieure d'environ \textbf{17\%}. Cela signifie que statistiquement, pour une entrée aléatoire, le résultat Minimax sera plus souvent proche de la valeur exacte que celui de Taylor.
+
+Nous avons donc sélectionné le polynôme **Minimax de degré 8** pour l'implémentation finale du cosinus.
+
+% ==========================================================
+% 5. RÉDUCTION D'ARGUMENT (GRANDES VALEURS)
+% ==========================================================
+\section{Stratégie de Réduction d'Argument pour les grandes valeurs}
+
+L'un des défis majeurs de l'implémentation des fonctions périodiques en simple précision est la perte de précision catastrophique lorsque l'argument $x$ devient grand ($x \gg 2\pi$).
+
+\subsection{Le problème de la réduction naïve}
+Une réduction simple $r = x - k \cdot (\pi/2)$ échoue car $\pi/2$ ne peut être représenté exactement. L'erreur d'approximation est multipliée par $k$, noyant rapidement le résultat sous le "bruit" numérique.
+
+Pour remédier à cela, nous utilisons la méthode \textbf{Upper/Lower} (inspirée de Cody-Waite), qui simule une précision étendue en séparant la constante $\pi/2$ en deux parties (haute et basse précision).
+
+\subsection{Analyse quantitative de l'amélioration}
+
+Nous avons soumis notre algorithme à un "Stress Test" sur des valeurs allant de $10^1$ à $10^6$ radians. Les résultats sont présentés ci-dessous.
+
+\begin{figure}[H]
+    \centering
+    % Le graphe de dispersion (Points rouges et verts)
+    \includegraphics[width=0.95\textwidth]{sections/images/reduction_comparison.png}
+    \caption{Évolution de l'erreur en fonction de la grandeur de l'entrée. La méthode naïve (Rouge) diverge beaucoup plus tôt que la méthode Upper/Lower (Vert).}
+    \label{fig:reduction_scatter}
+\end{figure}
+
+Pour quantifier ce gain, nous avons mesuré l'erreur maximale et moyenne sur les échantillons où $x > 1000$ (zone critique).
+
+\begin{figure}[H]
+    \centering
+    % La capture d'écran de ta console avec les chiffres
+    \includegraphics[width=0.8\textwidth]{sections/images/resultat_division_normal.png}
+    \caption{Mesures brutes de l'erreur (en ULP) sur les grands arguments.}
+    \label{fig:reduction_metrics}
+\end{figure}
+
+\subsubsection{Comparaison des performances}
+
+D'après les mesures de la Figure \ref{fig:reduction_metrics}, nous observons une nette amélioration de la stabilité numérique :
+
+\begin{enumerate}
+    \item \textbf{Sur l'erreur moyenne (Mean Error) :}
+    \begin{itemize}
+        \item Méthode Naïve : $\approx 279\,327$ ULP
+        \item Méthode Upper/Lower : $\approx 74\,753$ ULP
+    \end{itemize}
+    Notre stratégie divise l'erreur moyenne par un facteur \textbf{3.74}. Cela signifie que pour une entrée aléatoire élevée, notre fonction est près de 4 fois plus précise que la version naïve.
+
+    \item \textbf{Sur l'erreur maximale (Max Error) :}
+    \begin{itemize}
+        \item Méthode Naïve : $\approx 11.4 \times 10^6$ ULP
+        \item Méthode Upper/Lower : $\approx 3.6 \times 10^6$ ULP
+    \end{itemize}
+    L'erreur pire-cas est réduite d'un facteur \textbf{3.17}.
+\end{enumerate}
+
+\textbf{Conclusion :}
+Bien que la limitation inhérente au format 32-bits rende impossible une précision parfaite pour des valeurs extrêmes ($x > 10^6$), l'approche Upper/Lower retarde considérablement la divergence, rendant la bibliothèque utilisable pour une gamme d'applications beaucoup plus large.
+
+% ==========================================================
+% 6. OPTIMISATION ARCTAN
+% ==========================================================
+\section{Optimisation de la fonction Arctan}
+
+Contrairement au sinus qui est borné, la fonction \texttt{atan(x)} est définie sur $\mathbb{R}$. Après la réduction d'argument $x > 1 \implies 1/x$, nous devons approximer la fonction sur l'intervalle $[0, 1]$.
+
+La difficulté réside dans la "raideur" de la pente près de 0. Nous avons mené une étude comparative pour déterminer le degré minimal nécessaire pour respecter l'arrondi fidèle (2 ULP).
+
+\subsection{L'échec du Degré 12}
+
+Nous avons d'abord tenté une approximation de degré 12.
+
+\begin{figure}[H]
+    \centering
+    % Ajustement des tailles pour que ça rentre bien
+    \begin{minipage}{0.60\textwidth}
+        \centering
+        % AJOUT DU CHEMIN sections/images/
+        \includegraphics[width=\textwidth]{sections/images/arctan_degree_12.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.35\textwidth}
+        \centering
+        % AJOUT DU CHEMIN sections/images/
+        \includegraphics[width=\textwidth]{sections/images/atan_degree_12.png}
+    \end{minipage}
+    \caption{Analyse du Degré 12. L'erreur atteint \textbf{7.00 ULP}, ce qui est bien au-delà des standards acceptables.}
+    \label{fig:atan_12}
+\end{figure}
+
+Comme le montre la Figure \ref{fig:atan_12}, le polynôme "décroche" significativement, créant des pics d'erreur inacceptables.
+
+\subsection{Le choix du compromis : Degré 14 vs 16}
+
+Nous avons comparé les degrés 14 et 16 pour évaluer le coût calculatoire (nombre de multiplications) par rapport au gain de précision.
+
+\begin{figure}[H]
+    \centering
+    % Comparaison Degré 14
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \textbf{Degré 14 (Retenu)}
+        % AJOUT DU CHEMIN
+        \includegraphics[width=\textwidth]{sections/images/resultats_atan_degree_14.png}
+        \includegraphics[width=\textwidth]{sections/images/arctan_degree_14.png}
+        \caption{Max: 2.0 ULP | Mean: 0.40}
+    \end{minipage}
+    \hfill
+    % Comparaison Degré 16
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \textbf{Degré 16 (Rejeté)}
+        % AJOUT DU CHEMIN
+        \includegraphics[width=\textwidth]{sections/images/atan_degree_16.png}
+        \includegraphics[width=\textwidth]{sections/images/arctan_degree_16.png}
+        \caption{Max: 2.0 ULP | Mean: 0.37}
+    \end{minipage}
+    \caption*{Comparaison : Le degré 16 n'améliore pas le pire cas (Max ULP).}
+\end{figure}
+
+\subsubsection{Analyse des gains marginaux}
+
+En analysant les statistiques :
+\begin{enumerate}
+    \item \textbf{Erreur Maximale :} Les deux degrés plafonnent à \textbf{2.00 ULP}. Le degré 16 ne parvient pas à réduire ce pire cas.
+    \item \textbf{Erreur Moyenne :} Le degré 16 apporte une amélioration minime (0.37 contre 0.40 ULP), un gain négligeable (< 10\%).
+\end{enumerate}
+
+\subsection{Conclusion : Sélection du Degré 14}
+
+Nous avons choisi le polynôme de \textbf{degré 14}.
+Chaque instruction comptant en assembleur, passer au degré 16 coûterait 2 opérations FMA supplémentaires sans gain visible pour l'utilisateur. Le degré 14 est le \textbf{ bon compromis} entre performance et précision.
+
+% ==========================================================
+% 7. OPTIMISATION ARCSIN
+% ==========================================================
+\section{Optimisation de la fonction Arcsin}
+
+La fonction $\arcsin(x)$ présente une difficulté majeure : sa dérivée tend vers l'infini lorsque $x \to 1$ (tangente verticale). Une simple approximation polynomiale ne peut pas capturer cette pente sans un degré excessivement élevé.
+
+Nous avons opté pour une stratégie à deux intervalles avec une transition à $|x| = 0.5$.
+
+\subsection{Stratégie de découpage}
+
+Le code implémente deux branches distinctes :
+\begin{enumerate}
+    \item \textbf{Zone stable ($|x| \le 0.5$) :} Approximation directe par la série de Taylor modifiée : $x + x^3 P(x^2)$.
+    \item \textbf{Zone critique ($|x| > 0.5$) :} Utilisation de l'identité $\frac{\pi}{2} - \sqrt{2(1-x)}(1 + R(1-x))$ pour gérer la singularité en 1.
+\end{enumerate}
+
+\subsection{Contrainte technique : La Racine Carrée en Float}
+
+Pour la branche critique ($x > 0.5$), le calcul de $\sqrt{2(1-x)}$ est nécessaire. L'architecture cible (IMA) ne disposant pas d'instruction matérielle pour la racine carrée, nous avons dû l'implémenter logiciellement.
+
+\subsubsection{Algorithme de Newton-Raphson en simple précision}
+Nous utilisons la méthode itérative de Newton pour approximer $y = \sqrt{A}$ :
+\[
+y_{n+1} = \frac{1}{2} \left( y_n + \frac{A}{y_n} \right)
+\]
+
+Contrairement aux bibliothèques standard qui utilisent souvent des calculs intermédiaires en \texttt{double} pour stabiliser le résultat, nous sommes contraints d'effectuer **toutes les itérations en \texttt{float} 32-bits**.
+Cette limitation entraîne une accumulation inévitable d'erreurs d'arrondi à chaque étape (multiplication et division), limitant la précision finale de la racine carrée à environ 1 ou 2 ULP.
+
+\subsection{Analyse de l'erreur et Compromis}
+
+La Figure \ref{fig:asin_error} présente l'erreur finale de la fonction.
+
+\begin{figure}[H]
+    \centering
+    % Assure-toi que le chemin est correct
+    \includegraphics[width=0.95\textwidth]{sections/images/arcsin_visualisation.png}
+    \caption{Erreur de \texttt{asin(x)}. On observe un pic d'erreur localisé à la transition ($x=\pm 0.5$).}
+    \label{fig:asin_error}
+\end{figure}
+
+\subsubsection{Justification du pic de 3.0 ULP}
+Comme illustré par les lignes rouges verticales sur la Figure \ref{fig:asin_error}, un saut d'erreur atteignant \textbf{3.0 ULP} apparaît au point de bascule $x = 0.5$.
+
+Ce pic résulte de la conjonction de deux facteurs :
+\begin{itemize}
+    \item \textbf{Discontinuité algorithmique :} Le passage brutal du polynôme simple à la formule complexe impliquant la racine carrée.
+    \item \textbf{Bruit numérique du Newton :} L'imprécision du calcul de la racine en \texttt{float} s'ajoute à l'erreur d'approximation polynomiale.
+\end{itemize}
+
+\textbf{Conclusion sur le compromis :}
+Pour lisser parfaitement cette transition (réduire l'erreur < 1.5 ULP), il aurait fallu complexifier l'algorithme ou augmenter le nombre d'itérations de Newton, ce qui aurait dégradé la performance globale.
+Nous avons jugé qu'une erreur locale de **3.0 ULP** était un compromis acceptable pour maintenir une exécution rapide, la précision restant excellente (< 1.5 ULP) sur le reste du domaine.

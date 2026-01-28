@@ -1,0 +1,12 @@
+// Description:
+//   test des heritages entre classes
+//
+// Resultats:
+//    Ok
+//
+class B{}
+class A extends B{}
+
+{
+    B a = new A();
+}

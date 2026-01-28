@@ -1,0 +1,11 @@
+// Description :
+//  Teste les opérations logiques avec négation sans objet.
+//
+// Resultats :
+// OK
+{
+    boolean a = true;
+    boolean b = false;
+    boolean c = !a && b;
+    println(c);
+}

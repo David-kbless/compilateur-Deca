@@ -1,0 +1,14 @@
+class A {
+    int meth1(){
+        int x = 1;
+        return x;
+    }
+}
+
+class B extends A{
+    int meth1(){
+        int x = (A) (this).meth1();
+        x = x + 1;
+        return x;
+    }
+}

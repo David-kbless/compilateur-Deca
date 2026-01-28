@@ -1,0 +1,20 @@
+class A{
+    int a;
+
+    void setA(int val){
+        this.a = val;
+    }
+    int getA(){
+        return this.a;
+    }
+    
+}
+
+
+{
+    A obj = new A();
+    obj.setA(7);
+    
+    println(obj.getA() / 3);
+    println(obj.getA() % 3);
+}

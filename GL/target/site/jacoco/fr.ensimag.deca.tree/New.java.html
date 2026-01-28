@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>New.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">New.java</span></div><h1>New.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+import java.io.PrintStream;
+
+import org.apache.commons.lang.Validate;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.RegisterOffset;
+import fr.ensimag.ima.pseudocode.instructions.BOV;
+import fr.ensimag.ima.pseudocode.instructions.BSR;
+import fr.ensimag.ima.pseudocode.instructions.FLOAT;
+import fr.ensimag.ima.pseudocode.instructions.INT;
+import fr.ensimag.ima.pseudocode.instructions.LEA;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+import fr.ensimag.ima.pseudocode.instructions.NEW;
+import fr.ensimag.ima.pseudocode.instructions.POP;
+import fr.ensimag.ima.pseudocode.instructions.PUSH;
+import fr.ensimag.ima.pseudocode.instructions.STORE;
+import fr.ensimag.ima.pseudocode.instructions.SUBSP;
+import fr.ensimag.ima.pseudocode.instructions.TSTO;
+
+public class New extends AbstractExpr {
+    private final AbstractIdentifier type;
+
+<span class="fc" id="L32">    public New(AbstractIdentifier type) {</span>
+<span class="fc" id="L33">        Validate.notNull(type);</span>
+<span class="fc" id="L34">        this.type = type;</span>
+<span class="fc" id="L35">    }</span>
+    public AbstractIdentifier getTypeIdentifier() {
+<span class="fc" id="L37">        return type;</span>
+    }
+
+    @Override
+    public void setLocation(Location location){
+<span class="fc" id="L42">        super.setLocation(location);</span>
+<span class="fc" id="L43">    }</span>
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv, ClassDefinition currentClass)
+            throws ContextualError {
+<span class="fc" id="L48">        Type type1 = type.verifyType(compiler);</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (!type1.isClass()) {</span>
+<span class="fc" id="L50">            throw new ContextualError(&quot;The type &quot; + type1 + &quot; is not a class type&quot;, getLocation());</span>
+        }
+<span class="fc" id="L52">        setType(type1);</span>
+<span class="fc" id="L53">        return type1;</span>
+    }
+
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="nc" id="L58">        s.print(&quot;new &quot;);</span>
+<span class="nc" id="L59">        getTypeIdentifier().decompile(s);</span>
+<span class="nc" id="L60">    }</span>
+
+    @Override
+    protected void prettyPrintChildren(PrintStream s, String prefix) {
+<span class="fc" id="L64">        getTypeIdentifier().prettyPrint(s, prefix, false);</span>
+<span class="fc" id="L65">    }</span>
+    
+    @Override
+    protected void iterChildren(TreeFunction f) {
+<span class="nc" id="L69">        type.iter(f);</span>
+<span class="nc" id="L70">    }</span>
+
+    @Override
+    protected GPRegister codeGenInst(DecacCompiler compiler) {
+<span class="nc" id="L74">        GPRegister reg = compiler.utiliserRegistre();</span>
+<span class="nc" id="L75">        ClassDefinition defClass = type.getClassDefinition();</span>
+
+
+        // Allocation
+<span class="nc" id="L79">        compiler.addInstruction(new NEW(defClass.getNumberOfFields() + 1, reg));</span>
+<span class="nc" id="L80">        compiler.addTasOverflowLabel();</span>
+<span class="nc" id="L81">        compiler.addInstruction(new BOV(new Label(&quot;tas_plein&quot;)));</span>
+
+        // VTable
+<span class="nc" id="L84">        GPRegister tas = compiler.utiliserRegistre();</span>
+<span class="nc" id="L85">        compiler.addInstruction(new LEA(defClass.getVTableAddr(), tas));</span>
+<span class="nc" id="L86">        compiler.addInstruction(new STORE(tas, new RegisterOffset(0, reg)));</span>
+<span class="nc" id="L87">        compiler.libererRegistre();</span>
+
+        // Appel INIT
+<span class="nc" id="L90">        compiler.addInstruction(new PUSH(reg));</span>
+<span class="nc" id="L91">        compiler.addInstruction(new BSR(defClass.getLabelInit()));</span>
+        
+
+        // On récupère le résultat du NEW (l'objet) tout de suite
+<span class="nc" id="L95">        compiler.addInstruction(new POP(reg)); </span>
+
+
+<span class="nc" id="L98">        return reg;</span>
+    }
+    
+    // @Ousmane , je dois implementer cette fonctionnalite
+
+    @Override
+    public int simuleExecutionNbRegistres(DecacCompiler compiler){
+<span class="fc" id="L105">        return compiler.simulerAllocationRegistre() + compiler.simulerAllocationRegistre(); // +1 pour l'objet lui meme</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

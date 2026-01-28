@@ -1,0 +1,41 @@
+// commande de compilation :
+//    decac src/test/deca/demo_soutenance/Partie_C/messages_erreurs/io_dereferencement_divZero_Erreur.deca
+//    ima src/test/deca/demo_soutenance/Partie_C/messages_erreurs/io_dereferencement_divZero_Erreur.ass
+
+
+//     exec-decac ../Partie_C/messages_erreurs/io_dereferencement_divZero_Erreur.deca 
+
+
+
+// Description :
+// test d'une erreur de déréférencement suite à une division par zéro avec des entrées/sorties erronees
+
+class Diviseur{
+    float numerateur = 10.0;
+
+    float diviser(int denominateur){
+        if(denominateur >= 0){
+            return numerateur / denominateur;
+        }
+    }
+}
+
+
+{
+    // Variables globales main
+    Diviseur d;
+    float resultat;
+    int denominateur;
+
+
+    // on oublie pas de créer l'objet Diviseur
+    //d = new Diviseur();
+
+    // saisie utilisateur 
+    print("Entrez un entier : ");
+    denominateur = readInt();
+    resultat = d.diviser(denominateur);
+
+    // affichage
+    println("Le résultat est :",resultat);
+}

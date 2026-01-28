@@ -1,0 +1,12 @@
+// Description :
+// Teste les divisions dans une boucle while sans objet. 
+//
+// Resultats :
+// OK
+{
+    int x = 64;
+    while (x > 1) {
+        x = x / 2;
+    }
+    println(x);
+}

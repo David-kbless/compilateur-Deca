@@ -1,0 +1,21 @@
+\subsection{Gestion des rendus et procédure de mise en production}
+
+Pour garantir la qualité de nos livrables et éviter les erreurs critiques de dernière minute, nous avons instauré une procédure rigoureuse de \textit{Release Management}. Chaque rendu est conditionné par la validation des étapes suivantes :
+
+\begin{enumerate}
+    \item \textbf{Nettoyage et revue du code :} Nous procédons à une suppression systématique des commentaires de débuggage (\textit{print}) et des portions de code mortes. Parallèlement, nous enrichissons la \textit{Javadoc} et ajoutons des commentaires explicatifs sur les algorithmes complexes pour faciliter la maintenance future.
+    
+    \item \textbf{Gel du code (\textit{Code Freeze}) :} Une heure de "gel" est fixée avant l'échéance. Durant cette période, plus aucune fonctionnalité n'est ajoutée. L'objectif est de stabiliser la version et de ne réaliser que des tests de bon fonctionnement.
+    
+    \item \textbf{Cycle Maven complet :} Nous exécutons systématiquement la commande \texttt{mvn clean compile package}. Le \texttt{clean} garantit que nous ne travaillons pas sur des résidus d'anciennes compilations, tandis que le \texttt{package} vérifie que le binaire final est prêt à l'emploi.
+    
+    \item \textbf{Procédure du "Clone Neutre" :} Pour s'assurer que le dépôt Git est complet, nous effectuons un \texttt{git clone} du projet dans un répertoire temporaire, totalement indépendant de notre espace de travail habituel. Nous y relançons les tests pour valider qu'aucun fichier n'a été oublié (\texttt{git add}).
+    
+    \item \textbf{Validation sur l'environnement de référence :} Le projet est testé sur les machines de l'Ensimag. Cette étape est cruciale pour garantir la portabilité du compilateur et s'assurer qu'il se comporte de la même manière sur l'environnement de correction.
+    
+    \item \textbf{Audit de la documentation et des manuels :} Nous vérifions que chaque fonctionnalité implémentée possède sa documentation de conception associée. Les manuels utilisateur et technique sont mis à jour et les versions PDF sont générées et placées dans le répertoire \texttt{/docs}.
+    
+    \item \textbf{Vérification des options d'interface :} Nous testons manuellement la réaction du binaire \texttt{decac} face aux différentes options (\texttt{-b}, \texttt{-p}, \texttt{-v}, etc.) pour vérifier la conformité avec le sujet.
+    
+    \item \textbf{Commit de clôture :} Une fois la checklist validée, nous effectuons un dernier \textit{commit} dont le message explicite indique que la version est prête pour le rendu. Cela marque la fin officielle du cycle de développement pour le jalon concerné.
+\end{enumerate}

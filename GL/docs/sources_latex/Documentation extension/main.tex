@@ -1,0 +1,158 @@
+\documentclass[a4paper,12pt]{report}
+
+% =============================================================
+% PACKAGES
+% =============================================================
+
+% Encodage et langue
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{hyperref}
+
+
+% Gestion des images et du placement
+\usepackage{graphicx}
+\usepackage{float}       % <--- OBLIGATOIRE pour utiliser [H] (force l'image ici)
+\usepackage{background}  % Pour le logo en filigrane
+
+% Maths et Symboles
+\usepackage{amsmath}
+\usepackage{amssymb}     % <--- Recommandé pour les symboles mathématiques
+\usepackage{seqsplit}
+
+% Mise en page
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    left=2.5cm,
+    right=2.5cm,
+    top=3cm,
+    bottom=3cm,
+}
+
+% Espacement des lignes (1.5)
+\usepackage{setspace}
+\onehalfspacing
+
+% =============================================================
+% CONFIGURATION DU BACKGROUND (FILIGRANE)
+% =============================================================
+\backgroundsetup{
+    scale=1,
+    color=black,
+    opacity=0.055,
+    angle=0,
+    position=current page.south,
+    vshift=15cm,
+    hshift=0cm,
+    % ATTENTION : Vérifie que ce chemin est bon.
+    % Si ton image est à la racine, mets juste {logoEnsimag.png}
+    contents={\includegraphics[width=\paperwidth]{assets/logoEnsimag.png}}
+}
+
+% =============================================================
+% DÉBUT DU DOCUMENT
+% =============================================================
+\begin{document}
+\sloppy
+
+% Réinitialisation compteurs (Configuration perso)
+\setcounter{section}{0}
+\renewcommand{\thesection}{\arabic{section}}
+
+% =============================================================
+% PAGE DE GARDE
+% =============================================================
+\begin{titlepage}
+    \centering
+
+    % --- En-tête ---
+    \begin{minipage}{0.48\textwidth}
+        \raggedright
+        \textbf{GRENOBLE-INP ENSIMAG}\\
+        \rule{3cm}{0.3pt}\\
+        INGÉNIERIE DES SYSTÈMES\\
+        D'INFORMATION\\
+        \rule{3cm}{0.3pt}\\
+        2A
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \raggedleft
+        \textbf{GRENOBLE-INP ENSIMAG}\\
+        \rule{3cm}{0.3pt}\\
+        INFORMATION SYSTEMS\\
+        ENGINEERING\\
+        \rule{3cm}{0.3pt}\\
+        2A
+    \end{minipage}
+
+    \vspace{1.5cm}
+
+    % --- Logo Central ---
+    % Vérifie le chemin ici aussi
+    \includegraphics[width=0.25\textwidth]{assets/logoEnsimag.png}
+
+    \vspace{1.5cm}
+
+    % --- Titre ---
+    {\Large \textbf{ÉCOLE NATIONALE SUPÉRIEURE D’INFORMATIQUE ET DE MATHÉMATIQUES APPLIQUÉES DE GRENOBLE}}\\[1.2cm]
+
+    {\huge \textbf{PROJET GL}}\\[0.8cm]
+
+    \hrule height 0.8pt
+    \vspace{0.8cm}
+    {\Large \textbf{DOCUMENTATION SUR L'EXTENSION [TRIGO]}}\\[0.8cm]
+    \hrule height 0.8pt
+
+    \vfill
+
+    % --- Auteurs et Client ---
+    \begin{minipage}{0.48\textwidth}
+        \raggedright
+        \textbf{Réalisé par :}\\[0.2cm]
+        DIAKITE Alpha Ousmane\\
+        DREUILLE Nathan\\
+        FLISS Yassine\\
+        KOSSI Yao David\\
+        OUDRHIRI IDRISSI Safwane
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \raggedleft
+        \textbf{CLIENT :}\\[0.2cm]
+        FREIRE MARCO
+    \end{minipage}
+
+    \vspace{2cm}
+
+    \textbf{Année académique : 2025--2026}
+
+\end{titlepage}
+
+\newpage
+
+% =============================================================
+% TABLE DES MATIÈRES
+% =============================================================
+\tableofcontents
+
+
+\newpage
+
+% =============================================================
+% INCLUSION DES SECTIONS
+% =============================================================
+
+% NOTE : J'utilise des guillemets "" car tes dossiers ont des espaces.
+% Si ça plante, renomme le dossier "Documentation extension" en "doc_ext"
+
+% 1. La partie de ton ami (Théorie / Spécification)
+\input{"Documentation extension/sections/Specification"}
+
+% 2. Ta nouvelle partie (Optimisation)
+% Assure-toi d'avoir collé mon code précédent dans ce fichier !
+\input{"Documentation extension/sections/optimisation"}
+
+\end{document}

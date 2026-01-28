@@ -1,0 +1,13 @@
+// Description :
+// Test de l'équivalence booléenne.
+//
+// Resultats :
+// Fichier .res manquant
+
+{
+    if (false) {
+        print("Erreur");
+    } else {
+        print("Equivalence OK");
+    }
+}

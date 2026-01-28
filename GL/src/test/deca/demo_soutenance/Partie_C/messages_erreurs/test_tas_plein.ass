@@ -1,0 +1,117 @@
+; start main program
+	TSTO #9
+	BOV stack_overflow_error
+	ADDSP #6
+;  ************************************************************
+;  *           CONSTRUCTION DES VTABLES DES CLASSES           *
+;  ************************************************************
+; Construction de la VTable de la classe Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de ClasseAvecBeacoupDeAttributss
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+; Variable Declarations : 
+	LOAD #null, R0
+	STORE R0, 5(GB)
+	LOAD #0, R0
+	STORE R0, 6(GB)
+; Beginning of main instructions:
+	BRA E_Cond.1
+E_Debut.1:
+	NEW #51, R2
+	BOV tas_plein
+	LEA 3(GB), R3
+	STORE R3, 0(R2)
+	PUSH R2
+	BSR init.ClasseAvecBeacoupDeAttributss
+	POP R2
+	STORE R2, 5(GB)
+	LOAD 6(GB), R2
+	ADD #1, R2
+	STORE R2, 6(GB)
+E_Cond.1:
+	LOAD 6(GB), R2
+	CMP #1000, R2
+	BLT E_Debut.1
+	HALT
+; end main program
+;  ************************************************************
+;  *  GENERATION DES INITS ET DES BODY METHODES DES CLASSES   *
+;  ************************************************************
+init.ClasseAvecBeacoupDeAttributss:
+	TSTO #0
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0, R0
+	STORE R0, 1(R2)
+	STORE R0, 2(R2)
+	STORE R0, 3(R2)
+	STORE R0, 4(R2)
+	STORE R0, 5(R2)
+	STORE R0, 6(R2)
+	STORE R0, 7(R2)
+	STORE R0, 8(R2)
+	STORE R0, 9(R2)
+	STORE R0, 10(R2)
+	STORE R0, 11(R2)
+	STORE R0, 12(R2)
+	STORE R0, 13(R2)
+	STORE R0, 14(R2)
+	STORE R0, 15(R2)
+	STORE R0, 16(R2)
+	STORE R0, 17(R2)
+	STORE R0, 18(R2)
+	STORE R0, 19(R2)
+	STORE R0, 20(R2)
+	STORE R0, 21(R2)
+	STORE R0, 22(R2)
+	STORE R0, 23(R2)
+	STORE R0, 24(R2)
+	STORE R0, 25(R2)
+	STORE R0, 26(R2)
+	STORE R0, 27(R2)
+	STORE R0, 28(R2)
+	STORE R0, 29(R2)
+	STORE R0, 30(R2)
+	STORE R0, 31(R2)
+	STORE R0, 32(R2)
+	STORE R0, 33(R2)
+	STORE R0, 34(R2)
+	STORE R0, 35(R2)
+	STORE R0, 36(R2)
+	STORE R0, 37(R2)
+	STORE R0, 38(R2)
+	STORE R0, 39(R2)
+	STORE R0, 40(R2)
+	STORE R0, 41(R2)
+	STORE R0, 42(R2)
+	STORE R0, 43(R2)
+	STORE R0, 44(R2)
+	STORE R0, 45(R2)
+	STORE R0, 46(R2)
+	STORE R0, 47(R2)
+	STORE R0, 48(R2)
+	STORE R0, 49(R2)
+	STORE R0, 50(R2)
+	LOAD -2(LB), R2
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+;  ************************************************************
+;  * AJOUT DES LABELS ERREURS DEMANDÉES PAR LE PROGRAMME DECA *
+;  ************************************************************
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+tas_plein:
+	WSTR "Erreur : le tas est plein, impossible d'allouer de la memoire"
+	WNL
+	ERROR

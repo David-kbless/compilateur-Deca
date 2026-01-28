@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Divide.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">Divide.java</span></div><h1>Divide.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.instructions.BOV;
+import fr.ensimag.ima.pseudocode.instructions.DIV;
+import fr.ensimag.ima.pseudocode.instructions.QUO;
+
+/**
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class Divide extends AbstractOpDivMod {
+    public Divide(AbstractExpr leftOperand, AbstractExpr rightOperand) {
+<span class="fc" id="L17">        super(leftOperand, rightOperand);</span>
+<span class="fc" id="L18">    }</span>
+
+
+    @Override
+    protected String getOperatorName() {
+<span class="fc" id="L23">        return &quot;/&quot;;</span>
+    }
+
+    protected  GPRegister codeGenOperationQuotionReste(DecacCompiler compiler, GPRegister operande1, DVal operande2){
+        
+        // en fonction du type des operandes 
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (getLeftOperand().getType().isFloat()) {</span>
+            // si operande flottante
+<span class="fc" id="L31">            compiler.addInstruction(new DIV(operande2, operande1));</span>
+
+        } else {
+            // SI Operande entier
+<span class="fc" id="L35">            compiler.addInstruction(new QUO(operande2, operande1));</span>
+        }
+
+<span class="fc" id="L38">        return operande1;  </span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

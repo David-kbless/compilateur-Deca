@@ -1,0 +1,14 @@
+// Description :
+// Test de l'évaluation en court-circuit pour l'opérateur 'et' logique.
+//
+// Resultats :
+// Fichier .res manquant
+
+{
+    boolean b = false;
+    if (b && (1 / 0 == 1)) {
+        print("Erreur");
+    } else {
+        print("Short-circuit AND OK");
+    }
+}

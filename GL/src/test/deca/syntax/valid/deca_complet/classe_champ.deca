@@ -1,0 +1,10 @@
+// Description :
+//  Teste la déclaration d'une classe avec un champ.
+//
+// Resultats :
+// OK
+class A {
+    int x;
+}
+{
+}

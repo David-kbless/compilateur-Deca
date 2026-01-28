@@ -1,0 +1,13 @@
+// Description :
+// test de déclaration de variables
+//
+// Resultats :
+// Ligne 10: z inconnu
+//
+// Historique:
+// cree le 8/01/2026
+
+{
+  boolean b;
+  b = 1 && 2;
+}

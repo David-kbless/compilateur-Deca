@@ -1,0 +1,14 @@
+// Description :
+// Teste les comparaisons avec négation sans objet. 
+//
+// Resultats :
+// OK
+{
+    int a = 10;
+    int b = 2;
+    if (!(a / b == 5)) {
+        println(0);
+    } else {
+        println(1);
+    }
+}

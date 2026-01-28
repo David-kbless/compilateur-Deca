@@ -1,0 +1,13 @@
+// Description :
+// Test de if simple.
+//
+// Resultats :
+// 3
+
+{
+    int x;
+    x = 3;
+    if (x > 0) {
+        print(x);
+    }
+}

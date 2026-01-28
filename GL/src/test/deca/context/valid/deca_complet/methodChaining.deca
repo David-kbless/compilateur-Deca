@@ -1,0 +1,10 @@
+// Description:
+//    Vérifie la résolution des types sur une chaîne d'appels.
+// Resultats:
+//    Succès (Passe 3)
+class A { B getB() { return new B(); } }
+class B { int x = 10; }
+{
+    A a = new A();
+    println(a.getB().x); // OK : resolve a -> A, then getB() -> B, then x -> int
+}

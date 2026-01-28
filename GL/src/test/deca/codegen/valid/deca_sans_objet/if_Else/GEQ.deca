@@ -1,0 +1,13 @@
+// Description :
+// Test de l'opérateur '>='.
+//
+// Resultats :
+// 2
+
+{
+    int a = 10;
+    int b = 2;
+    if (a >= b) {
+        print(2);
+    }
+}

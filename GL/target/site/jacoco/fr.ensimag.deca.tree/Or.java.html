@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Or.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">Or.java</span></div><h1>Or.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.instructions.BEQ;
+import fr.ensimag.ima.pseudocode.instructions.BNE;
+import fr.ensimag.ima.pseudocode.instructions.CMP;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+
+/**
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class Or extends AbstractOpBool {
+
+    public Or(AbstractExpr leftOperand, AbstractExpr rightOperand) {
+<span class="fc" id="L19">        super(leftOperand, rightOperand);</span>
+<span class="fc" id="L20">    }</span>
+
+    @Override
+    protected String getOperatorName() {
+<span class="nc" id="L24">        return &quot;||&quot;;</span>
+    }
+
+// @Override
+// protected GPRegister codeGenOperationBinaireBool(DecacCompiler compiler, GPRegister operande1){
+//     int num = compiler.getAndIncOpBool();
+//     Label eFin = new Label(&quot;E_Fin_Or.&quot; + num); // Utilise un nom explicite pour débugger
+
+//     compiler.addInstruction(new CMP(0, operande1));
+    
+//     // LOGIQUE OR : Si le premier est VRAI (différent de 0), 
+//     // on a fini, on saute à la fin.
+//     compiler.addInstruction(new BNE(eFin)); 
+
+//     // Si on est ici, c'est que le premier était FAUX.
+//     // On évalue le deuxième.
+//     GPRegister operande2 = getRightOperand().codeGenInst(compiler);
+//     compiler.addInstruction(new LOAD(operande2, operande1));
+//     compiler.libererRegistre();
+
+//     compiler.addLabel(eFin);
+//     return operande1;  
+// }
+
+
+    @Override
+    protected void codeGenVrai(DecacCompiler compiler, Label E) {
+        // @Ousmane : Si C1 est vrai, alors (C1 || C2) est vrai -&gt; branchement direct à E
+<span class="nc" id="L52">        getLeftOperand().codeGenVrai(compiler, E);</span>
+<span class="nc" id="L53">        getRightOperand().codeGenVrai(compiler, E);</span>
+<span class="nc" id="L54">    }</span>
+
+    @Override
+    protected void codeGenFaux(DecacCompiler compiler, Label E) {
+        // @Ousmane : Si C1 est vrai, on court-circuite vers la fin du OU
+<span class="fc" id="L59">        Label eFin = new Label(&quot;E_Fin_Or.&quot; + compiler.getAndIncOpBool());</span>
+<span class="fc" id="L60">        getLeftOperand().codeGenVrai(compiler, eFin);</span>
+<span class="fc" id="L61">        getRightOperand().codeGenFaux(compiler, E);</span>
+<span class="fc" id="L62">        compiler.addLabel(eFin);</span>
+<span class="fc" id="L63">    }</span>
+
+    @Override
+    protected GPRegister codeGenOperationBinaireBool(DecacCompiler compiler, GPRegister operande1) {
+<span class="nc" id="L67">        return operande1;</span>
+    }
+
+
+}
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

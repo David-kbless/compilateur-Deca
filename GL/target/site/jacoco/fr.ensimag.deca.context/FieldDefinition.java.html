@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.context</a> &gt; <span class="el_source">FieldDefinition.java</span></div><h1>FieldDefinition.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.context;
+
+import fr.ensimag.deca.tree.Location;
+import fr.ensimag.deca.tree.Visibility;
+
+/**
+ * Definition of a field (data member of a class).
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class FieldDefinition extends ExpDefinition {
+    public int getIndex() {
+<span class="nc" id="L14">        return index;</span>
+    }
+
+    private int index;
+<span class="fc" id="L18">    private int nbNbRegEstimee = 0;</span>
+
+    public int getNbNbRegEstimee() {
+<span class="nc" id="L21">        return nbNbRegEstimee;</span>
+    }
+
+    public void setNbNbRegEstimeeIfMax(int newNbNbRegEstimee) {
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        if(newNbNbRegEstimee &gt; nbNbRegEstimee){</span>
+<span class="nc" id="L26">            this.nbNbRegEstimee = newNbNbRegEstimee;</span>
+        }
+<span class="nc" id="L28">    }</span>
+    
+    @Override
+    public boolean isField() {
+<span class="fc" id="L32">        return true;</span>
+    }
+
+    private final Visibility visibility;
+    private final ClassDefinition containingClass;
+    
+    public FieldDefinition(Type type, Location location, Visibility visibility,
+            ClassDefinition memberOf, int index) {
+<span class="fc" id="L40">        super(type, location);</span>
+<span class="fc" id="L41">        this.visibility = visibility;</span>
+<span class="fc" id="L42">        this.containingClass = memberOf;</span>
+<span class="fc" id="L43">        this.index = index;</span>
+<span class="fc" id="L44">    }</span>
+    
+    @Override
+    public FieldDefinition asFieldDefinition(String errorMessage, Location l)
+            throws ContextualError {
+<span class="fc" id="L49">        return this;</span>
+    }
+
+    public Visibility getVisibility() {
+<span class="fc" id="L53">        return visibility;</span>
+    }
+
+    public ClassDefinition getContainingClass() {
+<span class="fc" id="L57">        return containingClass;</span>
+    }
+
+    @Override
+    public String getNature() {
+<span class="fc" id="L62">        return &quot;field&quot;;</span>
+    }
+
+    @Override
+    public boolean isExpression() {
+<span class="fc" id="L67">        return true;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

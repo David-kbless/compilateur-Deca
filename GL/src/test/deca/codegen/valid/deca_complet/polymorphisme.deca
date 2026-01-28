@@ -1,0 +1,29 @@
+// Description :
+//    Test du polymorphisme de base : appel d'une méthode redéfinie
+//    via une référence de la classe parente.
+//
+// Resultats :
+//    Animal mange
+//    Chien mange
+//    ok
+//
+
+class Animal {
+    void manger() {
+        println("Animal mange");
+    }
+}
+
+class Chien extends Animal {
+    void manger() {
+        println("Chien mange");
+    }
+}
+
+{
+    Animal a = new Animal();
+    Animal c = new Chien();
+    a.manger();
+    c.manger();
+    println("ok");
+}

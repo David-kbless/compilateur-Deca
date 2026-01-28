@@ -1,0 +1,12 @@
+// Description :
+// test de déclaration des variables
+//
+// Resultats :
+// Ligne 11: declaration d'un type void
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+        int x = void ;
+}

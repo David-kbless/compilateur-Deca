@@ -1,0 +1,16 @@
+// Description:
+//   Changement de signature
+// Resultats:
+//    Ligne 14: signature différente de la superclass
+//
+// Historique:
+//    cree le 10/01/2026
+
+class A {
+    void m() { }
+    void p(int x, boolean y) { }
+}
+class B extends A {
+    void p(boolean x, int y) { }
+    void q() { }
+}

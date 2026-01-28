@@ -1,0 +1,9 @@
+{
+    int a;
+    int b;
+    float m;
+    a = readInt();
+    b = readInt();
+    m = (float)(a + b) / 2.0;
+    print(m);
+}

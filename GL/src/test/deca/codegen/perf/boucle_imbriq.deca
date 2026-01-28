@@ -1,0 +1,23 @@
+// Explosion du nombre d’instructions --
+// Multiplications massives --
+// Test long mais déterministe --
+
+{
+    int i;
+    int j;
+    int s;
+
+    i = 0;
+    s = 0;
+
+    while (i < 2000) {
+        j = 0;
+        while (j < 2000) {
+            s = s + i * j;
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+
+    println(s);
+}

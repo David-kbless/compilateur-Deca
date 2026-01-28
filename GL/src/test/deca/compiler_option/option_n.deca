@@ -1,0 +1,4 @@
+{
+    float f = 21111111.0;
+    println(f*f*f*f*f*f*f*f);
+}

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.context</a> &gt; <span class="el_source">ClassDefinition.java</span></div><h1>ClassDefinition.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.context;
+
+import fr.ensimag.deca.tree.Location;
+import fr.ensimag.ima.pseudocode.DAddr;
+import fr.ensimag.ima.pseudocode.Label;
+
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.apache.commons.lang.Validate;
+
+/**
+ * Definition of a class.
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class ClassDefinition extends TypeDefinition {
+
+    private Label labelInit;
+
+    public Label getLabelInit() {
+<span class="nc" id="L23">        return labelInit;</span>
+    }
+    
+    public void setLabelInit(Label labelInit) {
+<span class="nc" id="L27">        this.labelInit = labelInit;</span>
+<span class="nc" id="L28">    }</span>
+
+    // @safwane j'ai du rajouter une façon ordonné de bien gérer les index de façon ordonné
+<span class="fc" id="L31">    private Map&lt;Integer, MethodDefinition&gt; methodTable = new TreeMap&lt;&gt;();</span>
+
+    public void setMethod(int index, MethodDefinition method) {
+<span class="fc" id="L34">        this.methodTable.put(index, method);</span>
+<span class="fc" id="L35">    }</span>
+
+    public MethodDefinition getMethodByIndex(int index) {
+<span class="nc" id="L38">        return methodTable.get(index);</span>
+    }
+    
+    public Map&lt;Integer, MethodDefinition&gt; getMethodTable() {
+<span class="fc" id="L42">        return methodTable;</span>
+    }
+//_____________________________________-------------------_________________________
+
+    public void setNumberOfFields(int numberOfFields) {
+<span class="fc" id="L47">        this.numberOfFields = numberOfFields;</span>
+<span class="fc" id="L48">    }</span>
+
+    public int getNumberOfFields() {
+<span class="fc" id="L51">        return numberOfFields;</span>
+    }
+
+    public void incNumberOfFields() {
+<span class="fc" id="L55">        this.numberOfFields++;</span>
+<span class="fc" id="L56">    }</span>
+
+    public int getNumberOfMethods() {
+<span class="fc" id="L59">        return numberOfMethods;</span>
+    }
+
+    public void setNumberOfMethods(int n) {
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        Validate.isTrue(n &gt;= 0);</span>
+<span class="fc" id="L64">        numberOfMethods = n;</span>
+<span class="fc" id="L65">    }</span>
+    
+    public int incNumberOfMethods() {
+<span class="fc" id="L68">        numberOfMethods++;</span>
+<span class="fc" id="L69">        return numberOfMethods;</span>
+    }
+
+    public void setMembers(EnvironmentExp members){
+<span class="fc" id="L73">        Validate.notNull(members, &quot;members cannot be null&quot;);</span>
+<span class="fc" id="L74">        this.members = members;</span>
+<span class="fc" id="L75">    }</span>
+
+<span class="fc" id="L77">    private int numberOfFields = 0;</span>
+<span class="fc" id="L78">    private int numberOfMethods = 0;</span>
+    
+    @Override
+    public boolean isClass() {
+<span class="nc" id="L82">        return true;</span>
+    }
+    
+    @Override
+    public ClassType getType() {
+        // Cast succeeds by construction because the type has been correctly set
+        // in the constructor.
+<span class="fc" id="L89">        return (ClassType) super.getType();</span>
+    };
+
+    public ClassDefinition getSuperClass() {
+<span class="fc" id="L93">        return superClass;</span>
+    }
+
+    private EnvironmentExp members;
+    private final ClassDefinition superClass; 
+
+    public EnvironmentExp getMembers() {
+<span class="fc" id="L100">        return members;</span>
+    }
+
+    public ClassDefinition(ClassType type, Location location, ClassDefinition superClass) {
+<span class="fc" id="L104">        super(type, location);</span>
+        EnvironmentExp parent;
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (superClass != null) {</span>
+<span class="fc" id="L107">            parent = superClass.getMembers();</span>
+        } else {
+<span class="fc" id="L109">            parent = null;</span>
+        }
+<span class="fc" id="L111">        members = new EnvironmentExp(parent); //Cet EnvironmentExp est local à la classe</span>
+<span class="fc" id="L112">        this.superClass = superClass;</span>
+<span class="fc" id="L113">    }</span>
+
+    @Override
+    public ClassDefinition asClassDefinition(String errorMessage, Location l) {
+<span class="fc" id="L117">        return this;</span>
+    }
+    
+    // addr dans la pile 
+    private DAddr vTableAddr;
+
+    public DAddr getVTableAddr(){
+<span class="nc" id="L124">        return vTableAddr;</span>
+    }
+
+    public void setVtableAddr(DAddr vtAddr){
+<span class="fc" id="L128">        this.vTableAddr = vtAddr;</span>
+<span class="fc" id="L129">    }</span>
+
+
+<span class="fc" id="L132">    private int nbNbRegEstimee = 0;</span>
+
+    public int getNbNbRegEstimee() {
+<span class="nc" id="L135">        return nbNbRegEstimee;</span>
+    }
+
+    public void setNbNbRegEstimeeIfMax(int newNbNbRegEstimee) {
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        if(newNbNbRegEstimee &gt; nbNbRegEstimee){</span>
+<span class="nc" id="L140">            this.nbNbRegEstimee = newNbNbRegEstimee;</span>
+        }
+<span class="fc" id="L142">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

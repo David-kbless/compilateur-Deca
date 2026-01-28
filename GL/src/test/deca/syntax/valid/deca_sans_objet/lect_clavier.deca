@@ -1,0 +1,12 @@
+// Description :
+//  Teste les lectures clavier sans objet.
+//
+// Resultats :
+// OK
+{
+    int x;
+    float f;
+    x = readInt();
+
+    f = readFloat();
+}

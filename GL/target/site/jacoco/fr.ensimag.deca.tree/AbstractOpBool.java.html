@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractOpBool.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">AbstractOpBool.java</span></div><h1>AbstractOpBool.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.instructions.BRA;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+
+
+import org.apache.commons.lang.Validate;
+
+/**
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public abstract class AbstractOpBool extends AbstractBinaryExpr {
+
+    public AbstractOpBool(AbstractExpr leftOperand, AbstractExpr rightOperand) {
+<span class="fc" id="L24">        super(leftOperand, rightOperand);</span>
+<span class="fc" id="L25">    }</span>
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv,
+            ClassDefinition currentClass) throws ContextualError {
+
+<span class="fc" id="L31">        Type t1 = this.getLeftOperand().verifyExpr(compiler, localEnv, currentClass);</span>
+<span class="fc" id="L32">        Type t2 = this.getRightOperand().verifyExpr(compiler, localEnv, currentClass);</span>
+<span class="fc" id="L33">        Validate.notNull(t1);</span>
+<span class="fc" id="L34">        Validate.notNull(t2);</span>
+
+<span class="fc" id="L36">        Type resultType = typeOfOperation(compiler, t1, t2);</span>
+<span class="fc" id="L37">        Validate.notNull(resultType);</span>
+
+<span class="fc" id="L39">        this.setType(resultType);</span>
+<span class="fc" id="L40">        return resultType;</span>
+    }
+
+    @Override
+    protected Type typeOfOperation(DecacCompiler compiler, Type t1, Type t2) throws ContextualError {
+<span class="pc bpc" id="L45" title="1 of 4 branches missed.">        if (t1.isBoolean() &amp;&amp; t2.isBoolean()) return compiler.environmentType.BOOLEAN;</span>
+<span class="fc" id="L46">        throw new ContextualError(&quot;Boolean operations require boolean operands&quot;, getLocation());</span>
+    }
+
+    @Override
+    public boolean isBooleanOp(){
+<span class="nc" id="L51">        return true;</span>
+    }
+
+    // @Override
+    // protected GPRegister codeGenInst(DecacCompiler compiler){
+        
+    //     // on evalue d'abord et seulement l'operande 1
+    //     GPRegister operande1 = getLeftOperand().codeGenInst(compiler);
+        
+    //     return codeGenOperationBinaireBool(compiler, operande1);
+    // }
+
+    @Override
+    protected GPRegister codeGenInst(DecacCompiler compiler) {
+        // @Ousmane : Si on a besoin de la valeur (0 ou 1) dans un registre
+<span class="fc" id="L66">        GPRegister reg = compiler.utiliserRegistre();</span>
+<span class="fc" id="L67">        Label eFaux = new Label(&quot;E_Faux_Bool.&quot; + compiler.getAndIncOpBool());</span>
+<span class="fc" id="L68">        Label eFin = new Label(&quot;E_Fin_Bool.&quot; + compiler.getAndIncOpBool());</span>
+<span class="fc" id="L69">        this.codeGenFaux(compiler, eFaux);</span>
+        
+        // Si on n'a pas branché vers Faux, alors c'est Vrai
+<span class="fc" id="L72">        compiler.addInstruction(new LOAD(1, reg));</span>
+<span class="fc" id="L73">        compiler.addInstruction(new BRA(eFin));</span>
+
+<span class="fc" id="L75">        compiler.addLabel(eFaux);</span>
+<span class="fc" id="L76">        compiler.addInstruction(new LOAD(0, reg));</span>
+
+<span class="fc" id="L78">        compiler.addLabel(eFin);</span>
+<span class="fc" id="L79">        return reg;</span>
+    }
+    
+    protected abstract GPRegister codeGenOperationBinaireBool(DecacCompiler compiler, GPRegister operande1);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

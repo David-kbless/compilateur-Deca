@@ -1,0 +1,16 @@
+// Description :
+// Test de l'opérateur logique avec parenthèses.
+//
+// Resultats :
+// ok
+
+{
+    boolean b;
+    b = !(true && false);
+
+    if(!b){
+        print("Erreur");
+    }else{
+        print("ok");
+    }
+}

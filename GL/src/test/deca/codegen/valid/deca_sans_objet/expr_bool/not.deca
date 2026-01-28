@@ -1,0 +1,16 @@
+// Description :
+// Test de l'opérateur logique 'non'.
+//
+// Resultats :
+// ok
+
+{
+    boolean b;
+    b = !true;
+    
+    if(b){
+        print("Erreur");
+    }else{
+        print("ok");
+    }
+}

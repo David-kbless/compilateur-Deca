@@ -1,0 +1,79 @@
+; start main program
+	TSTO #5
+	BOV stack_overflow_error
+	ADDSP #5
+;  ************************************************************
+;  *           CONSTRUCTION DES VTABLES DES CLASSES           *
+;  ************************************************************
+; Construction de la VTable de la classe Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Variable Declarations : 
+; Beginning of main instructions:
+	LOAD #5, R0
+	STORE R0, 3(GB)
+	LOAD #3, R0
+	STORE R0, 4(GB)
+	LOAD 3(GB), R2
+	ADD #1, R2
+	STORE R2, 3(GB)
+	LOAD 3(GB), R2
+	ADD #2, R2
+	STORE R2, 4(GB)
+	LOAD #1, R2
+	LOAD #2, R3
+	MUL #3, R3
+	ADD R3, R2
+	STORE R2, 3(GB)
+	LOAD #1, R2
+	ADD #2, R2
+	MUL #3, R2
+	STORE R2, 4(GB)
+	BRA E_Faux_Bool.1
+	LOAD #1, R2
+	BRA E_Fin_Bool.2
+E_Faux_Bool.1:
+	LOAD #0, R2
+E_Fin_Bool.2:
+	STORE R2, 5(GB)
+	LOAD 3(GB), R3
+	LOAD 4(GB), R4
+	CMP R4, R3
+	BLT E_Fin_Or.5
+	LOAD 3(GB), R3
+	LOAD 4(GB), R4
+	CMP R4, R3
+	BNE E_Faux_Bool.3
+E_Fin_Or.5:
+	LOAD #1, R2
+	BRA E_Fin_Bool.4
+E_Faux_Bool.3:
+	LOAD #0, R2
+E_Fin_Bool.4:
+	STORE R2, 5(GB)
+	LOAD 3(GB), R2
+	LOAD R2, R1
+	WINT
+	WNL
+	LOAD 4(GB), R2
+	LOAD R2, R1
+	WINT
+	HALT
+; end main program
+;  ************************************************************
+;  *  GENERATION DES INITS ET DES BODY METHODES DES CLASSES   *
+;  ************************************************************
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+;  ************************************************************
+;  * AJOUT DES LABELS ERREURS DEMANDÉES PAR LE PROGRAMME DECA *
+;  ************************************************************
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR

@@ -1,0 +1,538 @@
+; start main program
+	TSTO #34
+	BOV stack_overflow_error
+	ADDSP #28
+;  ************************************************************
+;  *           CONSTRUCTION DES VTABLES DES CLASSES           *
+;  ************************************************************
+; Construction de la VTable de la classe Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de Point
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+	LOAD code.Point.setPoint, R2
+	STORE R2, 5(GB)
+	LOAD code.Point.norm2, R2
+	STORE R2, 6(GB)
+; Construction de la VTable de ColoredPoint
+	LEA 3(GB), R2
+	STORE R2, 7(GB)
+	STORE R1, 8(GB)
+	LOAD code.Point.setPoint, R2
+	STORE R2, 9(GB)
+	LOAD code.Point.norm2, R2
+	STORE R2, 10(GB)
+	LOAD code.ColoredPoint.setColoredPoint, R2
+	STORE R2, 11(GB)
+; Construction de la VTable de Rectangle
+	LEA 1(GB), R2
+	STORE R2, 12(GB)
+	STORE R1, 13(GB)
+	LOAD code.Rectangle.setRectangle, R2
+	STORE R2, 14(GB)
+	LOAD code.Rectangle.area, R2
+	STORE R2, 15(GB)
+; Construction de la VTable de Shape
+	LEA 1(GB), R2
+	STORE R2, 16(GB)
+	STORE R1, 17(GB)
+	LOAD code.Shape.area, R2
+	STORE R2, 18(GB)
+; Construction de la VTable de Square
+	LEA 16(GB), R2
+	STORE R2, 19(GB)
+	STORE R1, 20(GB)
+	LOAD code.Square.area, R2
+	STORE R2, 21(GB)
+	LOAD code.Square.setSquare, R2
+	STORE R2, 22(GB)
+; Variable Declarations : 
+	NEW #3, R2
+	BOV tas_plein
+	LEA 3(GB), R3
+	STORE R3, 0(R2)
+	PUSH R2
+	BSR init.Point
+	POP R2
+	STORE R2, 23(GB)
+	NEW #4, R2
+	BOV tas_plein
+	LEA 7(GB), R3
+	STORE R3, 0(R2)
+	PUSH R2
+	BSR init.ColoredPoint
+	POP R2
+	STORE R2, 24(GB)
+	NEW #3, R2
+	BOV tas_plein
+	LEA 12(GB), R3
+	STORE R3, 0(R2)
+	PUSH R2
+	BSR init.Rectangle
+	POP R2
+	STORE R2, 25(GB)
+	NEW #2, R2
+	BOV tas_plein
+	LEA 19(GB), R3
+	STORE R3, 0(R2)
+	PUSH R2
+	BSR init.Square
+	POP R2
+	STORE R2, 26(GB)
+	NEW #2, R2
+	BOV tas_plein
+	LEA 19(GB), R3
+	STORE R3, 0(R2)
+	PUSH R2
+	BSR init.Square
+	POP R2
+	STORE R2, 27(GB)
+	LOAD #null, R0
+	STORE R0, 28(GB)
+; Beginning of main instructions:
+	ADDSP #3
+	LOAD 23(GB), R2
+	STORE R2, 0(SP)
+	LOAD #0x1.8p1, R0
+	STORE R0, -1(SP)
+	LOAD #0x1.0p2, R0
+	STORE R0, -2(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #3
+	ADDSP #1
+	LOAD 23(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 3(R2)
+	SUBSP #1
+	LOAD R0, R1
+	WFLOAT
+	WNL
+	ADDSP #4
+	LOAD 24(GB), R2
+	STORE R2, 0(SP)
+	LOAD #0x1.0p0, R0
+	STORE R0, -1(SP)
+	LOAD #0x1.0p1, R0
+	STORE R0, -2(SP)
+	LOAD #7, R0
+	STORE R0, -3(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 4(R2)
+	SUBSP #4
+	LOAD 24(GB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 3(R2), R2
+	LOAD R2, R1
+	WINT
+	WNL
+	ADDSP #1
+	LOAD 24(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 3(R2)
+	SUBSP #1
+	LOAD R0, R1
+	WFLOAT
+	WNL
+	ADDSP #3
+	LOAD 25(GB), R2
+	STORE R2, 0(SP)
+	LOAD #0x1.8p1, R0
+	STORE R0, -1(SP)
+	LOAD #0x1.4p2, R0
+	STORE R0, -2(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #3
+	ADDSP #1
+	LOAD 25(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 3(R2)
+	SUBSP #1
+	LOAD R0, R1
+	WFLOAT
+	WNL
+	ADDSP #2
+	LOAD 27(GB), R2
+	STORE R2, 0(SP)
+	LOAD #0x1.0p2, R0
+	STORE R0, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 3(R2)
+	SUBSP #2
+	ADDSP #1
+	LOAD 26(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #1
+	LOAD R0, R1
+	WFLOAT
+	WNL
+	LOAD 27(GB), R2
+	CMP #null, R2
+	BEQ not_instance_Shape_118_8
+	LEA 16(GB), R4
+	LOAD 0(R2), R2
+start_instanceof_Shape_118_8:
+	CMP R4, R2
+	BEQ is_instance_Shape_118_8
+	LOAD 0(R2), R2
+	CMP #null, R2
+	BNE start_instanceof_Shape_118_8
+not_instance_Shape_118_8:
+	LOAD #0, R3
+	BRA end_instanceof_Shape_118_8
+is_instance_Shape_118_8:
+	LOAD #1, R3
+end_instanceof_Shape_118_8:
+	CMP #0, R3
+	BEQ E_Sinon.1
+	ADDSP #1
+	LOAD 27(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #1
+	LOAD R0, R1
+	WFLOAT
+	WNL
+	BRA E_Fin_if.1
+E_Sinon.1:
+E_Fin_if.1:
+	HALT
+; end main program
+;  ************************************************************
+;  *  GENERATION DES INITS ET DES BODY METHODES DES CLASSES   *
+;  ************************************************************
+init.Point:
+	TSTO #0
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0x0.0p0, R1
+	STORE R1, 1(R2)
+	STORE R1, 2(R2)
+	LOAD -2(LB), R2
+	RTS
+init.ColoredPoint:
+	TSTO #3
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0, R0
+	STORE R0, 3(R2)
+	PUSH R2
+	BSR init.Point
+	POP R2
+	LOAD -2(LB), R2
+	RTS
+init.Rectangle:
+	TSTO #0
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0x0.0p0, R1
+	STORE R1, 1(R2)
+	STORE R1, 2(R2)
+	LOAD -2(LB), R2
+	RTS
+init.Shape:
+	LOAD -2(LB), R2
+	LOAD -2(LB), R2
+	RTS
+init.Square:
+	TSTO #3
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0x0.0p0, R1
+	STORE R1, 1(R2)
+	PUSH R2
+	BSR init.Shape
+	POP R2
+	LOAD -2(LB), R2
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+code.Point.setPoint:
+	TSTO #4
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	LOAD -3(LB), R2
+	LOAD -2(LB), R3
+	CMP #null, R3
+	BEQ dereferencement.null
+	STORE R2, 1(R3)
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	CMP #null, R3
+	BEQ dereferencement.null
+	STORE R2, 2(R3)
+fin.Point.setPoint:
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.Point.norm2:
+	TSTO #8
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	PUSH R6
+	PUSH R7
+	PUSH R8
+	PUSH R9
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	LOAD -2(LB), R4
+	LOAD 1(R4), R3
+	MUL R3, R2
+	BOV overflow_error
+	LOAD -2(LB), R4
+	LOAD 2(R4), R3
+	LOAD -2(LB), R5
+	LOAD 2(R5), R4
+	MUL R4, R3
+	BOV overflow_error
+	ADD R3, R2
+	BOV overflow_error
+	LOAD R2, R0
+	BRA fin.Point.norm2
+	BRA absence_return_error
+fin.Point.norm2:
+	POP R9
+	POP R8
+	POP R7
+	POP R6
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.ColoredPoint.setColoredPoint:
+	TSTO #8
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	ADDSP #3
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -3(LB), R2
+	STORE R2, -1(SP)
+	LOAD -4(LB), R2
+	STORE R2, -2(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	BSR code.Point.setPoint
+	SUBSP #3
+	LOAD -5(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 3(R3)
+fin.ColoredPoint.setColoredPoint:
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.Rectangle.setRectangle:
+	TSTO #9
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	PUSH R6
+	PUSH R7
+	PUSH R8
+	PUSH R9
+	PUSH R10
+	LOAD -3(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 1(R3)
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 2(R3)
+fin.Rectangle.setRectangle:
+	POP R10
+	POP R9
+	POP R8
+	POP R7
+	POP R6
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.Rectangle.area:
+	TSTO #12
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	PUSH R6
+	PUSH R7
+	PUSH R8
+	PUSH R9
+	PUSH R10
+	PUSH R11
+	PUSH R12
+	PUSH R13
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	LOAD -2(LB), R4
+	LOAD 2(R4), R3
+	MUL R3, R2
+	BOV overflow_error
+	LOAD R2, R0
+	BRA fin.Rectangle.area
+	BRA absence_return_error
+fin.Rectangle.area:
+	POP R13
+	POP R12
+	POP R11
+	POP R10
+	POP R9
+	POP R8
+	POP R7
+	POP R6
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.Shape.area:
+	LOAD #0x0.0p0, R0
+	BRA fin.Shape.area
+	BRA absence_return_error
+fin.Shape.area:
+	RTS
+code.Square.setSquare:
+	TSTO #14
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	PUSH R6
+	PUSH R7
+	PUSH R8
+	PUSH R9
+	PUSH R10
+	PUSH R11
+	PUSH R12
+	PUSH R13
+	PUSH R14
+	PUSH R15
+	LOAD -3(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 1(R3)
+fin.Square.setSquare:
+	POP R15
+	POP R14
+	POP R13
+	POP R12
+	POP R11
+	POP R10
+	POP R9
+	POP R8
+	POP R7
+	POP R6
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.Square.area:
+	TSTO #6
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	ADDSP #1
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	BSR code.Shape.area
+	SUBSP #1
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	LOAD -2(LB), R4
+	LOAD 1(R4), R3
+	MUL R3, R2
+	BOV overflow_error
+	LOAD R2, R0
+	BRA fin.Square.area
+	BRA absence_return_error
+fin.Square.area:
+	POP R4
+	POP R3
+	POP R2
+	RTS
+;  ************************************************************
+;  * AJOUT DES LABELS ERREURS DEMANDÉES PAR LE PROGRAMME DECA *
+;  ************************************************************
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+overflow_error:
+	WSTR "Error: Overflow sur Float"
+	WNL
+	ERROR
+tas_plein:
+	WSTR "Erreur : le tas est plein, impossible d'allouer de la memoire"
+	WNL
+	ERROR
+absence_return_error:
+	WSTR "Erreur : Absence de return dans le corps d'une methode "
+	WNL
+	ERROR
+dereferencement.null:
+	WSTR "Erreur : Dereferencement null"
+	WNL
+	ERROR

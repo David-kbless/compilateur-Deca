@@ -1,0 +1,19 @@
+// érifie que le runtime tient --
+// Entrée utilisateur + calcul long --
+
+{
+    int n;
+    int i;
+    int s;
+
+    n = readInt();
+    i = 0;
+    s = 0;
+
+    while (i < n) {
+        s = s + i;
+        i = i + 1;
+    }
+
+    println(s);
+}

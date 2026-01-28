@@ -1,0 +1,15 @@
+// Description:
+//    test d'utilisation des booleans
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+  boolean b;
+  b = 1 < 2;
+  b = true && false;
+  b = 1 < 2 && true;
+}

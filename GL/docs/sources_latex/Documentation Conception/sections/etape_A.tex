@@ -1,0 +1,223 @@
+\newpage
+\section*{Etape A du compilateur : Lexing et Parsing}
+\section{Analyse lexicale}
+
+\subsection{Objectif de l’analyse lexicale}
+L’analyse lexicale transforme un programme source Deca en une suite de \textit{tokens} destinée à l’analyse syntaxique. Elle identifie les mots-clés, identificateurs, littéraux, opérateurs et ponctuations, et élimine les éléments non significatifs (espaces et commentaires) via l’utilisation de l’action \texttt{-> skip}.
+
+L’implémentation repose sur \textbf{ANTLR4} via une grammaire de lexer (\texttt{DecaLexer.g4}) qui étend la classe fournie \texttt{AbstractDecaLexer}. Cette classe est notamment utilisée pour la gestion des \texttt{\#include}.
+
+\subsection{Tokens implémentés}
+
+\subsubsection{Mots-clés}
+Les mots-clés définis par la spécification Deca sont implémentés comme des règles lexicales dédiées afin d’éviter toute ambiguïté avec les identificateurs. Ils sont placés \textbf{avant} la règle \texttt{IDENT} afin qu’ils soient reconnus prioritairement et ne soient pas interprétés comme des identificateurs.
+
+Exemples :
+\begin{itemize}
+  \item Contrôle : \texttt{if}, \texttt{else}, \texttt{while}, \texttt{return}
+  \item Objet : \texttt{class}, \texttt{extends}, \texttt{new}, \texttt{protected}
+  \item Constantes : \texttt{true}, \texttt{false}, \texttt{null}, \texttt{this}
+  \item Entrées/sorties : \texttt{print}, \texttt{println}, \texttt{printx}, \texttt{printlnx}, \texttt{readInt}, \texttt{readFloat}
+  \item Autres : \texttt{instanceof}, \texttt{asm}
+\end{itemize}
+
+\subsubsection{Identificateurs}
+Les identificateurs respectent la forme suivante :
+\begin{itemize}
+  \item commencent par une lettre, \texttt{\_} ou \texttt{\$}
+  \item peuvent contenir lettres, chiffres, \texttt{\_} ou \texttt{\$}
+\end{itemize}
+
+\begin{verbatim}
+IDENT : (LETTER | '$' | '_') (LETTER | DIGIT | '$' | '_')*;
+\end{verbatim}
+
+\subsubsection{Littéraux entiers}
+Les entiers respectent la contrainte \og sans zéros en tête \fg{} (sauf \texttt{0}) :
+
+\begin{verbatim}
+INT : '0' | [1-9] [0-9]*;
+\end{verbatim}
+
+\subsubsection{Littéraux flottants}
+Les flottants sont définis conformément à la spécification :
+\begin{itemize}
+  \item flottants décimaux avec exposant optionnel et suffixe \texttt{f/F}
+  \item flottants hexadécimaux (\texttt{0x...p...})
+\end{itemize}
+
+La règle \texttt{FLOAT} s’appuie sur les fragments \texttt{FLOATDEC} et \texttt{FLOATHEX} afin d’être plus lisible :
+
+\begin{verbatim}
+FLOAT : FLOATDEC | FLOATHEX;
+\end{verbatim}
+
+\subsubsection{Chaînes de caractères}
+Deux formes sont supportées :
+\begin{itemize}
+  \item \texttt{STRING} : chaînes sur une seule ligne
+  \item \texttt{MULTI\_LINE\_STRING} : chaînes multi-lignes
+\end{itemize}
+
+Seuls les échappements \texttt{\"} et \texttt{\\} sont autorisés. Les retours à la ligne sont interdits dans \texttt{STRING} mais autorisés dans \texttt{MULTI\_LINE\_STRING}.
+
+\subsubsection{Opérateurs et ponctuation}
+Tous les opérateurs et symboles requis par Deca sont implémentés :
+\begin{itemize}
+  \item opérateurs arithmétiques, relationnels et logiques (\texttt{+}, \texttt{-}, \texttt{*}, \texttt{/}, \texttt{\%}, \texttt{==}, \texttt{!=}, \texttt{<=}, \texttt{>=}, \texttt{\&\&}, \texttt{||})
+  \item ponctuation (\texttt{;}, \texttt{,}, \texttt{.}, \texttt{(}, \texttt{)}, \texttt{\{}, \texttt{\}})
+\end{itemize}
+
+\subsubsection{Commentaires et séparateurs}
+Les commentaires mono-ligne (\texttt{//}) et multi-lignes (\texttt{/* ... */}) ainsi que les séparateurs (espaces, tabulations, retours à la ligne) sont ignorés par le lexer :
+
+\begin{verbatim}
+WS : [ \t\r\n]+ -> skip;
+\end{verbatim}
+
+\subsection{Gestion de l’instruction \texttt{\#include}}
+
+\subsubsection{Principe}
+La directive \texttt{\#include} permet d’inclure un fichier Deca dans un autre. Sa gestion est réalisée au niveau lexical afin de rendre l’inclusion transparente pour l’analyse syntaxique.
+
+\subsubsection{Règle lexicale}
+Une règle dédiée reconnaît la directive \texttt{\#include}. Le token est ignoré (\texttt{-> skip}) et une action Java déclenche l’inclusion en appelant \texttt{doInclude(getText())}.
+
+\begin{verbatim}
+INCLUDE
+  : '#include' ' '* '"' FILENAME '"'
+    { doInclude(getText()); }
+    -> skip;
+\end{verbatim}
+
+On utilise ici la méthode \texttt{doInclude}, déjà implémentée dans la classe \texttt{AbstractDecaLexer}.
+
+\subsubsection{Mécanisme d’inclusion}
+La méthode \texttt{doInclude}, fournie par \texttt{AbstractDecaLexer}, réalise les opérations suivantes :
+\begin{itemize}
+  \item recherche du fichier à inclure (répertoire courant puis bibliothèque standard)
+  \item changement temporaire du flux d’entrée du lexer
+  \item restauration automatique du flux précédent à la fin du fichier inclus
+  \item détection des inclusions circulaires
+  \item gestion des erreurs (fichier introuvable ou illisible)
+  \end{itemize}
+
+
+
+\section{Analyse syntaxique (Parser)}
+
+\subsection{Objectif de l’analyse syntaxique}
+L’analyse syntaxique (parsing) consomme la suite de tokens produite par le lexer et vérifie que le programme respecte la grammaire du langage Deca. En parallèle, elle construit un \textbf{AST} (\textit{Abstract Syntax Tree}) en instanciant explicitement des nœuds (classes du paquetage \texttt{fr.ensimag.deca.tree}) dans les actions Java des règles ANTLR.
+
+Le parser est généré avec \textbf{ANTLR4} à partir de la grammaire \texttt{DecaParser.g4}. Il étend la classe \texttt{AbstractDecaParser}, qui centralise des méthodes utilitaires (gestion d’erreurs, localisation, etc.).
+
+\subsection{Structure générale du programme}
+Le point d’entrée de la grammaire est la règle \texttt{prog}. Elle reconnaît :
+\begin{itemize}
+    \item une liste (éventuellement vide) de déclarations de classes,
+    \item le bloc principal (\texttt{main}),
+    \item puis le token \texttt{EOF}.
+\end{itemize}
+
+L’AST racine construit est un objet \texttt{Program} contenant la liste des classes et le main.
+
+\subsection{Main et blocs}
+La règle \texttt{main} accepte soit un bloc principal, soit l’absence de main (epsilon), auquel cas un \texttt{EmptyMain} est créé.
+
+Un bloc est délimité par des accolades et contient \textbf{d’abord} une liste de déclarations de variables, puis une liste d’instructions. Cette séparation impose donc l’ordre \og déclarations avant instructions \fg{} au sein d’un bloc, ce qui explique qu’une déclaration par exemple (\texttt{int x;}) placée après une instruction (\texttt{println(...);}) est rejetée par la grammaire.
+
+\subsection{Déclarations de variables}
+Les déclarations suivent la forme :
+\[
+\texttt{type} \ \texttt{decl\_var} (\,\texttt{, decl\_var}\,)^* \ \texttt{;}
+\]
+Chaque variable peut être initialisée par une expression via \texttt{=} (\texttt{EQUALS}). Le parser construit un nœud \texttt{DeclVar} contenant :
+\begin{itemize}
+    \item le type (\texttt{AbstractIdentifier}),
+    \item l’identificateur (\texttt{Identifier}),
+    \item l’initialisation : \texttt{Initialization(expr)} si présente, sinon \texttt{NoInitialization}.
+\end{itemize}
+
+\subsection{Instructions}
+Les instructions supportées à ce stade comprennent :
+\begin{itemize}
+    \item une expression suivie de \texttt{;} (instruction-expr),
+    \item l’instruction vide \texttt{;} (création d’un \texttt{NoOperation}),
+    \item \texttt{print}, \texttt{println}, \texttt{printx}, \texttt{printlnx},
+    \item \texttt{if / else if* / else?} (construction de \texttt{IfThenElse}),
+    \item \texttt{while} (construction de \texttt{While}),
+    \item \texttt{return expr ;} (construction de \texttt{Return}).
+\end{itemize}
+
+La règle \texttt{if\_then\_else} gère les chaînes de \texttt{else if} en construisant une structure imbriquée de nœuds \texttt{IfThenElse}. Concrètement, chaque \texttt{else if} est encodé comme une branche \texttt{else} contenant une liste d’instructions dont le premier élément est un nouveau \texttt{IfThenElse}, ce qui permet d’obtenir une représentation uniforme dans l’AST.
+
+\subsection{Expressions et gestion des précédences}
+Les expressions sont structurées en plusieurs niveaux afin de respecter les précédences et associativités :
+\[
+\texttt{assign} \rightarrow \texttt{or} \rightarrow \texttt{and} \rightarrow (\texttt{==}/\texttt{!=}) \rightarrow
+(\texttt{<}/\texttt{<=}/\texttt{>}/\texttt{>=}/\texttt{instanceof}) \rightarrow
+(\texttt{+}/\texttt{-}) \rightarrow (\texttt{*}/\texttt{/}/\texttt{\%}) \rightarrow
+\texttt{unaire} 
+\]
+\[
+\rightarrow \texttt{sélection/appel} \rightarrow \texttt{primaire}.
+\]
+
+
+L’affectation est gérée dans \texttt{assign\_expr} et est \textbf{récursive à droite} (\textit{right-associative}) pour permettre des expressions du type \texttt{a = b = c}. Une contrainte est ajoutée : l’expression à gauche doit être un \texttt{LValue}. Si ce n’est pas le cas, le parser déclenche une erreur \texttt{InvalidLValue}. Cela garantit que seules des expressions assignables (identificateurs, sélections, etc.) apparaissent à gauche du \texttt{=}.
+
+\subsection{Sélection et appel de méthode}
+La règle \texttt{select\_expr} permet de reconnaître :
+\begin{itemize}
+    \item \texttt{e.i} : sélection d’un champ (nœud \texttt{Selection}),
+    \item \texttt{e.i(args)} : appel de méthode sur un objet (nœud \texttt{MethodCall}).
+\end{itemize}
+On supporte également les appels sans receveur explicite (\texttt{m(args)}) via \texttt{primary\_expr}, construisant alors un \texttt{MethodCall} avec un receveur \texttt{null}.
+
+\subsection{Littéraux, identificateurs et types}
+La règle \texttt{literal} construit les nœuds d’AST associés :
+\texttt{IntLiteral}, \texttt{FloatLiteral}, \texttt{StringLiteral}, \texttt{BooleanLiteral}, \texttt{Null}, \texttt{This}.
+La règle \texttt{ident} crée un \texttt{Identifier} à partir de la table des symboles du compilateur :
+\texttt{compiler.createSymbol(\$IDENT.text)}.
+Dans cette étape du projet, la règle \texttt{type} réutilise \texttt{ident} : un type est donc représenté comme un identificateur.
+
+\subsection{Gestion des classes (POO)}
+Le parser supporte une liste (éventuellement vide) de déclarations de classes. Une classe est reconnue sous la forme :
+\[
+\texttt{class <name> <extends?> \{ <body> \}}
+\]
+L’AST correspondant est un \texttt{DeclClass} contenant :
+\begin{itemize}
+    \item le nom de la classe,
+    \item la super-classe éventuelle (ou \texttt{null} si absence de \texttt{extends}),
+    \item la liste de champs (\texttt{ListDeclField}),
+    \item la liste de méthodes (\texttt{ListDeclMethod}).
+\end{itemize}
+
+La visibilité est gérée par la règle \texttt{visibility} : par défaut, elle vaut \texttt{PUBLIC} (epsilon), sinon elle peut être explicitement \texttt{PUBLIC} ou \texttt{PROTECTED}.
+Les méthodes sont définies soit par un bloc, soit par une forme \texttt{asm(...)} prenant une \texttt{STRING} ou une \texttt{MULTI\_LINE\_STRING} via la règle \texttt{multi\_line\_string}.
+
+\subsection{Construction de l’AST et localisation}
+Les nœuds de l’AST ne sont pas générés automatiquement par ANTLR : ils sont \textbf{instanciés explicitement} dans les actions Java des règles du parser (\texttt{new Program(...)} etc.). La localisation (fichier/ligne/colonne) est propagée grâce à \texttt{setLocation(node, token)} afin de produire des diagnostics précis lors des phases suivantes (analyse contextuelle, génération de code). Des assertions (\texttt{assert}) permettent également de vérifier que les sous-arbres attendus sont non nuls avant de construire un nœud parent.
+
+\subsection{Interaction avec la gestion des \texttt{\#include}}
+La directive \texttt{\#include} est traitée au niveau lexical, comme nous l'avons deja evoqué auparavant dans le rapport(changement temporaire de \texttt{CharStream} dans \texttt{AbstractDecaLexer}). Le parser reçoit donc un flux de tokens correspondant au fichier principal \og déplié \fg{} avec ses fichiers inclus, sans nécessiter de règle syntaxique dédiée à \texttt{\#include}.
+
+\subsection{Extensibilité et simplicité d’évolution de la grammaire}
+
+Nous avons fait en sorte de synthetiser notre code  pour faciliter l’ajout de nouvelles constructions syntaxiques. L’organisation des règles (séparation \texttt{decl}/\texttt{inst}, expressions en niveaux de précédence, règles dédiées pour les structures de contrôle) permet d’ajouter une nouvelle instruction très simplemment.
+
+Par exemple, l’ajout futur de structures comme \texttt{do\ ...\ while} ou \texttt{for} (non présentes actuellement) se ferait en :
+\begin{enumerate}
+    \item ajoutant les tokens/mots-clés nécessaires dans le lexer,
+    \item ajoutant une règle dédiée (ex. \texttt{do\_while}, \texttt{for\_loop}) ou une alternative dans \texttt{inst},
+    \item instanciant le nœud d’AST correspondant (ex. \texttt{DoWhile}, \texttt{For}) en réutilisant les structures existantes (\texttt{ListInst}, \texttt{AbstractExpr}, etc.).
+\end{enumerate}
+
+Cette approche nous permettrait donc d'apporter facilement des évolutions au langage sans craindre des gros "bug" du compilateur.
+
+
+
+
+
+\end{Document}

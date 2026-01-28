@@ -1,0 +1,11 @@
+// Description :
+//  Teste les castings sans objet.
+//
+// Resultats :
+// OK
+{
+    float f;
+    float y = (int) (x);
+    f = (float)(3);
+    
+}

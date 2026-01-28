@@ -1,0 +1,7 @@
+#include "Math.decah"
+{
+    Math math = new Math();
+    float x = math.asin(2.0);
+    print("Arc sinus de 2 : ");
+    println(x);
+}

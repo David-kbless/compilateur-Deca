@@ -1,0 +1,13 @@
+// Description :
+// Test d'opération mixte entier et flottant.
+//
+// Resultats :
+// 3.50000e+00
+
+{
+    int x;
+    float y;
+    x = 2;
+    y = x + 1.5;
+    print(y);
+}

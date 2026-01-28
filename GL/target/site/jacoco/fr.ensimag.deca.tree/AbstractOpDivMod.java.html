@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractOpDivMod.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">AbstractOpDivMod.java</span></div><h1>AbstractOpDivMod.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.ImmediateFloat;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.instructions.BEQ;
+import fr.ensimag.ima.pseudocode.instructions.CMP;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+
+public abstract class AbstractOpDivMod extends AbstractOpArith{
+    
+    public AbstractOpDivMod(AbstractExpr leftOperand, AbstractExpr rightOperand) {
+<span class="fc" id="L16">        super(leftOperand, rightOperand);</span>
+<span class="fc" id="L17">    }</span>
+
+
+    protected GPRegister codeGenOperationBinaire(DecacCompiler compiler, GPRegister operande1, DVal operande2){
+        
+        // s'il l'utilisateur active les erreurs d'overflow et de division par zero
+<span class="pc bpc" id="L23" title="1 of 2 branches missed.">        if (!compiler.getCompilerOptions().getNoCheck()) {</span>
+
+            // comme operande 2 peut etre de type RegistreOffset, alors
+            // j'utilise R0 pour eviter des erreur de cast dur a debug
+<span class="fc" id="L27">            compiler.addInstruction(new LOAD(operande2, Register.R0));</span>
+
+<span class="fc bfc" id="L29" title="All 2 branches covered.">            if (getRightOperand().getType().isInt()) {</span>
+<span class="fc" id="L30">                compiler.addInstruction(new CMP(0, Register.R0));</span>
+            } else {
+<span class="fc" id="L32">                compiler.addInstruction(new CMP(new ImmediateFloat(0.0f), Register.R0));</span>
+            }
+<span class="fc" id="L34">            compiler.addInstruction(new BEQ(new Label(&quot;div_zero_error&quot;)));</span>
+<span class="fc" id="L35">            compiler.addDivisionByZeroLabel();</span>
+        } 
+
+<span class="fc" id="L38">        return codeGenOperationQuotionReste(compiler, operande1, operande2);</span>
+    }
+
+    protected abstract GPRegister codeGenOperationQuotionReste(DecacCompiler compiler, GPRegister operande1, DVal operande2);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

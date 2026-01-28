@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DecacCompiler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca</a> &gt; <span class="el_source">DecacCompiler.java</span></div><h1>DecacCompiler.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca;
+
+import fr.ensimag.deca.codegen.GestionnaireLabel;
+import fr.ensimag.deca.codegen.GestionnaireRegistre;
+import fr.ensimag.deca.context.EnvironmentType;
+import fr.ensimag.deca.syntax.DecaLexer;
+import fr.ensimag.deca.syntax.DecaParser;
+import fr.ensimag.deca.tools.DecacInternalError;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.deca.tools.SymbolTable;
+import fr.ensimag.deca.tools.SymbolTable.Symbol;
+import fr.ensimag.deca.tree.AbstractProgram;
+import fr.ensimag.deca.tree.LocationException;
+import fr.ensimag.ima.pseudocode.AbstractLine;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.IMAProgram;
+import fr.ensimag.ima.pseudocode.Instruction;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.instructions.POP;
+import fr.ensimag.ima.pseudocode.instructions.PUSH;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.instrument.ClassDefinition;
+
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.log4j.Logger;
+
+/**
+ * Decac compiler instance.
+ *
+ * This class is to be instantiated once per source file to be compiled. It
+ * contains the meta-data used for compiling (source file name, compilation
+ * options) and the necessary utilities for compilation (symbol tables, abstract
+ * representation of target file, ...).
+ *
+ * It contains several objects specialized for different tasks. Delegate methods
+ * are used to simplify the code of the caller (e.g. call
+ * compiler.addInstruction() instead of compiler.getProgram().addInstruction()).
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class DecacCompiler {
+
+    // gestion de la creation unique des label d'eerreur (overflow, ....) au besoin
+<span class="fc" id="L52">    private boolean overflowAdded = false;</span>
+<span class="fc" id="L53">    private boolean divisionByZeroAdded = false;</span>
+<span class="fc" id="L54">    private boolean absenceReturnAdded = false;</span>
+<span class="fc" id="L55">    private boolean conversionImpossibleAdded = false;</span>
+<span class="fc" id="L56">    private boolean dereferencementNullAdded = false;</span>
+<span class="fc" id="L57">    private boolean ioErreurAdded = false;</span>
+<span class="fc" id="L58">    private boolean stack_overflow_errorAdded = false;</span>
+<span class="fc" id="L59">    private boolean accesVarNonInitAdded = false;</span>
+<span class="fc" id="L60">    private boolean methodeIncompatibleAdded = false;</span>
+<span class="fc" id="L61">    private boolean tasOverflowAdded = false;</span>
+
+
+    public boolean getTasOverflowLabel() {
+<span class="fc" id="L65">        return tasOverflowAdded;</span>
+    }
+
+    public void addTasOverflowLabel() {
+<span class="nc" id="L69">        tasOverflowAdded = true;</span>
+<span class="nc" id="L70">    }</span>
+
+
+    public boolean getOverflowLabel() {
+<span class="fc" id="L74">        return overflowAdded;</span>
+    }
+
+    public boolean getDivisionByZeroLabel() {
+<span class="fc" id="L78">        return divisionByZeroAdded;</span>
+    }
+
+    public boolean getAbsenceReturnLabel() {
+<span class="fc" id="L82">        return absenceReturnAdded;</span>
+    }
+
+
+    public boolean getConversionImpossibleLabel() {
+<span class="fc" id="L87">        return conversionImpossibleAdded;</span>
+    }
+
+    public boolean getDereferencementNullLabel() {
+<span class="fc" id="L91">        return dereferencementNullAdded;</span>
+    }
+
+    public boolean getIOErreurLabel() {
+<span class="fc" id="L95">        return ioErreurAdded;</span>
+    }
+
+    // public boolean getStackOverflowLabel() {
+    //     return stack_overflow_errorAdded;
+    // }
+
+    public boolean getAccesVarNonInitLabel() {
+<span class="fc" id="L103">        return accesVarNonInitAdded;</span>
+    }
+
+    public boolean getMethodeIncompatibleLabel() {
+<span class="fc" id="L107">        return methodeIncompatibleAdded;</span>
+    }
+
+
+
+    public void addOverflowLabel() {
+<span class="nc" id="L113">        overflowAdded = true;</span>
+<span class="nc" id="L114">    }</span>
+    public void addDivisionByZeroLabel() {
+<span class="nc" id="L116">        divisionByZeroAdded = true;</span>
+<span class="nc" id="L117">    }</span>
+
+    public void addAbsenceReturnLabel() {
+<span class="nc" id="L120">        absenceReturnAdded = true;</span>
+<span class="nc" id="L121">    }</span>
+
+    // public void addConversionImpossibleLabel() {
+    //     conversionImpossibleAdded = true;
+    // }
+
+    public void addDereferencementNullLabel() {
+<span class="nc" id="L128">        dereferencementNullAdded = true;</span>
+<span class="nc" id="L129">    }</span>
+
+
+    public void addIOErreurLabel() {
+<span class="nc" id="L133">        ioErreurAdded = true;</span>
+<span class="nc" id="L134">    }</span>
+
+    // public void addStackOverflowLabel() {
+    //     stack_overflow_errorAdded = true;
+    // }
+
+        
+    // public void addAccesVarNonInitLabel() {
+    //     accesVarNonInitAdded = true;
+    // }
+
+
+    // public void addMethodeIncompatibleLabel() {
+    //     methodeIncompatibleAdded = true;
+    // }
+
+    
+
+
+    
+
+    // gestion des compteur de labels en fonction de sa nature : 
+    // private int compteurLabelIF = 1;
+    // private int compteurOpBool = 1;
+
+
+    public Label getLabelOpBool() {
+<span class="nc" id="L161">        return new Label(&quot;E_Fin.&quot; + compteurOpBool);</span>
+    }
+
+    public void addLabelOpBool() {
+<span class="nc" id="L165">        compteurOpBool++;</span>
+<span class="nc" id="L166">    }</span>
+
+
+    public void incCOmpteurLabelIF() {
+<span class="nc" id="L170">        compteurLabelIF++;</span>
+<span class="nc" id="L171">    }</span>
+
+    public int getCompteurLabelIF() {
+<span class="nc" id="L174">        return compteurLabelIF;</span>
+    }
+
+    public void addLabelIF() {
+<span class="nc" id="L178">        compteurLabelIF++;</span>
+<span class="nc" id="L179">    }</span>
+
+
+
+    // Dans DecacCompiler.java
+<span class="fc" id="L184">    private int compteurOpBool = 1;</span>
+<span class="fc" id="L185">    private int compteurLabelIF = 1;</span>
+
+    // Donne un numéro unique et l'incrémente immédiatement
+    public int getAndIncOpBool() {
+<span class="nc" id="L189">        return compteurOpBool++;</span>
+    }
+
+    public int getAndIncIf() {
+<span class="fc" id="L193">        return compteurLabelIF++;</span>
+    }
+
+
+
+    
+
+
+<span class="fc" id="L201">    private static final Logger LOG = Logger.getLogger(DecacCompiler.class);</span>
+    
+    /**
+     * Portable newline character.
+     */
+<span class="fc" id="L206">    private static final String nl = System.getProperty(&quot;line.separator&quot;, &quot;\n&quot;);</span>
+
+    private final CompilerOptions compilerOptions;
+<span class="fc" id="L209">    private final GestionnaireRegistre gestionnaireRegistre = new GestionnaireRegistre();</span>
+
+    public GPRegister utiliserRegistre() {
+<span class="fc" id="L212">        return gestionnaireRegistre.utiliserRegistre(this);</span>
+    }
+
+    public void libererRegistre() {
+<span class="fc" id="L216">        gestionnaireRegistre.libererRegistre(this);</span>
+<span class="fc" id="L217">    }</span>
+
+    public int simulerAllocationRegistre(){
+<span class="fc" id="L220">        return gestionnaireRegistre.simulerAllocationRegistre();</span>
+    }
+    public void simulerLiberationRegistre(){
+<span class="nc" id="L223">        gestionnaireRegistre.simulerLiberationRegistre();</span>
+<span class="nc" id="L224">    }</span>
+
+    public int getCompteurRegistre(){
+<span class="fc" id="L227">        return gestionnaireRegistre.getCompteurRegistre();</span>
+    }
+
+    public void setCompteurRegistre(int compteurRegistre){
+<span class="fc" id="L231">        gestionnaireRegistre.setCompteurRegistre(compteurRegistre);</span>
+<span class="fc" id="L232">    }</span>
+
+    public int getNbRegStokes(){
+<span class="fc" id="L235">        return gestionnaireRegistre.getNbRegStokes();</span>
+    }
+
+    public void setNbRegStokes(int nbRegStokes){
+<span class="fc" id="L239">        gestionnaireRegistre.setNbRegStokes(nbRegStokes);</span>
+<span class="fc" id="L240">    }</span>
+
+    public void commencerSimulationRegistres(boolean reset){
+<span class="fc" id="L243">        gestionnaireRegistre.commencerSimulationRegistre(reset);</span>
+<span class="fc" id="L244">    }</span>
+
+    public void resetGestionnaireRegistres(boolean reset){
+<span class="fc" id="L247">        gestionnaireRegistre.resetGestionnaireRegistre(reset);</span>
+<span class="fc" id="L248">    }</span>
+
+<span class="fc" id="L250">    private final GestionnaireLabel gestionnaireLabel = new GestionnaireLabel();</span>
+
+    public int getCompteurLabelWhile(){
+<span class="nc" id="L253">        return gestionnaireLabel.getCompteurLabelWhile();</span>
+    }
+
+    public int incrementerCompteurLabelWhile(){
+<span class="nc" id="L257">        return gestionnaireLabel.incrementerCompteurLabelWhile();</span>
+    }
+
+
+    public DecacCompiler(CompilerOptions compilerOptions, File source) {
+<span class="fc" id="L262">        super();</span>
+<span class="fc" id="L263">        this.compilerOptions = compilerOptions;</span>
+<span class="fc" id="L264">        this.source = source;</span>
+        int rMax;
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        if (compilerOptions != null) {</span>
+<span class="fc" id="L267">            rMax = compilerOptions.getNRegisters();</span>
+        } else {
+<span class="fc" id="L269">            rMax = 16; // Valeur par défaut pour les tests</span>
+        }
+<span class="fc" id="L271">        this.gestionnaireRegistre.setRMax(rMax);</span>
+<span class="fc" id="L272">        environmentType = new EnvironmentType(this);</span>
+<span class="fc" id="L273">    }</span>
+
+    /**
+     * Source file associated with this compiler instance.
+     */
+    public File getSource() {
+<span class="nc" id="L279">        return source;</span>
+    }
+
+    /**
+     * Compilation options (e.g. when to stop compilation, number of registers
+     * to use, ...).
+     */
+    public CompilerOptions getCompilerOptions() {
+<span class="fc" id="L287">        return compilerOptions;</span>
+    }
+
+    /**
+     * @see
+     * fr.ensimag.ima.pseudocode.IMAProgram#add(fr.ensimag.ima.pseudocode.AbstractLine)
+     */
+    public void add(AbstractLine line) {
+<span class="nc" id="L295">        program.add(line);</span>
+<span class="nc" id="L296">    }</span>
+
+    /**
+     * @see fr.ensimag.ima.pseudocode.IMAProgram#addComment(java.lang.String)
+     */
+    public void addComment(String comment) {
+<span class="fc" id="L302">        program.addComment(comment);</span>
+<span class="fc" id="L303">    }</span>
+
+    /**
+     * @see
+     * fr.ensimag.ima.pseudocode.IMAProgram#addLabel(fr.ensimag.ima.pseudocode.Label)
+     */
+    public void addLabel(Label label) {
+<span class="fc" id="L310">        program.addLabel(label);</span>
+<span class="fc" id="L311">    }</span>
+
+    /**
+     * @see
+     * fr.ensimag.ima.pseudocode.IMAProgram#addInstruction(fr.ensimag.ima.pseudocode.Instruction)
+     */
+    public void addInstruction(Instruction instruction) {
+<span class="fc" id="L318">        program.addInstruction(instruction);</span>
+<span class="fc" id="L319">    }</span>
+
+    /**
+     * @see
+     * fr.ensimag.ima.pseudocode.IMAProgram#addInstruction(fr.ensimag.ima.pseudocode.Instruction)
+     */
+    public void addFirstComment(String comment) {
+<span class="fc" id="L326">        program.addFirstComment(comment);;</span>
+<span class="fc" id="L327">    }</span>
+
+    /**
+     * @see
+     * fr.ensimag.ima.pseudocode.IMAProgram#addFirstInstruction(fr.ensimag.ima.pseudocode.Instruction)
+     */
+    public void addFirstInstruction(Instruction instruction) {
+<span class="fc" id="L334">        program.addFirst(instruction);</span>
+<span class="fc" id="L335">    }</span>
+
+
+    /**
+     * @see
+     * fr.ensimag.ima.pseudocode.IMAProgram#addInstruction(fr.ensimag.ima.pseudocode.Instruction,
+     * java.lang.String)
+     */
+    public void addInstruction(Instruction instruction, String comment) {
+<span class="fc" id="L344">        program.addInstruction(instruction, comment);</span>
+<span class="fc" id="L345">    }</span>
+    
+    /**
+     * @see 
+     * fr.ensimag.ima.pseudocode.IMAProgram#display()
+     */
+    public String displayIMAProgram() {
+<span class="nc" id="L352">        return program.display();</span>
+    }
+    
+    private final File source;
+    /**
+     * The main program. Every instruction generated will eventually end up here.
+     */
+<span class="fc" id="L359">    private final IMAProgram program = new IMAProgram();</span>
+ 
+
+    public final IMAProgram getProgram() {
+<span class="nc" id="L363">        return program;</span>
+    }
+
+    /** The global environment for types (and the symbolTable) */
+<span class="fc" id="L367">    public final SymbolTable symbolTable = new SymbolTable();</span>
+    public final EnvironmentType environmentType;
+    
+
+    public Symbol createSymbol(String name) {
+<span class="fc" id="L372">        return symbolTable.create(name);</span>
+    }
+
+    /**
+     * Run the compiler (parse source file, generate code)
+     *
+     * @return true on error
+     */
+    public boolean compile() {
+<span class="fc" id="L381">        String sourceFile = source.getAbsolutePath();</span>
+<span class="fc" id="L382">        String destFile = null;</span>
+
+
+
+
+
+
+        // A FAIRE: calculer le nom du fichier .ass à partir du nom du
+        // A FAIRE: fichier .deca.
+
+        // ------------------------------------------------------------------------------------------------------------
+<span class="pc bpc" id="L393" title="1 of 2 branches missed.">        if (sourceFile.endsWith(&quot;.deca&quot;)) {</span>
+            // on ajoute l'extension .ass la place de .deca dns le nom du fichier a generer
+<span class="fc" id="L395">            destFile = sourceFile.substring(0, sourceFile.length() - &quot;.deca&quot;.length()) + &quot;.ass&quot;;</span>
+        } else {
+            // throw new IllegalArgumentException(&quot; le fichier source ne se termine pas par .deca, entree incorrecte ...&quot;);
+<span class="nc" id="L398">            throw new DecacInternalError(&quot;Erreur: le fichier source ne se termine pas par .deca&quot;);</span>
+        }
+        // ------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+<span class="fc" id="L407">        PrintStream err = System.err;</span>
+<span class="fc" id="L408">        PrintStream out = System.out;</span>
+<span class="fc" id="L409">        LOG.debug(&quot;Compiling file &quot; + sourceFile + &quot; to assembly file &quot; + destFile);</span>
+        try {
+<span class="fc" id="L411">            return doCompile(sourceFile, destFile, out, err);</span>
+<span class="nc" id="L412">        } catch (LocationException e) {</span>
+<span class="nc" id="L413">            e.display(err);</span>
+<span class="nc" id="L414">            return true;</span>
+<span class="nc" id="L415">        } catch (DecacFatalError e) {</span>
+<span class="nc" id="L416">            err.println(e.getMessage());</span>
+<span class="nc" id="L417">            return true;</span>
+<span class="nc" id="L418">        } catch (StackOverflowError e) {</span>
+<span class="nc" id="L419">            LOG.debug(&quot;stack overflow&quot;, e);</span>
+<span class="nc" id="L420">            err.println(&quot;Stack overflow while compiling file &quot; + sourceFile + &quot;.&quot;);</span>
+<span class="nc" id="L421">            return true;</span>
+<span class="nc" id="L422">        } catch (Exception e) {</span>
+<span class="nc" id="L423">            LOG.fatal(&quot;Exception raised while compiling file &quot; + sourceFile</span>
+                    + &quot;:&quot;, e);
+<span class="nc" id="L425">            err.println(&quot;Internal compiler error while compiling file &quot; + sourceFile + &quot;, sorry.&quot;);</span>
+<span class="nc" id="L426">            return true;</span>
+<span class="nc" id="L427">        } catch (AssertionError e) {</span>
+<span class="nc" id="L428">            LOG.fatal(&quot;Assertion failed while compiling file &quot; + sourceFile</span>
+                    + &quot;:&quot;, e);
+<span class="nc" id="L430">            err.println(&quot;Internal compiler error while compiling file &quot; + sourceFile + &quot;, sorry.&quot;);</span>
+<span class="nc" id="L431">            return true;</span>
+        }
+    }
+
+    /**
+     * Internal function that does the job of compiling (i.e. calling lexer,
+     * verification and code generation).
+     *
+     * @param sourceName name of the source (deca) file
+     * @param destName name of the destination (assembly) file
+     * @param out stream to use for standard output (output of decac -p)
+     * @param err stream to use to display compilation errors
+     *
+     * @return true on error
+     */
+    private boolean doCompile(String sourceName, String destName,
+            PrintStream out, PrintStream err)
+            throws DecacFatalError, LocationException {
+<span class="fc" id="L449">        AbstractProgram prog = doLexingAndParsing(sourceName, err);</span>
+        
+<span class="pc bpc" id="L451" title="1 of 2 branches missed.">        if (prog == null) {</span>
+<span class="nc" id="L452">            LOG.info(&quot;Parsing failed&quot;);</span>
+<span class="nc" id="L453">            return true;</span>
+        }
+<span class="pc bpc" id="L455" title="1 of 2 branches missed.">        assert(prog.checkAllLocations());</span>
+
+
+        // on arrete le programe dans le cas ou il ya l'option -p 
+<span class="pc bpc" id="L459" title="1 of 2 branches missed.">        if(getCompilerOptions().getParse()){</span>
+<span class="nc" id="L460">            IndentPrintStream ips = new IndentPrintStream(out);</span>
+<span class="nc" id="L461">            prog.decompile(ips);  // on affiche avant tout l'arbre de decompile</span>
+<span class="nc" id="L462">            System.exit(0);</span>
+        }
+
+
+<span class="fc" id="L466">        prog.verifyProgram(this);</span>
+<span class="pc bpc" id="L467" title="1 of 2 branches missed.">        assert(prog.checkAllDecorations());</span>
+
+        // si l'option -v est active alors : ....
+<span class="pc bpc" id="L470" title="1 of 2 branches missed.">        if(getCompilerOptions().getVerify()){</span>
+            // on sort sans afficher !
+<span class="nc" id="L472">            System.exit(0);</span>
+        }
+
+<span class="fc" id="L475">        prog.codeGenProgram(this);</span>
+        //addComment(&quot;end main program&quot;);
+<span class="fc" id="L477">        LOG.debug(&quot;Generated assembly code:&quot; + nl + program.display());</span>
+<span class="fc" id="L478">        LOG.info(&quot;Output file assembly file is: &quot; + destName);</span>
+
+<span class="fc" id="L480">        FileOutputStream fstream = null;</span>
+        try {
+<span class="fc" id="L482">            fstream = new FileOutputStream(destName);</span>
+<span class="nc" id="L483">        } catch (FileNotFoundException e) {</span>
+<span class="nc" id="L484">            throw new DecacFatalError(&quot;Failed to open output file: &quot; + e.getLocalizedMessage());</span>
+<span class="fc" id="L485">        }</span>
+
+<span class="fc" id="L487">        LOG.info(&quot;Writing assembler file ...&quot;);</span>
+
+<span class="fc" id="L489">        program.display(new PrintStream(fstream));</span>
+<span class="fc" id="L490">        LOG.info(&quot;Compilation of &quot; + sourceName + &quot; successful.&quot;);</span>
+<span class="fc" id="L491">        return false;</span>
+    }
+
+    /**
+     * Build and call the lexer and parser to build the primitive abstract
+     * syntax tree.
+     *
+     * @param sourceName Name of the file to parse
+     * @param err Stream to send error messages to
+     * @return the abstract syntax tree
+     * @throws DecacFatalError When an error prevented opening the source file
+     * @throws DecacInternalError When an inconsistency was detected in the
+     * compiler.
+     * @throws LocationException When a compilation error (incorrect program)
+     * occurs.
+     */
+    protected AbstractProgram doLexingAndParsing(String sourceName, PrintStream err)
+            throws DecacFatalError, DecacInternalError {
+        DecaLexer lex;
+        try {
+<span class="fc" id="L511">            lex = new DecaLexer(CharStreams.fromFileName(sourceName));</span>
+<span class="nc" id="L512">        } catch (IOException ex) {</span>
+<span class="nc" id="L513">            throw new DecacFatalError(&quot;Failed to open input file: &quot; + ex.getLocalizedMessage());</span>
+<span class="fc" id="L514">        }</span>
+<span class="fc" id="L515">        lex.setDecacCompiler(this);</span>
+<span class="fc" id="L516">        CommonTokenStream tokens = new CommonTokenStream(lex);</span>
+<span class="fc" id="L517">        DecaParser parser = new DecaParser(tokens);</span>
+<span class="fc" id="L518">        parser.setDecacCompiler(this);</span>
+<span class="fc" id="L519">        return parser.parseProgramAndManageErrors(err);</span>
+    }
+
+
+    
+<span class="fc" id="L524">    private int indexGB = 1;</span>
+
+    public int getIndexGB(){
+<span class="fc" id="L527">        return indexGB;</span>
+    }
+
+
+    public int getAndAddIndexGB(){
+<span class="fc" id="L532">        return indexGB++;</span>
+    }
+
+    private Label currentLabel;
+
+    public Label getCurrentLabel() {
+<span class="nc" id="L538">        return currentLabel;</span>
+    }
+
+    public void setCurrentLabel(Label currentLabel) {
+<span class="nc" id="L542">        this.currentLabel = currentLabel;</span>
+<span class="nc" id="L543">    }</span>
+
+<span class="fc" id="L545">    protected int autrePush = 0;</span>
+
+    public int getAutrePush() {
+<span class="fc" id="L548">        return autrePush;</span>
+    }
+
+    public void setAutrePush(int autrePush) {
+<span class="nc bnc" id="L552" title="All 2 branches missed.">        if(autrePush &gt; this.autrePush){</span>
+<span class="nc" id="L553">            this.autrePush = autrePush;</span>
+        }
+<span class="nc" id="L555">    }</span>
+
+    // label pour les casts dynamiques
+<span class="fc" id="L558">    private int labelCastCounter = 1;</span>
+
+    public int getLabelCastId() {
+<span class="nc" id="L561">        return labelCastCounter++;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

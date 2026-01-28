@@ -1,0 +1,11 @@
+// Description :
+// test else sans if
+//
+// Resultat :
+// Erreur syntaxique
+// Ligne 8 : else sans if
+{
+    else {
+        print(1);
+    }
+}

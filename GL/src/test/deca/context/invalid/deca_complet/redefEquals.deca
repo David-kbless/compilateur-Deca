@@ -1,0 +1,13 @@
+// Description:
+//    Tentative de redéfinition de equals avec un type spécifique (surcharge interdite).
+// Resultats:
+//    Ligne 7: Erreur (Règle 2.7 : la signature doit être identique à celle d'Object)
+//
+// Historique:
+//    cree le 15/01/2026
+
+class A {
+    boolean equals(A a) { // ERREUR : attend Object, pas A
+        return true;
+    }
+}

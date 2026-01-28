@@ -1,0 +1,217 @@
+; start main program
+	TSTO #10
+	BOV stack_overflow_error
+	ADDSP #7
+;  ************************************************************
+;  *           CONSTRUCTION DES VTABLES DES CLASSES           *
+;  ************************************************************
+; Construction de la VTable de la classe Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de TestDefautRegistre
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+	LOAD code.TestDefautRegistre.m, R2
+	STORE R2, 5(GB)
+; Variable Declarations : 
+	NEW #2, R2
+	BOV tas_plein
+	LEA 3(GB), R3
+	STORE R3, 0(R2)
+	PUSH R2
+	BSR init.TestDefautRegistre
+	POP R2
+	STORE R2, 7(GB)
+; Beginning of main instructions:
+	LOAD #1, R2
+	LOAD #2, R3
+	LOAD #3, R4
+	LOAD #4, R5
+	LOAD #5, R6
+	LOAD #6, R7
+	LOAD #7, R8
+	LOAD #8, R9
+	LOAD #9, R10
+	LOAD #10, R11
+	LOAD #11, R12
+	LOAD #12, R13
+	LOAD #13, R14
+	LOAD #14, R15
+	PUSH R15
+	LOAD #15, R15
+	ADD #16, R15
+	POP R0
+	ADD R15, R0
+	LOAD R0, R15
+	ADD R15, R14
+	ADD R14, R13
+	ADD R13, R12
+	ADD R12, R11
+	ADD R11, R10
+	ADD R10, R9
+	ADD R9, R8
+	ADD R8, R7
+	ADD R7, R6
+	ADD R6, R5
+	ADD R5, R4
+	ADD R4, R3
+	ADD R3, R2
+	STORE R2, 6(GB)
+	WSTR "Resultat attendu : 136"
+	WNL
+	WSTR "Resultat obtenu main : "
+	LOAD 6(GB), R3
+	LOAD R3, R1
+	WINT
+	WNL
+	WSTR "Resultat obtenu m : "
+	ADDSP #1
+	LOAD 7(GB), R3
+	STORE R3, 0(SP)
+	LOAD 0(SP), R3
+	CMP #null, R3
+	BEQ dereferencement.null
+	LOAD 0(R3), R3
+	BSR 2(R3)
+	SUBSP #1
+	LOAD R0, R1
+	WINT
+	WNL
+	WSTR "Resultat obtenu membre : "
+	LOAD 7(GB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 1(R2), R2
+	LOAD R2, R1
+	WINT
+	WNL
+	HALT
+; end main program
+;  ************************************************************
+;  *  GENERATION DES INITS ET DES BODY METHODES DES CLASSES   *
+;  ************************************************************
+init.TestDefautRegistre:
+	TSTO #2
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0, R0
+	STORE R0, 1(R2)
+	LOAD -2(LB), R2
+	LOAD #1, R3
+	LOAD #2, R4
+	LOAD #3, R5
+	LOAD #4, R6
+	LOAD #5, R7
+	LOAD #6, R8
+	LOAD #7, R9
+	LOAD #8, R10
+	LOAD #9, R11
+	LOAD #10, R12
+	LOAD #11, R13
+	LOAD #12, R14
+	LOAD #13, R15
+	PUSH R15
+	LOAD #14, R15
+	PUSH R15
+	LOAD #15, R15
+	ADD #16, R15
+	POP R0
+	ADD R15, R0
+	LOAD R0, R15
+	POP R0
+	ADD R15, R0
+	LOAD R0, R15
+	ADD R15, R14
+	ADD R14, R13
+	ADD R13, R12
+	ADD R12, R11
+	ADD R11, R10
+	ADD R10, R9
+	ADD R9, R8
+	ADD R8, R7
+	ADD R7, R6
+	ADD R6, R5
+	ADD R5, R4
+	ADD R4, R3
+	STORE R3, 1(R2)
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+code.TestDefautRegistre.m:
+	TSTO #5
+	BOV stack_overflow_error
+	ADDSP #1
+	PUSH R2
+	LOAD #1, R4
+	LOAD #2, R5
+	LOAD #3, R6
+	LOAD #4, R7
+	LOAD #5, R8
+	LOAD #6, R9
+	LOAD #7, R10
+	LOAD #8, R11
+	LOAD #9, R12
+	LOAD #10, R13
+	LOAD #11, R14
+	LOAD #12, R15
+	PUSH R15
+	LOAD #13, R15
+	PUSH R15
+	LOAD #14, R15
+	PUSH R15
+	LOAD #15, R15
+	ADD #16, R15
+	POP R0
+	ADD R15, R0
+	LOAD R0, R15
+	POP R0
+	ADD R15, R0
+	LOAD R0, R15
+	POP R0
+	ADD R15, R0
+	LOAD R0, R15
+	ADD R15, R14
+	ADD R14, R13
+	ADD R13, R12
+	ADD R12, R11
+	ADD R11, R10
+	ADD R10, R9
+	ADD R9, R8
+	ADD R8, R7
+	ADD R7, R6
+	ADD R6, R5
+	ADD R5, R4
+	STORE R0, 1(LB)
+	LOAD 1(LB), R2
+	LOAD R2, R0
+	BRA fin.TestDefautRegistre.m
+	BRA absence_return_error
+fin.TestDefautRegistre.m:
+	POP R2
+	SUBSP #1
+	RTS
+;  ************************************************************
+;  * AJOUT DES LABELS ERREURS DEMANDÉES PAR LE PROGRAMME DECA *
+;  ************************************************************
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+tas_plein:
+	WSTR "Erreur : le tas est plein, impossible d'allouer de la memoire"
+	WNL
+	ERROR
+absence_return_error:
+	WSTR "Erreur : Absence de return dans le corps d'une methode "
+	WNL
+	ERROR
+dereferencement.null:
+	WSTR "Erreur : Dereferencement null"
+	WNL
+	ERROR

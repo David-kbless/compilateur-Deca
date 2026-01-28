@@ -1,0 +1,15 @@
+// Description :
+//    Appel d'une méthode sur un objet null.
+//
+// Resultats :
+//    Erreur : Dereferencement null
+//
+
+class A {
+    void hello() { println("Hello"); }
+}
+
+{
+    A a;
+    a.hello();
+}

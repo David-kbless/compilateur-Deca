@@ -1,0 +1,7 @@
+{
+    int x = 1, y = 2, z = 3, w = 4, t = 5;
+
+    int res = x * y + z - w / 5;
+    println(res);
+
+}

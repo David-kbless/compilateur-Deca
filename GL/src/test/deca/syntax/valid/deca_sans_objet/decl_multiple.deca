@@ -1,0 +1,8 @@
+// Description :
+// Teste les déclarations multiples sans objet.
+//
+// Resultats :
+// OK
+{
+    int a, b = 2, c;
+}

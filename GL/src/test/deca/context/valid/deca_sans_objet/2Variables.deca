@@ -1,0 +1,14 @@
+// Description:
+//    test de déclaration et utilisation de 2 variables
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+        int x = 2 ;
+        int y = 5 ;
+        x = x + y ;
+}

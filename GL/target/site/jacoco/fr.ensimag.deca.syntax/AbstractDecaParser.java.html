@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractDecaParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.syntax</a> &gt; <span class="el_source">AbstractDecaParser.java</span></div><h1>AbstractDecaParser.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.syntax;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.tools.DecacInternalError;
+import fr.ensimag.deca.tree.AbstractProgram;
+import fr.ensimag.deca.tree.Location;
+import fr.ensimag.deca.tree.LocationException;
+import fr.ensimag.deca.tree.Tree;
+
+import java.io.PrintStream;
+
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.apache.log4j.Logger;
+
+/**
+ * The super class of the generated parser. It is extended by the generated
+ * code because of the superClass option in the .g file.
+ *
+ * @author gl54, Based on template by Jim Idle - Temporal Wave LLC - jimi@temporal-wave.com
+ * @date 01/01/2026
+ */
+<span class="fc" id="L23">public abstract class AbstractDecaParser extends Parser {</span>
+<span class="fc" id="L24">    Logger LOG = Logger.getLogger(AbstractDecaParser.class);</span>
+
+    private DecacCompiler decacCompiler;
+
+    protected DecacCompiler getDecacCompiler() {
+<span class="nc" id="L29">        return decacCompiler;</span>
+    }
+
+    public void setDecacCompiler(DecacCompiler decacCompiler) {
+<span class="nc" id="L33">        this.decacCompiler = decacCompiler;</span>
+<span class="nc" id="L34">    }</span>
+
+    protected abstract AbstractProgram parseProgram();
+    
+    public AbstractProgram parseProgramAndManageErrors(PrintStream err) {
+        try {
+<span class="fc" id="L40">            AbstractProgram result = parseProgram();</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">            assert(result != null);</span>
+<span class="fc" id="L42">            return result;</span>
+<span class="fc" id="L43">        } catch (ParseCancellationException e) {</span>
+<span class="fc" id="L44">            LOG.debug(&quot;ParseCancellationException raised while compiling file:&quot;, e);</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">            if (e.getCause() instanceof LocationException) {</span>
+<span class="fc" id="L46">                ((LocationException)e.getCause()).display(err);</span>
+<span class="fc" id="L47">                return null;</span>
+            } else {
+<span class="nc" id="L49">                throw new DecacInternalError(&quot;Parsing cancelled&quot;, e);</span>
+            }
+<span class="fc" id="L51">        } catch (DecaRecognitionException e) {</span>
+<span class="fc" id="L52">            e.display(err);</span>
+<span class="fc" id="L53">            return null;</span>
+        }
+    }
+
+    /**
+     * Extract the Location of a token.
+     */
+    protected Location tokenLocation(Token token) {
+<span class="fc" id="L61">        return new Location(token.getLine(),</span>
+<span class="fc" id="L62">                token.getCharPositionInLine(),</span>
+<span class="fc" id="L63">                token.getInputStream().getSourceName());</span>
+    }
+    
+    /**
+     * Sets the location of Tree to the one in Token.
+     *
+     * This is a simple convenience wrapper around {@link Tree#setLocation(Location)}.
+     */
+    protected void setLocation(Tree tree, Token token) {
+<span class="fc" id="L72">        tree.setLocation(tokenLocation(token));</span>
+<span class="fc" id="L73">    }</span>
+
+    /**
+     * Create a new parser instance, pre-supplying the input token stream.
+     *
+     * @param input The stream of tokens that will be pulled from the lexer
+     */
+    protected AbstractDecaParser(TokenStream input) {
+<span class="fc" id="L81">        super(input);</span>
+<span class="fc" id="L82">        setErrorHandler(new DefaultErrorStrategy() {</span>
+            @Override
+            public void reportError(Parser recognizer,
+                                    RecognitionException e) {
+<span class="fc" id="L86">                LOG.debug(&quot;Error found by ANTLR&quot;);</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">                if (e instanceof DecaRecognitionException) {</span>
+<span class="fc" id="L88">                    Token offendingToken = e.getOffendingToken();</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">                    if (offendingToken == null) {</span>
+<span class="nc" id="L90">                        offendingToken = recognizer.getCurrentToken();                        </span>
+                    }
+<span class="nc" id="L92">                    recognizer.notifyErrorListeners(offendingToken, e.getMessage(), e);</span>
+<span class="nc" id="L93">                } else {</span>
+<span class="nc" id="L94">                    super.reportError(recognizer, e);</span>
+                }
+<span class="nc" id="L96">            }</span>
+        });
+<span class="fc" id="L98">        removeErrorListeners();</span>
+<span class="fc" id="L99">        addErrorListener(new DecacErrorListner(input));</span>
+<span class="fc" id="L100">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

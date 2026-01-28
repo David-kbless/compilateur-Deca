@@ -1,0 +1,36 @@
+// Description:
+//    test des environnements avec des classes et des objets
+//
+// Resultats:
+//    Ok
+//
+class A {
+    int x;
+    void meth1(boolean x){
+        if (x){
+            this.x = 1;
+        }
+    }
+}
+class B {
+    float x;
+    void meth1(){
+        int x = readInt();
+        if(x==2){
+            this.x = 2;
+        }
+    }
+}
+
+class C{
+    int x;
+    void meth1(){
+        x = readInt();
+    }
+}
+{
+    A x = new A();
+    x.meth1(true);
+    print(x.x);
+    print(x.x);
+}

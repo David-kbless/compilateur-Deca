@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ListInst.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">ListInst.java</span></div><h1>ListInst.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.Type;
+
+import java.util.List;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.ima.pseudocode.Label;
+
+
+/**
+ * 
+ * @author gl54
+ * @date 01/01/2026
+ */
+<span class="fc" id="L20">public class ListInst extends TreeList&lt;AbstractInst&gt; {</span>
+
+    private int maxNumRegUtilises;
+    public int getmaxNumRegUtilises() {
+<span class="nc" id="L24">        return maxNumRegUtilises;</span>
+    }
+
+
+    /**
+     * Implements non-terminal &quot;list_inst&quot; of [SyntaxeContextuelle] in pass 3
+     * @param compiler contains &quot;env_types&quot; attribute
+     * @param localEnv corresponds to &quot;env_exp&quot; attribute
+     * @param currentClass 
+     *          corresponds to &quot;class&quot; attribute (null in the main bloc).
+     * @param returnType
+     *          corresponds to &quot;return&quot; attribute (void in the main bloc).
+     */    
+    public void verifyListInst(DecacCompiler compiler, EnvironmentExp localEnv,
+            ClassDefinition currentClass, Type returnType)
+            throws ContextualError {
+
+<span class="fc" id="L41">                List&lt;AbstractInst&gt; list = getList(); //On récupère la liste des instructions</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">                for (AbstractInst inst : list) {</span>
+<span class="fc" id="L43">                    inst.verifyInst(compiler, localEnv, currentClass, returnType); //On vérifie chaque instruction</span>
+<span class="fc" id="L44">                }                                                                  //de la liste en lui passant les attributs hérités </span>
+<span class="fc" id="L45">    }</span>
+
+    public void codeGenListInst(DecacCompiler compiler) {
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        for (AbstractInst i : getList()) {</span>
+<span class="fc" id="L49">            i.codeGenInst(compiler);</span>
+
+            // on libère le dernier registre utilisé par une affectation
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            if(i instanceof Assign){</span>
+<span class="fc" id="L53">                compiler.libererRegistre();</span>
+            }
+<span class="fc" id="L55">        }</span>
+<span class="fc" id="L56">    }</span>
+
+    public int simuleExecutionNbRegistres(DecacCompiler compiler){
+<span class="fc" id="L59">        int maxNumRegUtilises = 0;</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        for (AbstractInst i : getList()) {</span>
+<span class="fc" id="L61">            int nbReg = i.simuleExecutionNbRegistres(compiler);</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">            if(nbReg &gt; maxNumRegUtilises){</span>
+<span class="fc" id="L63">                maxNumRegUtilises = nbReg;</span>
+            }
+<span class="fc" id="L65">        }</span>
+<span class="fc" id="L66">        return maxNumRegUtilises;</span>
+    }
+
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        for (AbstractInst i : getList()) {</span>
+<span class="fc" id="L72">            i.decompileInst(s);</span>
+<span class="fc" id="L73">            s.println();</span>
+<span class="fc" id="L74">        }</span>
+<span class="fc" id="L75">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,11 @@
+// Description :
+// Test avec une condition simple 'true'.
+//
+// Resultats :
+// Fichier .res manquant
+
+{
+    if (true) {
+        print("Epsilon OK");
+    }
+}

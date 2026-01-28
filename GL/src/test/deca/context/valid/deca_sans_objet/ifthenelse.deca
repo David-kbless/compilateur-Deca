@@ -1,0 +1,19 @@
+// Description:
+//    test if then else
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+        int x = 0 ;
+        if (x < 10) {
+            x = x + 1;
+        }
+
+        else {
+            x = x - 1;
+        }
+}

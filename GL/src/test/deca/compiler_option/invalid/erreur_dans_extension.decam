@@ -1,0 +1,3 @@
+{
+    println("si on voit ça, c'est qu'on gere pas bien les entrees sources de votre compilateur");
+}

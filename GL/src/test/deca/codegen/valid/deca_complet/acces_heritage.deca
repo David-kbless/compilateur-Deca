@@ -1,0 +1,26 @@
+// Description :
+//    Test de l'accès aux champs hérités et locaux avec shadowing (masquage).
+//
+// Resultats :
+//    x = 10
+//    y = 20
+//    ok
+//
+
+class Base {
+    int x = 10;
+}
+
+class Derived extends Base {
+    int y = 20;
+    void printAll() {
+        println("x = ", x);
+        println("y = ", y);
+    }
+}
+
+{
+    Derived d = new Derived();
+    d.printAll();
+    println("ok");
+}

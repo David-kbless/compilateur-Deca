@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>genCodeInitFields.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.ima.gencodeobjet</a> &gt; <span class="el_source">genCodeInitFields.java</span></div><h1>genCodeInitFields.java</h1><pre class="source lang-java linenums">package fr.ensimag.ima.gencodeobjet;
+
+import fr.ensimag.deca.context.ClassDefinition;
+import java.util.List;
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.Definition;
+import fr.ensimag.deca.context.FieldDefinition;
+import fr.ensimag.deca.tree.AbstractDeclClass;
+import fr.ensimag.deca.tree.AbstractDeclField;
+import fr.ensimag.deca.tree.AbstractIdentifier;
+import fr.ensimag.deca.tree.DeclClass;
+import fr.ensimag.deca.tree.DeclField;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.ImmediateFloat;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.NullOperand;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.RegisterOffset;
+import fr.ensimag.ima.pseudocode.instructions.BOV;
+import fr.ensimag.ima.pseudocode.instructions.BSR;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+import fr.ensimag.ima.pseudocode.instructions.POP;
+import fr.ensimag.ima.pseudocode.instructions.PUSH;
+import fr.ensimag.ima.pseudocode.instructions.RTS;
+import fr.ensimag.ima.pseudocode.instructions.STORE;
+import fr.ensimag.ima.pseudocode.instructions.SUBSP;
+import fr.ensimag.ima.pseudocode.instructions.TSTO;
+
+public class genCodeInitFields{
+
+    /**
+     * Initialisation s'il s'agit des champs d'une classe
+     * @param compiler
+     * @param classes
+     */
+<span class="fc" id="L38">    public genCodeInitFields(DecacCompiler compiler, List&lt;AbstractDeclClass&gt; classes){</span>
+        //compiler.addComment( &quot;On a choisi de mettre l'objet dans R2 Pour toutes les initialisations&quot;);
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        for(AbstractDeclClass abstractClass : classes){</span>
+<span class="nc" id="L41">            DeclClass classe = (DeclClass)abstractClass;</span>
+<span class="nc" id="L42">            initFields(compiler, classe);</span>
+<span class="nc" id="L43">        }</span>
+<span class="fc" id="L44">    }</span>
+    
+
+    private void initFields(DecacCompiler compiler, DeclClass classe){
+        
+<span class="nc" id="L49">        Label labelInit = new Label(&quot;init.&quot; + classe.getName().getName().getName());</span>
+
+<span class="nc" id="L51">        classe.getName().getClassDefinition().setLabelInit(labelInit);</span>
+<span class="nc" id="L52">        compiler.addLabel(labelInit);</span>
+
+            // on test la pile 
+<span class="nc" id="L55">            ClassDefinition classDef = classe.getName().getClassDefinition();</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">            if(classDef.getNumberOfFields() &gt; 0){</span>
+<span class="nc" id="L57">                compiler.addInstruction(new TSTO(classe.getName().getClassDefinition().getNumberOfFields()));</span>
+<span class="nc" id="L58">                compiler.addInstruction(new BOV(new Label(&quot;stack_overflow_error&quot;)));</span>
+            }
+
+
+            //Sauvegarde du contexte (R2, R3...)
+<span class="nc" id="L63">            int nbRegASauvegarder = classDef.getNbNbRegEstimee(); </span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            if(nbRegASauvegarder &gt; 0){</span>
+                //compiler.addInstruction(new TSTO(nbRegASauvegarder));
+<span class="nc" id="L66">                compiler.setAutrePush(nbRegASauvegarder);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">                for(int i = 2; i &lt; 2 + nbRegASauvegarder; i++){</span>
+<span class="nc" id="L68">                    compiler.addInstruction(new PUSH(Register.getR(i)));</span>
+                }
+            }
+
+
+            // on initialise à 0 dabord toutes les vars de la classe fille 
+<span class="nc" id="L74">            GPRegister objet = compiler.utiliserRegistre();</span>
+<span class="nc" id="L75">            GPRegister nullReg = compiler.utiliserRegistre();</span>
+<span class="nc" id="L76">            compiler.addInstruction(new LOAD(new RegisterOffset(-2, Register.LB), objet));</span>
+<span class="nc" id="L77">            boolean nullChargee = false;</span>
+<span class="nc" id="L78">            boolean zeroRegChargee = false;</span>
+<span class="nc" id="L79">            boolean zeroFloatChargee = false;</span>
+
+            
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            for(AbstractDeclField abstractField : classe.getFields().getList()){</span>
+<span class="nc" id="L83">                FieldDefinition fieldDef = ((DeclField)abstractField).getFieldName().getFieldDefinition();</span>
+                // selon le type de field
+<span class="nc" id="L85">                Type type = fieldDef.getType();</span>
+<span class="nc" id="L86">                RegisterOffset fieldOffsetRegistre = new RegisterOffset(fieldDef.getIndex() + 1, objet);</span>
+
+
+                // on stocke 0 (pour int et bool) ou 0.0f (pour float) ici :
+                // petite optim, on ne charge q'une fois ces valeurs !
+<span class="nc bnc" id="L91" title="All 4 branches missed.">                if(type.isInt() || type.isBoolean()){</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">                    if(!zeroRegChargee){</span>
+<span class="nc" id="L93">                        compiler.addInstruction(new LOAD(0, Register.R0));</span>
+<span class="nc" id="L94">                        zeroRegChargee = true;</span>
+                    }
+<span class="nc" id="L96">                    compiler.addInstruction(new STORE(Register.R0, fieldOffsetRegistre));</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                }else if(type.isFloat()){</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">                    if(!zeroFloatChargee){</span>
+<span class="nc" id="L99">                        compiler.addInstruction(new LOAD(new ImmediateFloat(0.0f), Register.R1));</span>
+<span class="nc" id="L100">                        zeroFloatChargee = true;</span>
+                    }
+<span class="nc" id="L102">                    compiler.addInstruction(new STORE(Register.R1, fieldOffsetRegistre));</span>
+                }else{
+<span class="nc bnc" id="L104" title="All 2 branches missed.">                    if(!nullChargee){</span>
+<span class="nc" id="L105">                        compiler.addInstruction(new LOAD(new NullOperand(), nullReg));</span>
+<span class="nc" id="L106">                        nullChargee = true;</span>
+                    }
+<span class="nc" id="L108">                    compiler.addInstruction(new STORE(nullReg, fieldOffsetRegistre));</span>
+                }
+                        
+<span class="nc" id="L111">            }</span>
+
+            // liberation des registres utiliser pour le nullreg
+<span class="nc" id="L114">            compiler.libererRegistre(); // nullReg</span>
+
+
+
+
+            // s'il la classe a une mere alors on appelle son init
+<span class="nc" id="L120">            AbstractIdentifier superclass = classe.getSuperClass();</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            if(superclass != null){</span>
+<span class="nc" id="L122">                compiler.addInstruction(new PUSH(objet));</span>
+<span class="nc" id="L123">                compiler.addInstruction(new BSR(superclass.getClassDefinition().getLabelInit()));</span>
+<span class="nc" id="L124">                compiler.addInstruction(new POP(objet));</span>
+            }
+
+            // on restaure le gestionnaire afin d'optimiser l'utilisation des registres
+<span class="nc" id="L128">            compiler.resetGestionnaireRegistres(false);</span>
+<span class="nc" id="L129">            objet =compiler.utiliserRegistre();</span>
+<span class="nc" id="L130">            compiler.addInstruction(new LOAD(new RegisterOffset(-2, Register.LB), objet));</span>
+
+
+            // et enfin on initialise les champs de la classe fille qui sont explicitement initialisées
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            for(AbstractDeclField abstractField : classe.getFields().getList()){</span>
+<span class="nc" id="L135">                DeclField field = (DeclField)abstractField;</span>
+
+<span class="nc" id="L137">                DVal expr = field.getInitialization().codeGen(compiler);</span>
+
+                
+
+                // s'il ya bien une initialisation, alors elle ecrase ce qui est deja dans le champs de ce objet
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                if(expr != null){</span>
+                    // on gere le fait que  reg peut etre un immediat :
+<span class="nc bnc" id="L144" title="All 2 branches missed.">                    if(expr instanceof GPRegister == false){</span>
+<span class="nc" id="L145">                        compiler.addInstruction(new LOAD(expr, Register.R0));</span>
+<span class="nc" id="L146">                        expr = Register.R0;</span>
+                    }
+<span class="nc" id="L148">                    compiler.addInstruction(new STORE((GPRegister)expr, new RegisterOffset(field.getFieldName().getFieldDefinition().getIndex() + 1, objet)));</span>
+
+                    // on libere le registre utiliser pour. expr dans ce cas
+<span class="nc" id="L151">                    compiler.libererRegistre();</span>
+                }
+
+<span class="nc" id="L154">            }</span>
+
+            // on libere le registre utiliser pour l'objet
+<span class="nc" id="L157">            compiler.libererRegistre();</span>
+        
+
+            // on restaure le contexte (R2, R3...)// Restauration du contexte
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            if(nbRegASauvegarder &gt; 0){</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">                for(int i = 1 + nbRegASauvegarder; i &gt;= 2; i--){</span>
+                    
+<span class="nc" id="L164">                    compiler.addInstruction(new POP(Register.getR(i)));</span>
+                } 
+            }
+<span class="nc" id="L167">        compiler.addInstruction(new RTS());</span>
+<span class="nc" id="L168">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,15 @@
+// Description:
+//    Vérifie que le compilateur distingue le champ 'x' du paramètre 'x'.
+// Resultats:
+//    Succès (Passe 3)
+class A {
+    int x = 1;
+    void m(int x) {
+        println(x);      // Doit être le paramètre
+        println(this.x); // Doit être le champ
+    }
+}
+{
+    A a = new A();
+    a.m(2);
+}

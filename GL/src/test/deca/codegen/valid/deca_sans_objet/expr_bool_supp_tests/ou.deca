@@ -1,0 +1,12 @@
+// Description :
+// Test de l'opérateur 'ou' logique.
+//
+// Resultats :
+// Fichier .res manquant
+
+{
+    boolean a = true;
+    if (a || false) {
+        print("OR OK");
+    }
+}

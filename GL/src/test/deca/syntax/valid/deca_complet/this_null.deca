@@ -1,0 +1,9 @@
+// Description :
+//  Teste l'utilisation de this et de la valeur null.
+//
+// Resultats :
+// OK
+{
+    Object o;
+    o = null;
+}

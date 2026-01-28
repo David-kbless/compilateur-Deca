@@ -1,0 +1,15 @@
+// Description:
+//    test de while
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+        int x = 0 ;
+        while (x < 10) {
+            x = x + 1;
+        }
+}

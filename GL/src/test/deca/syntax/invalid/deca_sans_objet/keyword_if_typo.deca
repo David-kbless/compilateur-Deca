@@ -1,0 +1,11 @@
+// Description :
+// test d’un mot-cle invalide (iff)
+//
+// Resultat :
+// Erreur syntaxique
+// Ligne 9 : mot-cle attendu
+
+{
+iff (true) {
+}
+}

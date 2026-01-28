@@ -1,0 +1,17 @@
+// Description:
+// test des acces aux membres proteges d'une meme classe
+//
+// Resultats:
+// Ligne 13: x est un champ protégé inaccessible
+//
+// Historique:
+//    cree le 15/01/2026
+class A{
+    protected int x;
+}
+
+{
+    A a = new A();
+    a.x = 19262;
+    print(a.x);
+}

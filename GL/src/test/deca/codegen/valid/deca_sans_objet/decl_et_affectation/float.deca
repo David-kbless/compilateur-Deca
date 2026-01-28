@@ -1,0 +1,11 @@
+// Description :
+// Test de déclaration et d'affectation d'un flottant.
+//
+// Resultats :
+// 1.50000e+00
+
+{
+    float x;
+    x = 1.5;
+    print(x);
+}

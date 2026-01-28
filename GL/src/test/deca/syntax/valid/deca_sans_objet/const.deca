@@ -1,0 +1,10 @@
+// Description :
+//  Teste les divisions simples sans objet.
+//
+// Resultats :
+// OK
+{
+    int a = 20;
+    int c = a / 4;
+    println(c);
+}

@@ -1,0 +1,13 @@
+// Description :
+// Test de if avec une expression complexe.
+//
+// Resultats :
+// 3
+
+{
+    int x;
+    x = 3;
+    if (x > 1 && x < 5) {
+        print(x);
+    }
+}

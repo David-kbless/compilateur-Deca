@@ -1,0 +1,9 @@
+// Description :
+//  Teste l'héritage entre classes.
+//
+// Resultats :
+// OK
+class B extends A {
+}
+{
+}

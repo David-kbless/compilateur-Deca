@@ -1,0 +1,14 @@
+// Description :
+// Test de while avec une expression complexe.
+//
+// Resultats :
+// 109876
+
+{
+    int x;
+    x = 10;
+    while (x > 0 && x != 5) {
+        print(x);
+        x = x - 1;
+    }
+}

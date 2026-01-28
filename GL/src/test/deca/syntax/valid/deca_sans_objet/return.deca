@@ -1,0 +1,8 @@
+// Description :
+//  Teste les instructions return sans objet.
+//
+// Resultats :
+// OK
+{
+    return 3;
+}

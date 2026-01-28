@@ -1,0 +1,47 @@
+// Description :
+//  Teste diverses expressions et appels de méthodes avec objet.
+//
+// Resultats :
+// OK
+class Personne {
+    int nb;
+
+    public void init(int n) {
+        this.nb = n;
+    }
+
+    public void afficherNb() {
+        print(this.nb);
+    }
+}
+
+class Etudiant extends Personne {
+    int age;
+
+    public void init(int n) {
+        ((Personne)(this)).init(n);
+        this.age = 23;
+    }
+
+    public void afficherAge() {
+        print(this.age);
+        println();
+    }
+}
+
+{
+        Etudiant e = new Etudiant();
+        e.init(1);
+
+        // Test d'appel de méthode
+        e.afficherNb();   // Méthode héritée
+        print("- David : ");
+        e.afficherAge();   // Méthode propre
+
+        // Test de sélection
+        print(e.nb);      // Accès à l'attribut hérité
+        print("- David : ");
+        print(e.age);   // Accès à l'attribut spécifique
+        println();
+}
+

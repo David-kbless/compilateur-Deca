@@ -1,0 +1,14 @@
+// Description :
+// test de déclaration de variables
+//
+// Resultats :
+// Ligne 10: z inconnu
+//
+// Historique:
+// cree le 8/01/2026
+
+{
+        int x = 2 ;
+        int y = 5 ;
+        z = x + y ;
+}

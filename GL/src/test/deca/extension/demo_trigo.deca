@@ -1,0 +1,124 @@
+#include "Math.decah"
+
+/*
+ * Démonstration technico-commerciale de l'extension TRIGO
+ * Fonctions testées : sin, cos, atan, asin, ulp
+ *
+ * Principe :
+ *  - Certaines lignes provoquent volontairement des erreurs
+ *  - On les commente / décommente pour illustrer les bonnes pratiques
+ */
+
+{
+    Math m = new Math();
+
+    float x;
+    float y;
+    float ulp;
+    float err;
+
+    println("===== DEMONSTRATION EXTENSION TRIGO =====");
+
+    /* ======================================================
+     * 1) CAS D'ERREUR : asin hors domaine
+     *    Domaine valide : [-1 ; 1]
+     * ======================================================
+     */
+
+    println("\n--- Test asin : erreur de domaine ---");
+
+    // ERREUR : valeur hors domaine
+
+    // CORRECTION :
+    x = m.asin(0.7);
+    print("asin(0.7) = ");
+    println(x);
+
+    err = 0.775397 - x; // valeur théorique
+    print("Erreur absolue = ");
+    println(err);
+
+    ulp= m.ulp(x);
+    print("ULP(asin(0.7)) = ");
+    println(ulp);
+
+    /* ======================================================
+     * 2) PRECISION : sin(pi)
+     *    Théoriquement sin(pi) = 0
+     * ======================================================
+     */
+
+    println("\n--- Test precision sin(pi) ---");
+
+    x = m.sin(m.PI);
+    print("sin(pi) = ");
+    println(x);
+
+    err = 0.0 - x;
+    print("Erreur absolue = ");
+    println(err);
+    ulp= m.ulp(x);
+    print("ULP(sin(pi)) = ");
+    println(ulp);
+    
+
+    /* ======================================================
+     * 3) COMPARAISON sin(pi/2)
+     * ======================================================
+     */
+
+    println("\n--- Test sin(pi/2) ---");
+
+    x = m.sin(m.PI / 2);
+    print("sin(pi/2) = ");
+    println(x);
+
+    err = 1.0 - x;
+    print("Erreur absolue = ");
+    println(err);
+
+    ulp= m.ulp(x);
+    print("ULP(sin(pi/2)) = ");
+    println(ulp);
+    
+
+    /* ======================================================
+     * 4) atan : comportement stable : atan(0.8) = 0.674741
+     * ======================================================
+     */
+
+    println("\n--- Test atan ---");
+
+    x = m.atan(0.8);
+    print("atan(0.8) = ");
+    println(x);
+
+    err = 0.674741 - x;
+    print("Erreur absolue = ");
+    println(err);
+
+    ulp= m.ulp(x);
+    print("ULP(atan(0.8)) = ");
+    println(ulp);
+
+    /* ======================================================
+     * 5) cos(pi) : valeur attendue -1
+     * ======================================================
+     */
+
+    println("\n--- Test cos(pi) ---");
+
+    x = m.cos(m.PI);
+    print("cos(pi) = ");
+    println(x);
+
+    err = -1.0 - x;
+    print("Erreur absolue = ");
+    println(err);
+
+    ulp= m.ulp(x);
+    print("ULP(cos(pi)) = ");
+    println(ulp);
+
+    println("\n===== FIN DEMONSTRATION =====");
+}

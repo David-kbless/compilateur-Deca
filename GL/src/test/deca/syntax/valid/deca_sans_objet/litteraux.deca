@@ -1,0 +1,11 @@
+// Description :
+//  Teste les littéraux de base sans objet.
+//
+// Resultats :
+// OK
+{
+    int i = 42;
+    float f = 3.14;
+    boolean b = true;
+    string s = "hello";
+}

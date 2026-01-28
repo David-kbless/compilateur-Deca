@@ -1,0 +1,17 @@
+// Description:
+//    test objet fournit par le cahier de charge
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+class A {
+}
+
+{
+    A a = new A();
+    A b = new A();
+    boolean c = a.equals(b);
+}

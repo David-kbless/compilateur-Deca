@@ -1,0 +1,14 @@
+// Description :
+// affectation sur une expression non assignable
+//
+// Resultat :
+// Erreur contextuelle
+// Ligne 10 : Invalid LValue
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+    float x = 2.1;
+    int y = (void) (x) ;
+}

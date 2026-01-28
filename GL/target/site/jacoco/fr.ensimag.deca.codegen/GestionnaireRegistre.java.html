@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestionnaireRegistre.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.codegen</a> &gt; <span class="el_source">GestionnaireRegistre.java</span></div><h1>GestionnaireRegistre.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.codegen;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.instructions.POP;
+import fr.ensimag.ima.pseudocode.instructions.PUSH;
+
+/**
+ * Gestionnaire des registres
+ * 
+ * @author gl54
+ * @date 01/01/2026
+ */
+
+public class GestionnaireRegistre {
+    // gestion des utilisation des registres : 
+<span class="fc" id="L18">    private int compteurRegistre = 2;</span>
+<span class="fc" id="L19">    private int nbRegStokes = 0;</span>
+    private int rMax;
+
+
+<span class="fc" id="L23">    public GestionnaireRegistre(){</span>
+<span class="fc" id="L24">    }</span>
+
+    public void setRMax(int rMax){
+<span class="fc" id="L27">        this.rMax = rMax;</span>
+<span class="fc" id="L28">    }</span>
+
+
+    
+    public GPRegister utiliserRegistre(DecacCompiler compiler) {
+
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if(compteurRegistre &lt; rMax){</span>
+<span class="fc" id="L35">            return Register.getR(compteurRegistre++);</span>
+        } else {
+<span class="fc" id="L37">            nbRegStokes++;</span>
+            // on push le dernier registre dans la pile et on libere le Rmax
+<span class="fc" id="L39">            compiler.addInstruction(new PUSH(Register.getR(rMax - 1)));</span>
+<span class="fc" id="L40">            return Register.getR(rMax - 1);</span>
+        }
+        
+    }
+
+    public void libererRegistre(DecacCompiler compiler) {
+
+        // s'il ya des registre dans la pile
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if(nbRegStokes &gt; 0){</span>
+<span class="fc" id="L49">            nbRegStokes--;</span>
+<span class="fc" id="L50">            compiler.addInstruction(new POP(Register.getR(rMax - 1)));</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        }else if(compteurRegistre &gt; 2){</span>
+<span class="fc" id="L52">            compteurRegistre--;</span>
+        }
+<span class="fc" id="L54">    }</span>
+
+    public int simulerAllocationRegistre(){
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if(compteurRegistre &lt; rMax){</span>
+<span class="fc" id="L58">            return compteurRegistre++;</span>
+        } else {
+<span class="nc" id="L60">            nbRegStokes++;</span>
+<span class="nc" id="L61">            return rMax - 1;</span>
+        }
+        
+    }
+    public void simulerLiberationRegistre(){
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if(nbRegStokes &gt; 0){</span>
+<span class="nc" id="L67">            nbRegStokes--;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        }else if(compteurRegistre &gt;= 2){</span>
+<span class="nc" id="L69">            compteurRegistre--;</span>
+        }
+<span class="nc" id="L71">    }</span>
+
+<span class="fc" id="L73">    protected int saveCompteurRegistre = 0;</span>
+<span class="fc" id="L74">    protected int saveNbRegStokes = 0;</span>
+
+
+
+    public void resetGestionnaireRegistre(boolean reset){
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if(reset){</span>
+<span class="nc" id="L80">            compteurRegistre = saveCompteurRegistre;</span>
+<span class="nc" id="L81">            nbRegStokes = saveNbRegStokes;</span>
+        }else{
+<span class="fc" id="L83">            compteurRegistre = 2;</span>
+<span class="fc" id="L84">            nbRegStokes = 0;</span>
+        }
+<span class="fc" id="L86">    }</span>
+
+    public void commencerSimulationRegistre(boolean reset){
+        // on sauvegarde le contexte d'allocation de registre : 
+<span class="fc" id="L90">        saveCompteurRegistre = compteurRegistre;</span>
+<span class="fc" id="L91">        saveNbRegStokes = nbRegStokes;</span>
+        
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">        if(reset){</span>
+
+<span class="fc" id="L95">            compteurRegistre = 2;</span>
+<span class="fc" id="L96">            nbRegStokes = 0;</span>
+        }
+
+<span class="fc" id="L99">    }</span>
+
+
+
+    public int getCompteurRegistre() { 
+<span class="fc" id="L104">        return compteurRegistre; </span>
+    }
+
+    public void setCompteurRegistre(int v) { 
+<span class="fc" id="L108">        this.compteurRegistre = v; </span>
+<span class="fc" id="L109">    }</span>
+
+    public int getNbRegStokes() { 
+<span class="fc" id="L112">        return nbRegStokes; </span>
+    }
+
+    public void setNbRegStokes(int v) { 
+<span class="fc" id="L116">        this.nbRegStokes = v; </span>
+<span class="fc" id="L117">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

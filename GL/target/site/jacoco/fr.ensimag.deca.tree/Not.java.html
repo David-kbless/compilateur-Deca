@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Not.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">Not.java</span></div><h1>Not.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.instructions.BRA;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+import fr.ensimag.ima.pseudocode.instructions.OPP;
+import fr.ensimag.ima.pseudocode.instructions.SUB;
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+
+/**
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class Not extends AbstractUnaryExpr {
+
+    public Not(AbstractExpr operand) {
+<span class="fc" id="L25">        super(operand);</span>
+<span class="fc" id="L26">    }</span>
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv,
+            ClassDefinition currentClass) throws ContextualError {
+<span class="fc" id="L31">        Type t = getOperand().verifyExpr(compiler, localEnv, currentClass);</span>
+<span class="fc" id="L32">        Type resultType = typeUnaryOp(compiler, t);</span>
+<span class="fc" id="L33">        this.setType(resultType);</span>
+<span class="fc" id="L34">        return resultType;</span>
+    }
+
+    @Override
+    protected Type typeUnaryOp(DecacCompiler compiler, Type t) throws ContextualError {
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (t.isBoolean()){</span>
+<span class="fc" id="L40">            return t;</span>
+        }
+
+<span class="nc" id="L43">        throw new ContextualError(&quot;Operator NOT cannot be applied on type &quot; + t, getLocation());</span>
+    }
+
+
+    @Override
+    protected String getOperatorName() {
+<span class="nc" id="L49">        return &quot;!&quot;;</span>
+    }
+
+        // protected GPRegister codeGenOperationUnaire(DecacCompiler compiler, GPRegister operande){
+        //     // on va utiliser la technique du 1-phi qui retourne le not(boolean)
+
+        //     // R0 = 1
+        //     compiler.addInstruction(new LOAD(1, Register.R0));
+        //     // R0 = R0 - operande (pour determiner le not)
+        //     compiler.addInstruction(new SUB(operande, Register.R0));
+
+        //     // on retourne R0 dans operande, une erreur qui nous as bien coute du temps !!!
+        //     compiler.addInstruction(new LOAD(Register.R0, operande));
+
+        //     return operande;
+        // }
+
+
+    // @Override
+    // protected void codeGenVrai(DecacCompiler compiler, Label E) {
+    //     // @Ousmane : !C est vrai si C est faux [cite: 71]
+    //     getOperand().codeGenFaux(compiler, E);
+    // }
+
+    // @Override
+    // protected void codeGenFaux(DecacCompiler compiler, Label E) {
+    //     // @Ousmane : !C est faux si C est vrai [cite: 72]
+    //     getOperand().codeGenVrai(compiler, E);
+    // }
+
+    @Override
+protected void codeGenVrai(DecacCompiler compiler, Label E) {
+    // @Ousmane : L'élimination à la volée : !C est vrai si C est faux
+<span class="nc" id="L82">    getOperand().codeGenFaux(compiler, E);</span>
+<span class="nc" id="L83">}</span>
+
+@Override
+protected void codeGenFaux(DecacCompiler compiler, Label E) {
+    // @Ousmane : !C est faux si C est vrai
+<span class="fc" id="L88">    getOperand().codeGenVrai(compiler, E);</span>
+<span class="fc" id="L89">}</span>
+
+    @Override
+    protected GPRegister codeGenOperationUnaire(DecacCompiler compiler, GPRegister operande) {
+        // @Ousmane : Méthode court-circuitée par le flot de contrôle
+<span class="nc" id="L94">        return operande;</span>
+    }
+
+    @Override
+    protected GPRegister codeGenInst(DecacCompiler compiler) {
+<span class="fc" id="L99">        GPRegister reg = compiler.utiliserRegistre();</span>
+<span class="fc" id="L100">        int labelId = compiler.getAndIncOpBool();</span>
+<span class="fc" id="L101">        Label eFaux = new Label(&quot;Not_Val_Faux.&quot; + labelId);</span>
+<span class="fc" id="L102">        Label eFin = new Label(&quot;Not_Val_Fin.&quot; + labelId);</span>
+
+        // @Ousmane : On utilise le flot de contrôle pour déterminer la valeur
+        // Si !C est FAUX, on branche vers le chargement du 0
+<span class="fc" id="L106">        this.codeGenFaux(compiler, eFaux);</span>
+
+        // Si on n'a pas branché, c'est que !C est VRAI
+<span class="fc" id="L109">        compiler.addInstruction(new LOAD(1, reg));</span>
+<span class="fc" id="L110">        compiler.addInstruction(new BRA(eFin));</span>
+
+<span class="fc" id="L112">        compiler.addLabel(eFaux);</span>
+<span class="fc" id="L113">        compiler.addInstruction(new LOAD(0, reg));</span>
+
+<span class="fc" id="L115">        compiler.addLabel(eFin);</span>
+<span class="fc" id="L116">        return reg;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

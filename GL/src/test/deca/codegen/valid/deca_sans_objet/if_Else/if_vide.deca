@@ -1,0 +1,10 @@
+// Description :
+// Test de if avec un bloc vide.
+//
+// Resultats :
+// 
+
+{
+    if (true) {
+    }
+}

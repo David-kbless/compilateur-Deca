@@ -1,0 +1,13 @@
+// Description:
+//    test de cast
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+    float x = 2.1;
+    int y = (int) (x) ;
+}

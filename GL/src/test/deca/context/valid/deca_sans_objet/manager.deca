@@ -1,0 +1,16 @@
+// Test de pression sur les registres
+// Lancer avec decac -r 4 test.deca
+{
+    int a = 1;
+    int b = 2;
+    int c = 3;
+    int d = 4;
+    int e = 5;
+    int res;
+
+    // Expression qui demande beaucoup de registres simultanés
+    // On calcule (d + e) en dernier pour forcer le stockage de tout le reste
+    res = (a + (b + (c * (d + e))));
+    
+    println(res); // Doit afficher 28 (1 + (2 + (3 * 9)))
+}

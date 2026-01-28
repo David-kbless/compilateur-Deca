@@ -1,0 +1,16 @@
+// Description: 
+// Cast d'une class à une autre sans lien entre les deux
+//
+// Résultats:
+// Ligne 12: Erreur (cast incompatible)
+//
+// Historique:
+//    cree le 15/01/2026
+
+class A{}
+class B{}
+{
+    A a = new A();
+    B b = new B();
+    a = (A) (b); 
+}

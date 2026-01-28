@@ -1,0 +1,16 @@
+// Description :
+// Test de l'opérateur d'égalité.
+//
+// Resultats :
+// ok
+
+{
+    int x;
+    x = 3;
+    
+    if(x == 3){
+        print("ok");
+    }else{
+        print("Erreur");
+    }
+}

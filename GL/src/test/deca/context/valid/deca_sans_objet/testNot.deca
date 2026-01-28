@@ -1,0 +1,13 @@
+// Description:
+//    test de not
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+    boolean y = true ;
+    y = !y ;
+}

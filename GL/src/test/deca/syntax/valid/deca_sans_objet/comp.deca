@@ -1,0 +1,11 @@
+// Description :
+//  Teste les comparaisons avec négation sans objet.
+//
+// Resultats :
+// OK
+{
+    int a = 3;
+    int b = 5;
+    boolean c = !(a < b);
+    println(c);
+}

@@ -1,0 +1,14 @@
+// Description :
+// Test de while avec un cast.
+//
+// Resultats :
+// 3.00000e+002.00000e+001.00000e+00
+
+{
+    float x;
+    x = 3.0;
+    while ((int)(x) > 0) {
+        print(x);
+        x = x - 1.0;
+    }
+}

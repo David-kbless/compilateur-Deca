@@ -1,0 +1,9 @@
+// Description :
+//  Teste les instructions d'affichage printx et printlnx.
+//
+// Resultats :
+// OK
+{
+    printx(65);
+    printlnx(66);
+}

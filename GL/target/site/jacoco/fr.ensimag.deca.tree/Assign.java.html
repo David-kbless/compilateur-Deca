@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Assign.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">Assign.java</span></div><h1>Assign.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ClassType;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.context.FieldDefinition;
+import fr.ensimag.ima.pseudocode.DAddr;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.RegisterOffset;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+import fr.ensimag.ima.pseudocode.instructions.STORE;
+
+/**
+ * Assignment, i.e. lvalue = expr.
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class Assign extends AbstractBinaryExpr {
+
+    @Override
+    public AbstractLValue getLeftOperand() {
+        // The cast succeeds by construction, as the leftOperand has been set
+        // as an AbstractLValue by the constructor.
+<span class="fc" id="L30">        return (AbstractLValue)super.getLeftOperand();</span>
+    }
+
+    public Assign(AbstractLValue leftOperand, AbstractExpr rightOperand) {
+<span class="fc" id="L34">        super(leftOperand, rightOperand);</span>
+<span class="fc" id="L35">    }</span>
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv,
+            ClassDefinition currentClass) throws ContextualError {
+
+<span class="fc" id="L41">        Type leftType = getLeftOperand().verifyExpr(compiler, localEnv, currentClass);</span>
+
+<span class="fc" id="L43">        setRightOperand(getRightOperand().verifyRValue(compiler, localEnv, currentClass, leftType));</span>
+<span class="fc" id="L44">        Type rightType = getRightOperand().getType();</span>
+<span class="fc" id="L45">        assignCompatible(leftType, rightType, this.getLocation());</span>
+<span class="fc" id="L46">        this.setType(leftType);</span>
+<span class="fc" id="L47">        return leftType;</span>
+    }
+
+
+    public static void assignCompatible(Type target, Type exprType, Location loc) throws ContextualError {
+        // Same type OK!
+<span class="pc bpc" id="L53" title="1 of 6 branches missed.">        if (exprType.sameType(target) &amp;&amp; !(target.isClass() || exprType.isClassOrNull())) return;</span>
+
+        // int -&gt; float OK!
+<span class="pc bpc" id="L56" title="1 of 4 branches missed.">        if (target.isFloat() &amp;&amp; exprType.isInt()) return;</span>
+
+        // Class case
+<span class="pc bpc" id="L59" title="1 of 4 branches missed.">        if(target.isClass() &amp;&amp; exprType.isClassOrNull()){</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">            if(exprType.isNull()) return;</span>
+
+<span class="fc" id="L62">            ClassType targetClass = target.asClassType(&quot;Conversion from type &quot; + target + &quot; to ClassType failed&quot;, loc);</span>
+<span class="fc" id="L63">            ClassType exprClass = exprType.asClassType(&quot;Conversion from type &quot; + exprType + &quot; to ClassType failed&quot;, loc);</span>
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if(exprClass.isSubClassOf(targetClass)) return;</span>
+        }
+
+<span class="fc" id="L68">        throw new ContextualError(&quot;Type mismatch: cannot assign/cast &quot; + exprType + &quot; to &quot; + target, loc);</span>
+    }
+
+    @Override
+    protected Type typeOfOperation(DecacCompiler compiler, Type t1, Type t2) throws ContextualError{
+<span class="nc" id="L73">        return t1;</span>
+    }
+    
+    @Override
+    protected String getOperatorName() {
+<span class="fc" id="L78">        return &quot;=&quot;;</span>
+    }
+
+    @Override
+    protected DVal codeGenInst(DecacCompiler compiler){
+
+        // on calcul l'expression a stocker
+<span class="fc" id="L85">        DVal expressionAStoker = getRightOperand().codeGenInst(compiler);</span>
+
+<span class="fc" id="L87">        DAddr addr = null;</span>
+<span class="fc" id="L88">        AbstractLValue leftOperand = getLeftOperand();</span>
+
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if(leftOperand instanceof Selection){</span>
+<span class="nc" id="L91">            addr = leftOperand.getDAddr(compiler);</span>
+        }else{
+<span class="fc" id="L93">            AbstractIdentifier identifier = (AbstractIdentifier)getLeftOperand();</span>
+
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">            if (identifier.getExpDefinition().isField()) {</span>
+<span class="nc" id="L96">                FieldDefinition fieldDef = (FieldDefinition) identifier.getExpDefinition();</span>
+<span class="nc" id="L97">                int offset = fieldDef.getIndex() + 1;</span>
+
+                // On charge &quot;this&quot; dans un registre
+<span class="nc" id="L100">                GPRegister regThis = compiler.utiliserRegistre();</span>
+<span class="nc" id="L101">                compiler.addInstruction(new LOAD(new RegisterOffset(-2, Register.LB), regThis));</span>
+                
+                // On stocke la valeur de droite dans le champ
+<span class="nc" id="L104">                addr = new RegisterOffset(offset, regThis);</span>
+                // on libère le registre utilisé pour this
+<span class="nc" id="L106">                compiler.libererRegistre();</span>
+<span class="nc" id="L107">            } else {</span>
+                // Cas classique : variable locale ou paramètre
+            
+<span class="fc" id="L110">                addr = identifier.getExpDefinition().getOperand();</span>
+                
+            }
+        }
+        
+
+
+        // si l'expression a stoker n'est pas dans un registre on la charge d'abord dans un registre
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if(! (expressionAStoker instanceof Register)){</span>
+<span class="fc" id="L119">            compiler.addInstruction(new LOAD(expressionAStoker, Register.R0));</span>
+<span class="fc" id="L120">            expressionAStoker = Register.R0;</span>
+        }
+
+        // on l'a stocke finalement
+<span class="fc" id="L124">        compiler.addInstruction(new STORE((GPRegister)expressionAStoker, addr));</span>
+
+<span class="fc" id="L126">        return expressionAStoker;</span>
+    }
+
+
+    
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

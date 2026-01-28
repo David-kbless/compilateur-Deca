@@ -1,0 +1,17 @@
+// Description :
+// Test de comparaison de flottants.
+//
+// Resultats :
+// ok
+
+{
+    float x;
+    x = 2.5;
+    
+    if(!(x >= 2.0)){
+        print("Erreur");
+    }else{
+        print("ok");
+    }
+    
+}

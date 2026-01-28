@@ -1,0 +1,56 @@
+// Test des erreurs de context
+
+// commande de compilation :
+//    decac src/test/deca/demo_soutenance/Partie_C/messages_erreurs/demo_context.deca
+//    ima src/test/deca/demo_soutenance/Partie_C/messages_erreurs/demo_context.ass
+
+
+//  exec-decac ../Partie_C/messages_erreurs/demo_context.deca 
+
+
+// class A {
+//     protected int x;
+
+//     void initX(int x) {
+//         x = x;
+//         // this.x = x;
+//     }
+
+//     int getX() {
+//         return x;
+//     }
+
+// }
+
+class B extends A{
+    int initX(int x, boolean y) {
+        (A) (this).initX(x * 2);
+    }
+
+    // int initX(int x){
+    //     (A) (this).initX(x * 2);
+    // }
+    
+    // void initX(int x) {
+    //     (A) (this).initX(x * 2);
+    // }
+    
+}
+
+{
+    int y;
+    int z;
+    A a = new B();
+    B b = new B();
+    print(a instanceof A);
+    // if (a instanceof B) {
+    //     print("true\n");
+    // }
+    b.x = 10 * 2.0;
+    // b.initX(10);
+    z = b.getX();
+    y = z % 3.0;
+    // y = z % 3;
+    println(b.getX());
+    println(y);
+}

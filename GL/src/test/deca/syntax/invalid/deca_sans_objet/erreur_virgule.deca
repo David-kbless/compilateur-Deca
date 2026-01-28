@@ -1,0 +1,9 @@
+// Description :
+//  test erreur virgule
+//
+// Resultat :
+// Erreur syntaxique
+// Ligne 8 : caractère inattendu ','
+{
+    int a, ;
+}

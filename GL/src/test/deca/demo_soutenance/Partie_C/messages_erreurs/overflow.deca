@@ -1,0 +1,28 @@
+// commande de compilation :
+//    decac src/test/deca/demo_soutenance/Partie_C/messages_erreurs/overflow.deca
+//    ima src/test/deca/demo_soutenance/Partie_C/messages_erreurs/overflow.ass
+
+
+//   exec-decac ../Partie_C/messages_erreurs/overflow.deca 
+
+
+// Description :
+//    Test de débordement de pile via une récursion infinie.
+//
+// Resultats :
+//    Error: Stack Overflow
+//
+// Historique :
+//    cree le 22/01/2026
+
+class Infinite {
+    void overflow() {
+        // Chaque appel consomme de la place sur la pile
+        this.overflow();
+    }
+}
+
+{
+    Infinite i = new Infinite();
+    i.overflow();
+}

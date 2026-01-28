@@ -1,0 +1,93 @@
+// Fichier de démonstration des erreurs lexicales et syntaxiques
+
+// commande de compilation :
+//  decac src/test/deca/demo_soutenance/Partie_A/demo_lex_synt.deca
+//  ima src/test/deca/demo_soutenance/Partie_A/demo_lex_synt.ass
+
+
+
+// exec-decac demo_lex_synt.deca 
+
+
+
+{
+    // ================================
+    // DÉMONSTRATION ANALYSE LEXICALE
+    // ================================
+
+    int x;
+    int y;
+    // TOUTES LES DECLARATIONS DOIVENT ÊTRE FAITES AVANT LES INSTRUCTIONS
+    // boolean b;
+    
+    // ERREUR LEXICALE : caractère interdit
+     x = 5 @ 3;
+
+    // CORRECT
+    // x = 5;
+    // y = 3;
+
+    // ================================
+    // DÉMONSTRATION ANALYSE SYNTAXIQUE
+    // ================================
+    // Identifiant invalide
+     int 1x;
+
+    // ERREUR SYNTAXIQUE : point-virgule manquant
+     x = x + 1
+
+    // CORRECT
+    // x = x + 1;
+
+    // ERREUR SYNTAXIQUE : parenthèse non fermée
+     y = (x + 2;
+
+    // CORRECT
+    // y = (x + 2);
+
+    // ================================
+    // PRIORITÉS & EXPRESSIONS
+    // ================================
+
+    // ERREUR SYNTAXIQUE : opérateur manquant
+     x = 3 4;
+
+    // CORRECT
+    //x = 1 + 2 * 3;
+
+    // Parenthèses
+    y = (1 + 2) * 3;
+
+    // ================================
+    // BOOLÉENS & COMPARAISONS
+    // ================================
+
+    boolean b;
+
+
+    // ERREUR SYNTAXIQUE : opérateur incorrect
+     b = true &&&& false;
+
+    // CORRECT
+    // b = true && false;
+
+    // Comparaisons
+    b = (x < y) || (x == y);
+
+    // ================================
+    // AFFICHAGE
+    // ================================
+
+    print(x);
+    print(y);
+
+    // ERREUR : On ne peut pas afficher une valeur booléenne
+    print(b);
+
+    // CORRECT
+    // if (b) {
+    //     println("b est vrai");
+    // } else {
+    //     println("b est faux");
+    // }
+}

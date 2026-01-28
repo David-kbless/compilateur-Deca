@@ -1,0 +1,4 @@
+{
+    float f = 340282346638528859811704183484516925440.0;  // plus grand floatant
+    println(f + f + f);
+}

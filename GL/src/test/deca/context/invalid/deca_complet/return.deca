@@ -1,0 +1,14 @@
+// Description:
+//    Tentative de return dans une methode void
+// Resultats:
+//    Ligne 12: return incompatible
+//
+// Historique:
+//    cree le 10/01/2026
+
+class A{ 
+    void meth(){
+        int x;
+        return x; 
+    } 
+}

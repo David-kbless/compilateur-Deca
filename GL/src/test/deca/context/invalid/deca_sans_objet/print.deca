@@ -1,0 +1,12 @@
+// Description :
+// test de déclaration des variables
+//
+// Resultats :
+// Ligne 11: type incompatible pour print
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+    print(true);
+}

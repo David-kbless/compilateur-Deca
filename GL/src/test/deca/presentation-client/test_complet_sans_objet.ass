@@ -1,0 +1,144 @@
+; start main program
+	TSTO #6
+	BOV stack_overflow_error
+	ADDSP #6
+; Construction de la VTable de de Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Variable Declarations : 
+; Beginning of main instructions:
+	WSTR "--- Generateur d'erreurs controlees ---"
+	WNL
+	WSTR "Entrez un nombre entier (dividende) : "
+	RINT
+	BOV io_error
+	LOAD R1, R2
+	STORE R2, 3(GB)
+	WSTR "Entrez un diviseur (int): "
+	RINT
+	BOV io_error
+	LOAD R1, R2
+	STORE R2, 4(GB)
+	WNL
+	WNL
+	WSTR "Determination du signe du diviseur... : "
+	WNL
+	WSTR "saisissez un entier pour continuer  : "
+	RINT
+	BOV io_error
+	LOAD R1, R2
+	LOAD 4(GB), R3
+	CMP #0, R3
+	BNE E_Sinon.1
+	WSTR " Vous avez saisie un diviseur null"
+	WNL
+	BRA E_Fin_if.1
+E_Sinon.1:
+	LOAD 4(GB), R2
+	CMP #0, R2
+	BGE E_Sinon.2
+	WSTR " Vous avez saisie un diviseur negatif"
+	WNL
+	BRA E_Fin_if.2
+E_Sinon.2:
+	WSTR " Vous avez saisie un diviseur positif"
+	WNL
+E_Fin_if.2:
+E_Fin_if.1:
+	WNL
+	WNL
+	WSTR "Calcul de la division de "
+	LOAD 3(GB), R2
+	LOAD R2, R1
+	WINT
+	WSTR " par "
+	LOAD 4(GB), R2
+	LOAD R2, R1
+	WINT
+	WNL
+	WSTR "saisissez un entier pour continuer  : "
+	RINT
+	BOV io_error
+	LOAD R1, R2
+	LOAD 3(GB), R3
+	LOAD 4(GB), R4
+	LOAD R4, R0
+	CMP #0, R0
+	BEQ div_zero_error
+	QUO R4, R3
+	FLOAT R3, R3
+	BOV overflow_error
+	STORE R3, 5(GB)
+	WSTR "Le resultat brut est : "
+	LOAD 5(GB), R3
+	LOAD R3, R1
+	WFLOAT
+	WNL
+	WNL
+	WNL
+	WSTR "Test du while : "
+	WNL
+	WSTR "saisissez un entier pour continuer  : "
+	RINT
+	BOV io_error
+	LOAD R1, R3
+	STORE R3, 6(GB)
+	WSTR "Attention, vous etes pret ? On compte : "
+	BRA E_Cond.1
+E_Debut.1:
+	LOAD 6(GB), R3
+	LOAD R3, R1
+	WINT
+	WSTR " "
+	LOAD 6(GB), R3
+	SUB #1, R3
+	STORE R3, 6(GB)
+E_Cond.1:
+	LOAD 6(GB), R3
+	CMP #0, R3
+	BGT E_Debut.1
+	WSTR "-> C'est parti !"
+	WNL
+	WNL
+	WNL
+	WSTR "Tentative de provoquer un overflow..."
+	WNL
+	WSTR "saisissez un entier pour continuer  : "
+	RINT
+	BOV io_error
+	LOAD R1, R2
+	LOAD 5(GB), R3
+	MUL #0x1.2ced32p126, R3
+	BOV overflow_error
+	STORE R3, 5(GB)
+	LOAD 5(GB), R3
+	LOAD R3, R1
+	WFLOAT
+	WNL
+	WSTR "Si vous voyez ce message, l'overflow n'a pas ete detecte."
+	WNL
+	HALT
+; end main program
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+overflow_error:
+	WSTR "Error: Overflow sur Float"
+	WNL
+	ERROR
+div_zero_error:
+	WSTR "Erreur : division par 0"
+	WNL
+	ERROR
+io_error:
+	WSTR "Erreur: D'entree incompatible avec la variable "
+	WNL
+	ERROR

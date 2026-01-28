@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Register.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.ima.pseudocode</a> &gt; <span class="el_source">Register.java</span></div><h1>Register.java</h1><pre class="source lang-java linenums">package fr.ensimag.ima.pseudocode;
+
+/**
+ * Register operand (including special registers like SP).
+ * 
+ * @author Ensimag
+ * @date 01/01/2026
+ */
+public class Register extends DVal {
+    private String name;
+<span class="fc" id="L11">    protected Register(String name) {</span>
+<span class="fc" id="L12">        this.name = name;</span>
+<span class="fc" id="L13">    }</span>
+
+    @Override
+    public String toString() {
+<span class="fc" id="L17">        return name;</span>
+    }
+
+    /**
+     * Global Base register
+     */
+<span class="fc" id="L23">    public static final Register GB = new Register(&quot;GB&quot;);</span>
+    /**
+     * Local Base register
+     */
+<span class="fc" id="L27">    public static final Register LB = new Register(&quot;LB&quot;);</span>
+    /**
+     * Stack Pointer
+     */
+<span class="fc" id="L31">    public static final Register SP = new Register(&quot;SP&quot;);</span>
+    /**
+     * General Purpose Registers. Array is private because Java arrays cannot be
+     * made immutable, use getR(i) to access it.
+     */
+<span class="fc" id="L36">    private static final GPRegister[] R = initRegisters();</span>
+    /**
+     * General Purpose Registers
+     */
+    public static GPRegister getR(int i) {
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if(i &gt; 15)</span>
+<span class="nc" id="L42">            return R[15];</span>
+<span class="fc" id="L43">        return R[i];</span>
+    }
+    /**
+     * Convenience shortcut for R[0]
+     */
+<span class="fc" id="L48">    public static final GPRegister R0 = R[0];</span>
+    /**
+     * Convenience shortcut for R[1]
+     */
+<span class="fc" id="L52">    public static final GPRegister R1 = R[1];</span>
+    static private GPRegister[] initRegisters() {
+<span class="fc" id="L54">        GPRegister [] res = new GPRegister[16];</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        for (int i = 0; i &lt;= 15; i++) {</span>
+<span class="fc" id="L56">            res[i] = new GPRegister(&quot;R&quot; + i, i);</span>
+        }
+<span class="fc" id="L58">        return res;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

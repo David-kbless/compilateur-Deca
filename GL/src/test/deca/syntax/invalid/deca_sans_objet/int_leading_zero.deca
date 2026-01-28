@@ -1,0 +1,9 @@
+// Description :
+// test d’un littéral entier invalide (zero en tete)
+//
+// Resultat :
+// Erreur lexicale
+// Ligne 8 : littéral entier invalide
+{
+012;
+}

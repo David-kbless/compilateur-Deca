@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SymbolTable.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tools</a> &gt; <span class="el_source">SymbolTable.java</span></div><h1>SymbolTable.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tools;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Manage unique symbols.
+ * 
+ * A Symbol contains the same information as a String, but the SymbolTable
+ * ensures the uniqueness of a Symbol for a given String value. Therefore,
+ * Symbol comparison can be done by comparing references, and the hashCode()
+ * method of Symbols can be used to define efficient HashMap (no string
+ * comparison or hashing required).
+ * 
+ * @author gl54
+ * @date 01/01/2026
+ */
+<span class="fc" id="L18">public class SymbolTable {</span>
+<span class="fc" id="L19">    private Map&lt;String, Symbol&gt; map = new HashMap&lt;String, Symbol&gt;();</span>
+
+    /**
+     * Create or reuse a symbol.
+     * 
+     * If a symbol already exists with the same name in this table, then return
+     * this Symbol. Otherwise, create a new Symbol and add it to the table.
+     */
+    public Symbol create(String name) {
+        // Un identifiant null n'est pas autorisé en Deca --
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (name == null) {</span>
+<span class="fc" id="L30">            throw new IllegalArgumentException(&quot;Symbol name cannot be null&quot;);</span>
+        }
+
+<span class="fc" id="L33">        Symbol s = map.get(name);</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (s == null) {</span>
+<span class="fc" id="L35">            s = new Symbol(name);</span>
+<span class="fc" id="L36">            map.put(name, s);</span>
+        }
+<span class="fc" id="L38">        return s;</span>
+
+        //throw new UnsupportedOperationException(&quot;Symbol creation&quot;);
+    }
+
+    // Return the number of symbols in the table --
+    public int size() {
+<span class="fc" id="L45">        return map.size();</span>
+    }
+
+    // Check if a symbol with the given name exists in the table --
+    public boolean contains(String name) {
+<span class="fc" id="L50">        return map.containsKey(name);</span>
+    }
+
+    /**
+     * Symbols are unique per SymbolTable.
+     * Two symbols with the same name are guaranteed to be the same object.
+     */
+    public static class Symbol {
+        // Constructor is private, so that Symbol instances can only be created
+        // through SymbolTable.create factory (which thus ensures uniqueness
+        // of symbols).
+        private Symbol(String name) {
+<span class="fc" id="L62">            super();</span>
+<span class="fc" id="L63">            this.name = name;</span>
+<span class="fc" id="L64">        }</span>
+
+        public String getName() {
+<span class="fc" id="L67">            return name;</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="fc" id="L72">            return name;</span>
+        }
+
+        // Equality is based on reference equality, ensured by SymbolTable --
+        @Override
+        public int hashCode() {
+<span class="fc" id="L78">            return System.identityHashCode(this);</span>
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">            return this == obj;</span>
+        }
+
+        private String name;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

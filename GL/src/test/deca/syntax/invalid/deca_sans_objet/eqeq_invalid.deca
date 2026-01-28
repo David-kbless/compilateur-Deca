@@ -1,0 +1,10 @@
+// Description :
+// test operateur invalide ===
+//
+// Resultat :
+// Erreur lexicale
+// Ligne 8 : operateur invalide
+{
+if (1 === 1) {
+}
+}

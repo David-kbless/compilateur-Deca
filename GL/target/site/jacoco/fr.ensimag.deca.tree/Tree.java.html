@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Tree.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">Tree.java</span></div><h1>Tree.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.tools.DecacInternalError;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import org.apache.log4j.Logger;
+
+/**
+ * Base class for any node in the Deca abstract syntax tree.
+ *
+ * Factors all the common elements and utility functions to manipulate trees
+ * (location in source-code, pretty-printing, ...).
+ *
+ * @author gl54
+ * @date 01/01/2026
+ *
+ */
+<span class="fc" id="L20">public abstract class Tree {</span>
+
+<span class="fc" id="L22">    private static final Logger LOG = Logger.getLogger(Main.class);</span>
+
+    public Location getLocation() {
+<span class="fc" id="L25">        return location;</span>
+    }
+
+    public void setLocation(Location location) {
+<span class="fc" id="L29">        this.location = location;</span>
+<span class="fc" id="L30">    }</span>
+
+    public void setLocation(int line, int column, String filename) {
+<span class="nc" id="L33">        this.location = new Location(line, column, filename);</span>
+<span class="nc" id="L34">    }</span>
+    private Location location;
+
+    /**
+     * Display the tree as a (compilable) source program
+     *
+     * @param s Buffer to which the result will be written.
+     */
+    public abstract void decompile(IndentPrintStream s);
+
+    public void decompile(PrintStream s) {
+<span class="nc" id="L45">        decompile(new IndentPrintStream(s));</span>
+<span class="nc" id="L46">    }</span>
+
+    /**
+     * Display the tree as a (compilable) source program
+     */
+    public String decompile() {
+<span class="nc" id="L52">        ByteArrayOutputStream out = new ByteArrayOutputStream();</span>
+<span class="nc" id="L53">        PrintStream s = new PrintStream(out);</span>
+<span class="nc" id="L54">        decompile(s);</span>
+<span class="nc" id="L55">        return out.toString();</span>
+    }
+
+    /**
+     * wrapper for
+     * {@link #printNodeLine(PrintStream, String, boolean, boolean, String)},
+     * calling {@link #prettyPrintNode()} to display the node element.
+     * 
+     * @param s
+     * @param prefix
+     * @param last
+     * @param inlist
+     * @return The prefix to use for the next recursive calls to
+     *         {@link #prettyPrint()}.
+     */
+    protected String printNodeLine(PrintStream s, String prefix, boolean last,
+            boolean inlist) {
+<span class="fc" id="L72">        return printNodeLine(s, prefix, last, inlist, prettyPrintNode());</span>
+    }
+
+    /**
+     * Print the line corresponding to the current node.
+     *
+     * This displays the prefix (to show the tree hierarchy in ASCII-art), and
+     * the node name and information.
+     *
+     * @param s
+     * @param prefix
+     * @param last
+     * @param inlist
+     * @param nodeName
+     * @return The prefix to use for the next recursive calls to
+     * {@link #prettyPrint()}.
+     */
+    String printNodeLine(PrintStream s, String prefix, boolean last,
+            boolean inlist, String nodeName) {
+<span class="fc" id="L91">        s.print(prefix);</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        if (inlist) {</span>
+<span class="fc" id="L93">            s.print(&quot;[]&gt;&quot;);</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        } else if (last) {</span>
+<span class="fc" id="L95">            s.print(&quot;`&gt;&quot;);</span>
+        } else {
+<span class="fc" id="L97">            s.print(&quot;+&gt;&quot;);</span>
+        }
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (getLocation() != null) {</span>
+<span class="fc" id="L100">            s.print(&quot; &quot; + getLocation().toString());</span>
+        }
+<span class="fc" id="L102">        s.print(&quot; &quot;);</span>
+<span class="fc" id="L103">        s.print(nodeName);</span>
+<span class="fc" id="L104">        s.println();</span>
+        String newPrefix;
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (last) {</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">            if (inlist) {</span>
+<span class="fc" id="L108">                newPrefix = prefix + &quot;    &quot;;</span>
+            } else {
+<span class="fc" id="L110">                newPrefix = prefix + &quot;   &quot;;</span>
+            }
+        } else {
+<span class="fc bfc" id="L113" title="All 2 branches covered.">            if (inlist) {</span>
+<span class="fc" id="L114">                newPrefix = prefix + &quot;||  &quot;;</span>
+            } else {
+<span class="fc" id="L116">                newPrefix = prefix + &quot;|  &quot;;</span>
+            }
+        }
+<span class="fc" id="L119">        prettyPrintType(s, newPrefix);</span>
+<span class="fc" id="L120">        return newPrefix;</span>
+    }
+
+    /**
+     * Pretty-print the type of the tree, if applicable
+     */
+    protected void prettyPrintType(PrintStream s, String prefix) {
+        // Nothing by default
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Pretty-print the definition of the tree, if applicable
+     */
+    protected void prettyPrintDefinition(PrintStream s, String newPrefix) {
+        // Nothing by default
+<span class="nc" id="L135">    }</span>
+
+    /**
+     * Print the node information on a single line.
+     *
+     * Does not print the children (the recursive call is done by prettyPrint).
+     */
+    String prettyPrintNode() {
+<span class="fc" id="L143">        return this.getClass().getSimpleName();</span>
+    }
+
+    /**
+     * Pretty-print tree (see {@link #prettyPrint()}), sending output to
+     * PrintStream s.
+     *
+     * @param s
+     */
+    public final void prettyPrint(PrintStream s) {
+<span class="fc" id="L153">        prettyPrint(s, &quot;&quot;, true, false);</span>
+<span class="fc" id="L154">    }</span>
+
+    /**
+     * Pretty-print the tree as a String, using ASCII-art to show the tree
+     * hierarchy. Useful for debugging.
+     */
+    public final String prettyPrint() {
+<span class="nc" id="L161">        ByteArrayOutputStream out = new ByteArrayOutputStream();</span>
+<span class="nc" id="L162">        PrintStream s = new PrintStream(out);</span>
+<span class="nc" id="L163">        prettyPrint(s);</span>
+<span class="nc" id="L164">        return out.toString();</span>
+    }
+
+    protected final void prettyPrint(PrintStream s, String prefix,
+            boolean last) {
+<span class="fc" id="L169">        prettyPrint(s, prefix, last, false);</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * Pretty-print tree (see {@link #prettyPrint()}). This is an internal
+     * function that should usually not be called directly.
+     *
+     * @param s Stream to send the output to
+     * @param prefix Prefix (ASCII-art showing hierarchy) to print for this
+     * node.
+     * @param last Whether the node being displayed is the last child of a tree.
+     * @param inlist Whether the node is being displayed as part of a list.
+     */
+    protected final void prettyPrint(PrintStream s, String prefix,
+            boolean last, boolean inlist) {
+<span class="fc" id="L184">        String next = printNodeLine(s, prefix, last, inlist);</span>
+<span class="fc" id="L185">        prettyPrintChildren(s, next);</span>
+<span class="fc" id="L186">    }</span>
+
+    /**
+     * Used internally by {@link #prettyPrint}. Must call prettyPrint() on each
+     * children.
+     *
+     * @param s
+     * @param prefix
+     */
+    protected abstract void prettyPrintChildren(PrintStream s, String prefix);
+
+    /**
+     * Call function f on each node of the tree.
+     *
+     * @param f
+     */
+    public void iter(TreeFunction f) {
+<span class="fc" id="L203">        f.apply(this);</span>
+<span class="fc" id="L204">        iterChildren(f);</span>
+<span class="fc" id="L205">    }</span>
+
+    /**
+     * Function used internally by {@link #iter(TreeFunction)}. Must call iter() on each
+     * child of the tree.
+     *
+     * @param f
+     */
+    protected abstract void iterChildren(TreeFunction f);
+
+    /**
+     * Check that the current node has correctly been decorated, and throws an
+     * error if not.
+     *
+     * This is used only for defensive programming, each node type can add
+     * checks by overloading this method. Does nothing by default.
+     *
+     * The method is called automatically by {@link #checkAllDecorations()}.
+     */
+    protected void checkDecoration() {
+        // Nothing by default. Override to add checks for specific nodes.
+<span class="fc" id="L226">    }</span>
+
+    /**
+     * Check that all nodes of the tree have been correctly decorated.
+     *
+     * Useful for debugging/defensive programming.
+     *
+     * @return true. Raises an exception in case of error. The return value is
+     * meant to allow assert(tree.checkAllLocations()), to enable the defensive
+     * check only if assertions are enabled.
+     */
+    public boolean checkAllDecorations() {
+<span class="fc" id="L238">        iter(new TreeFunction() {</span>
+            @Override
+            public void apply(Tree t) {
+<span class="fc" id="L241">                t.checkDecoration();</span>
+<span class="fc" id="L242">            }</span>
+        });
+<span class="fc" id="L244">        return true;</span>
+    }
+
+    /**
+     * Check that the location has been correctly set for this tree.
+     *
+     * By default, this checks that getLocation() does not return null, but can
+     * be overridden for particular classes that do not require location
+     * information.
+     */
+    protected void checkLocation() {
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">        if (getLocation() == null) {</span>
+<span class="nc" id="L256">            LOG.info(prettyPrint());</span>
+<span class="nc" id="L257">            throw new DecacInternalError(&quot;Tree &quot;</span>
+<span class="nc" id="L258">                    + getClass().getName()</span>
+                    + &quot; has no location set&quot;);
+        }
+<span class="fc" id="L261">    }</span>
+
+    /**
+     * Check that all nodes of the tree have a location correctly set.
+     *
+     * Useful for debugging/defensive programming.
+     *
+     * @return true. Raises an exception in case of error. The return value is
+     * meant to allow assert(tree.checkAllLocations()), to enable the defensive
+     * check only if assertions are enabled.
+     */
+    public boolean checkAllLocations() {
+<span class="fc" id="L273">        iter(new TreeFunction() {</span>
+            @Override
+            public void apply(Tree t) {
+<span class="fc" id="L276">                t.checkLocation();</span>
+<span class="fc" id="L277">            }</span>
+        });
+<span class="fc" id="L279">        return true;</span>
+    }
+
+    /**
+     * Call decompile() if the compiler has a debug level greater than 1.
+     * 
+     * Useful for debugging.
+     * 
+     * @param compiler
+     * @return Decompilation, or the empty string.
+     */
+    protected String decompileIfDebug(DecacCompiler compiler) {
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (compiler.getCompilerOptions().getDebug() &gt; 1) {</span>
+<span class="nc" id="L292">            return decompile();</span>
+        } else {
+<span class="nc" id="L294">            return &quot;&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

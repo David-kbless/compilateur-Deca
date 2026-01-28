@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Line.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.ima.pseudocode</a> &gt; <span class="el_source">Line.java</span></div><h1>Line.java</h1><pre class="source lang-java linenums">package fr.ensimag.ima.pseudocode;
+
+import java.io.PrintStream;
+
+/**
+ * Line of code in an IMA program.
+ *
+ * @author Ensimag
+ * @date 01/01/2026
+ */
+public class Line extends AbstractLine {
+    public Line(Label label, Instruction instruction, String comment) {
+<span class="fc" id="L13">        super();</span>
+<span class="fc" id="L14">        checkComment(comment);</span>
+<span class="fc" id="L15">        this.label = label;</span>
+<span class="fc" id="L16">        this.instruction = instruction;</span>
+<span class="fc" id="L17">        this.comment = comment;</span>
+<span class="fc" id="L18">    }</span>
+
+    public Line(Instruction instruction) {
+<span class="fc" id="L21">        super();</span>
+<span class="fc" id="L22">        this.instruction = instruction;</span>
+<span class="fc" id="L23">    }</span>
+
+    public Line(String comment) {
+<span class="fc" id="L26">        super();</span>
+<span class="fc" id="L27">        checkComment(comment);</span>
+<span class="fc" id="L28">        this.comment = comment;</span>
+<span class="fc" id="L29">    }</span>
+
+    public Line(Label label) {
+<span class="fc" id="L32">        super();</span>
+<span class="fc" id="L33">        this.label = label;</span>
+<span class="fc" id="L34">    }</span>
+
+    private void checkComment(final String s) {
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        if (s == null) {</span>
+<span class="nc" id="L38">            return;</span>
+        }
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (s.contains(&quot;\n&quot;)) {</span>
+<span class="nc" id="L41">            throw new IMAInternalError(&quot;Comment '&quot; + s + &quot;'contains newline character&quot;);</span>
+        }
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if (s.contains(&quot;\r&quot;)) {</span>
+<span class="nc" id="L44">            throw new IMAInternalError(&quot;Comment '&quot; + s + &quot;'contains carriage return character&quot;);</span>
+        }
+<span class="fc" id="L46">    }</span>
+    private Instruction instruction;
+    private String comment;
+    private Label label;
+
+    @Override
+    void display(PrintStream s) {
+<span class="fc" id="L53">        boolean tab = false;</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (label != null) {</span>
+<span class="fc" id="L55">            s.print(label);</span>
+<span class="fc" id="L56">                        s.print(&quot;:&quot;);</span>
+<span class="fc" id="L57">            tab = true;</span>
+        }
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (instruction != null) {</span>
+<span class="fc" id="L60">            s.print(&quot;\t&quot;);</span>
+<span class="fc" id="L61">            instruction.display(s);</span>
+<span class="fc" id="L62">            tab = true;</span>
+        }
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (comment != null) {</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (tab) {</span>
+<span class="fc" id="L66">                            s.print(&quot;\t&quot;);</span>
+                        }
+<span class="fc" id="L68">            s.print(&quot;; &quot; + comment);</span>
+        }
+<span class="fc" id="L70">        s.println();</span>
+<span class="fc" id="L71">    }</span>
+
+    public void setInstruction(Instruction instruction) {
+<span class="nc" id="L74">        this.instruction = instruction;</span>
+<span class="nc" id="L75">    }</span>
+
+    public Instruction getInstruction() {
+<span class="nc" id="L78">        return instruction;</span>
+    }
+
+    public void setComment(String comment) {
+<span class="nc" id="L82">        this.comment = comment;</span>
+<span class="nc" id="L83">    }</span>
+
+    public String getComment() {
+<span class="nc" id="L86">        return comment;</span>
+    }
+
+    public void setLabel(Label label) {
+<span class="nc" id="L90">        this.label = label;</span>
+<span class="nc" id="L91">    }</span>
+
+    public Label getLabel() {
+<span class="nc" id="L94">        return label;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

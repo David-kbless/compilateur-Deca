@@ -1,0 +1,77 @@
+; start main program
+	TSTO #3
+	BOV stack_overflow_error
+	ADDSP #3
+; Construction de la VTable de de Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Variable Declarations : 
+; Beginning of main instructions:
+	LOAD #1, R2
+	LOAD #2, R3
+	LOAD #3, R4
+	LOAD #4, R5
+	LOAD #5, R6
+	LOAD #6, R7
+	LOAD #7, R8
+	LOAD #8, R9
+	LOAD #9, R10
+	LOAD #10, R11
+	LOAD #11, R12
+	LOAD #12, R13
+	LOAD #13, R14
+	LOAD #14, R15
+	PUSH R15
+	LOAD #15, R15
+	PUSH R15
+	LOAD #16, R15
+	PUSH R15
+	LOAD #17, R15
+	ADD #18, R15
+	POP R0
+	ADD R15, R0
+	LOAD R0, R15
+	ADD R15, R15
+	POP R15
+	POP R0
+	ADD R15, R0
+	LOAD R0, R15
+	ADD R15, R15
+	POP R15
+	POP R0
+	ADD R15, R0
+	LOAD R0, R15
+	ADD R15, R15
+	POP R15
+	ADD R15, R14
+	ADD R14, R13
+	ADD R13, R12
+	ADD R12, R11
+	ADD R11, R10
+	ADD R10, R9
+	ADD R9, R8
+	ADD R8, R7
+	ADD R7, R6
+	ADD R6, R5
+	ADD R5, R4
+	ADD R4, R3
+	ADD R3, R2
+	STORE R2, 3(GB)
+	WSTR "Résultat obtenu : "
+	LOAD 3(GB), R2
+	LOAD R2, R1
+	WINT
+	WNL
+	HALT
+; end main program
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR

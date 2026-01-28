@@ -1,0 +1,47 @@
+// commande de compilation :
+//    decac src/test/deca/demo_soutenance/Partie_C/messages_erreurs/conversion_impossible.deca
+//    ima src/test/deca/demo_soutenance/Partie_C/messages_erreurs/conversion_impossible.ass
+
+
+
+// Description :
+// test de conversion impossible entre classes non liées par héritage
+
+class A{
+    void m(){
+        println(" méthode m de A ");
+    }
+
+}
+
+class B extends A{
+    void m(){
+        println(" méthode m de B ");
+    }
+}
+
+class C extends B{
+    void m(){
+        println(" méthode m de C ");
+    }
+}
+
+
+{
+    // déclarations des objets
+    A a;
+    B b;
+    C c;
+
+    // création des objets
+    a = new A();
+    b = new B();
+    c = new C();
+
+    // erreurs de conversion
+    c = (C) (a);
+    c.m();
+}
+
+
+

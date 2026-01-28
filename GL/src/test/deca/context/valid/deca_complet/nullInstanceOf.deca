@@ -1,0 +1,10 @@
+// Description:
+//    Le type 'null' est compatible avec n'importe quelle classe pour instanceof.
+// Resultats:
+//    Succès (Passe 3). Doit retourner 'false' à l'exécution.
+class A {}
+{
+    if (null instanceof A) {
+        println("Bizarre");
+    }
+}

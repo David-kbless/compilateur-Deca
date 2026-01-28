@@ -1,0 +1,10 @@
+// Description:
+//   This utilisé hors d'une class
+// Resultats:
+//    Ligne 9: this utilisé hors d'une classe
+//
+// Historique:
+//    cree le 10/01/2026
+{
+    this.x = 2;
+}

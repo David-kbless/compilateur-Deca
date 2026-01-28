@@ -1,0 +1,16 @@
+// Description :
+// Test de comparaison d'entiers.
+//
+// Resultats :
+// ok
+
+{
+    int x;
+    x = 3;
+    
+    if(x > 1){
+        print("ok");
+    }else{
+        print("Erreur");
+    }
+}

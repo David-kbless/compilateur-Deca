@@ -1,0 +1,362 @@
+\section{Spécification détaillée des extensions TRIGO}
+
+Cette section décrit la méthodologie complète adoptée pour l’implémentation des fonctions trigonométriques
+\texttt{cos}, \texttt{sin}, \texttt{arcsin} et \texttt{arctan} dans la bibliothèque standard Deca, depuis
+la réduction d’argument jusqu’à l’obtention de la valeur finale. Les choix mathématiques, algorithmiques et
+liés à l’architecture IMA sont explicités.
+
+\subsection{Objectif général}
+
+Les fonctions trigonométriques doivent :
+\begin{itemize}
+    \item être définies pour tout flottant simple précision appartenant à leur domaine mathématique,
+    \item retourner une valeur appartenant au codomaine de la fonction,
+    \item fournir une approximation aussi précise que possible compte tenu des contraintes numériques,
+    \item être implémentables intégralement en assembleur IMA, sans primitives mathématiques avancées.
+\end{itemize}
+
+% ==========================================================
+\subsection{Réduction d’argument pour \texttt{sin} et \texttt{cos}}
+
+Les fonctions sinus et cosinus étant périodiques de période $2\pi$, toute valeur d’entrée $x$ est d’abord
+ramenée dans un intervalle réduit afin d’améliorer la précision des approximations polynomiales.
+
+On calcule :
+\[
+k = \mathrm{round}\left(\frac{x}{2\pi}\right)
+\]
+\[
+y = x - k \cdot 2\pi
+\]
+
+Cette réduction garantit que $y \in [-\pi, \pi]$.
+
+\subsubsection{Importance du round}
+
+L’utilisation de l’arrondi au plus proche (\texttt{round}) est essentielle. Une simple troncature
+introduirait une asymétrie entre valeurs positives et négatives, entraînant des erreurs importantes
+près des points critiques (notamment autour de $\pm \pi$).
+
+\subsection{Définition mathématique de l’arrondi}
+
+Pour un réel $x$, l’arrondi au plus proche est défini par :
+\[
+\mathrm{round}(x) =
+\begin{cases}
+\lfloor x + 0.5 \rfloor & \text{si } x \ge 0 \\
+\lceil x - 0.5 \rceil & \text{si } x < 0
+\end{cases}
+\]
+
+Sachant que :
+\[
+\lceil y \rceil = -\lfloor -y \rfloor
+\]
+
+Cette définition permet une implémentation exacte à l’aide d’opérations élémentaires.
+
+\subsection{Traduction de round en assembleur IMA}
+
+L’architecture IMA ne fournit pas d’instruction dédiée à l’arrondi. En revanche, elle dispose :
+\begin{itemize}
+    \item de comparaisons flottantes (\texttt{CMP}),
+    \item d’additions et soustractions flottantes,
+    \item d’une conversion flottant $\rightarrow$ entier (\texttt{INT}) effectuant une troncature vers zéro.
+\end{itemize}
+
+L’algorithme d’arrondi est donc implémenté comme suit :
+\begin{enumerate}
+    \item Tester le signe de la valeur flottante.
+    \item Ajouter $0.5$ si la valeur est positive.
+    \item Soustraire $0.5$ si la valeur est négative.
+    \item Convertir le résultat en entier par \texttt{INT}.
+\end{enumerate}
+
+\subsubsection{Code assembleur IMA correspondant}
+
+\begin{verbatim}
+CMP #0.0, R2
+BLT round_neg
+ADD #0.5, R2
+INT R2, R2
+BRA round_end
+
+round_neg:
+SUB #0.5, R2
+INT R2, R2
+
+round_end:
+\end{verbatim}
+
+% ==========================================================
+\subsection{Exploitation des symétries pour \texttt{sin} et \texttt{cos}}
+
+Après réduction d’argument, des identités trigonométriques sont utilisées :
+
+\[
+\cos(-x) = \cos(x), \quad \sin(-x) = -\sin(x)
+\]
+\[
+\cos(\pi - x) = -\cos(x), \quad \sin(\pi - x) = \sin(x)
+\]
+\[
+\cos(\frac\pi2 - x) = \sin(x), \quad sin(\frac\pi2 - x) = \cos(x)
+\]
+Ces transformations ramènent l’argument dans l’intervalle $[-\frac\pi4, \frac\pi4]$,
+zone où les polynômes d’approximation sont les plus précis.
+On utilise les polynomes minmax  plutot que les polynomes de Taylor pour des raisons qu'on précisera dans la partie optimisation .
+
+% ==========================================================
+\subsection{Cas des fonctions inverses : \texttt{arcsin} et \texttt{arctan}}
+
+Contrairement à \texttt{sin} et \texttt{cos}, les fonctions \texttt{arcsin} et \texttt{arctan}
+ne sont pas périodiques. Leur implémentation repose donc sur une réduction de domaine
+fondée sur des propriétés analytiques et non sur une périodicité.
+
+\subsubsection{Fonction \texttt{arcsin}}
+
+La fonction $\arcsin$ est définie sur $[-1,1]$ et est impaire :
+\[
+\arcsin(-x) = -\arcsin(x)
+\]
+
+On se ramène donc à $x \in [0,1]$. \\
+
+Lorsque $x=1$, la pente de cette fonction devient verticale et une petite variation sur $x$ entrainera un grosse erreur sur la valeur de $\arcsin(x)$. L'approximation devient instable. Ce qui fait qu'on subdivisera l'intervalle en deux : $[0, 0.5]$ et $]0.5, 1]$. \\
+
+
+\textbf{Pour $|x| \le 0.5$} 
+
+On utilise une approximation polynomiale de la forme :
+\[
+\arcsin(x) \approx x + x^3 P(x^2)
+\]
+
+
+\textbf{\textit{Démonstration}}
+
+\begin{align*}
+\arcsin(x) &\approx x + \frac{x^3}{6} + \frac{3x^5}{40}+... \\
+&\approx x + x^3(\frac{1}{6} + \frac{3x^2}{40} + ...)
+\end{align*}
+
+Avec $P(x²) = \frac{1}{6} + \frac{3x^2}{40} + ...$ \\
+
+\textbf{Pour $x \in ]0.5, 1]$}
+
+On applique alors l’identité :
+\[
+\arcsin(x) = \frac{\pi}{2} - \arcsin\left(\sqrt{1 - x^2}\right)
+\]
+
+On fait un changement de variable en posant $u=1-x$ avec $0 < u \ll 1$. Donc $x=1-u$.
+
+Quand $x \to 1$ , $u \to 0$.
+
+On sait que :
+\[
+\frac{d}{dx}(\arcsin(x)) = \frac{1}{\sqrt{1-x^2}}
+\]
+Près de $x=1$, on a :
+\begin{align*}
+1-x^2 &= 1-(1-u)^2 \\
+&= 2u-u^2 \approx2u 
+\end{align*}
+Donc 
+
+\[
+\frac{d}{dx}(\arcsin(1-u)) \approx \frac{1}{\sqrt{2u}}
+\]
+On obtient une première approximation ci-dessous avec une erreur qu'on essaiera de corriger par la suite :
+
+\begin{align*}
+\arcsin(1-u) - \arcsin(1) &\approx \int_{1}^{1-u} \frac{1}{\sqrt{2t}}dt \\
+&\approx -\int_{1-u}^{1} \frac{1}{\sqrt{2t}}dt \\
+&\approx \int_{0}^{u} \frac{1}{\sqrt{2t}}dt \\
+\arcsin(1-u) \approx \frac{\pi}{2} -\sqrt{2u}
+\end{align*}
+
+Pour corriger l'erreur et que la fonction soit plus précise, on va ajouter une fonction régulière que l'on pourra approximer avec un polynôme par après.
+
+On a donc :
+\begin{align*}
+    \arcsin(1-u) \approx \frac{\pi}{2} - \sqrt{2u}(1 + R(u)) \\
+    \arcsin(x) \approx \frac{\pi}{2} - \sqrt{2(1-x)}(1 + R(1-x))
+\end{align*}
+
+L’argument de la fonction est ainsi ramené dans un voisinage de 0.
+
+\subsubsection{Approximation de la racine carrée}
+
+L’IMA ne disposant pas d’instruction \texttt{sqrt}, la racine carrée est approchée par
+itération de Newton (converge quadratiquement) qui est meilleur à celle de Taylor.
+
+Par exemple $y=\sqrt{a}$ est donnée par :
+\[
+y_{n+1} = \frac{1}{2}\left(y_n + \frac{a}{y_n}\right)
+\]
+
+Quelques itérations (2) suffisent pour obtenir une précision adaptée à la simple précision.
+
+\subsubsection{Fonction \texttt{arctan}}
+
+La fonction $\arctan$ est définie sur $\mathbb{R}$ et est également impaire :
+\[
+\arctan(-x) = -\arctan(x)
+\]
+
+Pour $x > 1$, on utilise l’identité :
+\[
+\arctan(x) = \frac{\pi}{2} - \arctan\left(\frac{1}{x}\right)
+\]
+
+Ce qui permet de ramener l’argument dans l’intervalle $[0,1]$.
+
+Sur cet intervalle, on approxime :
+\[
+\arctan(x) \approx x + x^3 P(x^2)
+\]
+
+Et pour $x \in ]1, +\infty[$, $y = \frac{1}{x} \in (0, 1]$. L'approximation sur cet intervalle donne :
+
+\begin{align*}
+    \arctan(y) = y - \frac{y^3}{3} + y^5.Q(y^2) \\
+    \arctan(x) = \frac{\pi}{2} - (y - \frac{y^3}{3} + y^5.Q(y^2))
+\end{align*}
+
+Le signe négatif correspond à la structure du développement de Taylor, tandis que
+les coefficients sont obtenus par approximation minimax afin d’assurer une erreur uniforme.
+
+% ==========================================================
+\subsection{Approximation polynomiale et méthode de Horner}
+
+Toutes les approximations polynomiales sont évaluées par la méthode de Horner :
+\[
+P(t) = (\dots((a_n t + a_{n-1})t + a_{n-2})\dots)t + a_0
+\]
+
+Cette méthode :
+\begin{itemize}
+    \item minimise le nombre d’opérations,
+    \item améliore la stabilité numérique,
+    \item est directement traduisible en assembleur IMA,
+    \item bénéficie de l’instruction \texttt{FMA} pour réduire les erreurs d’arrondi.
+\end{itemize}
+
+\subsection{Mise en cache des angles usuels (optimisation)}
+
+\subsubsection{Motivation}
+
+Certaines valeurs angulaires apparaissent très fréquemment dans les programmes
+(utilisation graphique, calculs géométriques, tests numériques).
+Il s’agit notamment des angles :
+
+\[
+0^\circ,\; 30^\circ,\; 45^\circ,\; 60^\circ,\; 90^\circ,\; 180^\circ
+\]
+
+Ces angles présentent plusieurs caractéristiques importantes :
+\begin{itemize}
+    \item leurs valeurs trigonométriques exactes sont connues analytiquement ;
+    \item les erreurs relatives issues des approximations polynomiales sont
+    particulièrement visibles pour ces angles (notamment près de $\pi/2$) ;
+    \item leur recalcul systématique est inutile et coûteux.
+\end{itemize}
+
+Par exemple :
+\[
+\cos\left(\frac{\pi}{2}\right) = 0
+\quad \text{et} \quad
+\sin\left(\frac{\pi}{2}\right) = 1
+\]
+mais une approximation polynomiale ne peut jamais fournir exactement ces valeurs.
+
+Afin d’améliorer à la fois la précision numérique et les performances, une stratégie
+de mise en cache (\emph{lookup table}) est adoptée.
+
+\subsubsection{Implémentation}
+
+Une table statique est définie dans la bibliothèque standard, contenant pour chaque
+angle usuel :
+\begin{itemize}
+    \item l’angle normalisé (en radians) ;
+    \item la valeur exacte ou quasi-exacte de $\sin$ et $\cos$.
+\end{itemize}
+
+Conceptuellement, cette table peut être représentée comme suit :
+
+\[
+\begin{array}{c|c|c}
+\text{Angle (rad)} & \sin(x) & \cos(x) \\
+\hline
+0 & 0 & 1 \\
+\frac{\pi}{6} & \frac{1}{2} & \frac{\sqrt{3}}{2} \\
+\frac{\pi}{4} & \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} \\
+\frac{\pi}{3} & \frac{\sqrt{3}}{2} & \frac{1}{2} \\
+\frac{\pi}{2} & 1 & 0 \\
+\pi & 0 & -1
+\end{array}
+\]
+
+Lors de l’appel à une fonction trigonométrique, l’algorithme est le suivant :
+\begin{enumerate}
+    \item réduction de l’argument dans l’intervalle $[-\pi, \pi]$ ;
+    \item comparaison avec les valeurs stockées dans la table ;
+    \item si une correspondance est trouvée, la valeur est retournée immédiatement ;
+    \item sinon, le calcul polynomial est effectué.
+\end{enumerate}
+
+Cette optimisation permet d’éliminer totalement l’erreur numérique sur les angles
+usuels et réduit le temps de calcul dans les cas les plus fréquents.
+
+---
+
+\subsection{Valeur finale retournée}
+
+La valeur retournée par les fonctions trigonométriques résulte d’une chaîne
+d’opérations soigneusement ordonnée. \\
+
+Pour les fonctions \texttt{sin} et \texttt{cos}, les étapes sont les suivantes :
+\begin{enumerate}
+    \item réduction d’argument à l’aide de la périodicité ;
+    \item application des symétries trigonométriques pour ramener l’argument
+    dans $[0, \pi/2]$ ;
+    \item consultation de la table d’angles usuels ;
+    \item approximation polynomiale (Taylor ou minimax) si nécessaire ;
+    \item correction finale du signe ;
+    \item retour de la valeur flottante.\\
+\end{enumerate} 
+
+Pour les fonctions inverses \texttt{asin} et \texttt{atan}, le processus est similaire :
+\begin{enumerate}
+    \item vérification du domaine de définition ;
+    \item exploitation des symétries (fonctions impaires) ;
+    \item transformation de variable pour stabiliser la variation ;
+    \item approximation polynomiale adaptée à l’intervalle ;
+    \item recomposition de la valeur finale ;
+    \item retour du résultat flottant.
+\end{enumerate}
+
+---
+
+\subsection{Synthèse globale de l’extension TRIGO}
+
+L’implémentation des fonctions trigonométriques repose sur un compromis rigoureux
+entre précision numérique, performance et contraintes architecturales de la machine
+abstraite IMA.
+
+Les points clés de la méthodologie sont :
+\begin{itemize}
+    \item une réduction d’argument fondée sur un arrondi correct ;
+    \item l’exploitation systématique des symétries mathématiques ;
+    \item l’utilisation de polynômes minimax pour une erreur uniformément répartie ;
+    \item l’évaluation par la méthode de Horner, optimisée par l’instruction \texttt{FMA} ;
+    \item une approximation explicite de la racine carrée en l’absence d’instruction dédiée ;
+    \item la mise en cache des angles usuels afin d’éliminer les erreurs évitables.
+\end{itemize}
+
+Cette approche permet de fournir des implémentations robustes, précises et entièrement
+compatibles avec les contraintes de l’extension TRIGO et de l’assembleur IMA.
+
+
+% ==========================================================

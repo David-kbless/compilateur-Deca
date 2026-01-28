@@ -1,0 +1,11 @@
+// Description :
+//  Teste les divisions simples avec des opérations dans le dénominateur sans objet.
+//
+// Resultats :
+// OK
+{
+    int a = 10;
+    int b = 4 - 1*2;
+    int c = a / b;
+    println(c);
+}

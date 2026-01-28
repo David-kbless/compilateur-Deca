@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UnaryMinus.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">UnaryMinus.java</span></div><h1>UnaryMinus.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.instructions.OPP;
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+
+/**
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class UnaryMinus extends AbstractUnaryExpr {
+
+    public UnaryMinus(AbstractExpr operand) {
+<span class="fc" id="L19">        super(operand);</span>
+<span class="fc" id="L20">    }</span>
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv,
+            ClassDefinition currentClass) throws ContextualError {
+<span class="fc" id="L25">        Type t = getOperand().verifyExpr(compiler, localEnv, currentClass);</span>
+<span class="fc" id="L26">        Type resultType = typeUnaryOp(compiler,t);</span>
+<span class="fc" id="L27">        this.setType(resultType);</span>
+<span class="fc" id="L28">        return resultType;</span>
+
+    }
+
+    @Override 
+    protected Type typeUnaryOp(DecacCompiler compiler, Type t) throws ContextualError{
+<span class="pc bpc" id="L34" title="1 of 4 branches missed.">        if (t.isFloat() || t.isInt()){</span>
+<span class="fc" id="L35">            return t;</span>
+        }
+
+<span class="nc" id="L38">        throw new ContextualError(&quot;Operator MINUS cannot be applied on type &quot; + t, getLocation());</span>
+    }
+
+
+    @Override
+    protected String getOperatorName() {
+<span class="nc" id="L44">        return &quot;-&quot;;</span>
+    }
+
+    protected GPRegister codeGenOperationUnaire(DecacCompiler compiler, GPRegister operande){
+<span class="fc" id="L48">        compiler.addInstruction(new OPP((DVal)operande, operande));</span>
+  
+<span class="fc" id="L50">        return operande;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

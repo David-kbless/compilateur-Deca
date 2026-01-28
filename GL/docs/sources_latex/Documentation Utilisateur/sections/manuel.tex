@@ -1,0 +1,1362 @@
+
+
+\newpage
+\section{Construction et utilisation du langage Deca}
+
+\subsection{Structure générale d'un programme}
+
+\subsubsection{Bloc principal (\texttt{main})}
+
+\begin{center}
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+{
+    int x;
+    int y = 1;
+}
+\end{decabox}
+
+\small
+\textbf{Main :}\\
+- Déclaration de x comme entier \\
+- Affectation de 1 à y.
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+class C {
+    int y;
+}
+\end{decabox}
+
+\small
+\textbf{Classe simple :}\\
+- La classe \texttt{A} ne possède pas de super-classe \\ 
+- Elle définit un champ public.
+\end{minipage}
+\end{center}
+
+% =========================================================
+\subsection{Types, visibilités et variables}
+
+\subsubsection{Visibilités supportées}
+\begin{itemize}[label=\textbullet]
+    \item public
+    \item protected
+\end{itemize}
+
+\subsubsection{Types supportés}
+\begin{itemize}[label=\textbullet]
+    \item int
+    \item float
+    \item boolean
+    \item void
+    \item types de classes
+\end{itemize}
+
+\subsubsection{Déclarations des variables}
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+{
+    int x;
+    float y, z;
+    int a = 1, b = 2;
+    boolean ok;
+}
+\end{decabox}
+\end{minipage}
+
+% =========================================================
+\subsection{Expressions}
+
+Une expression est une valeur calculée à partir de constantes, variables, opérateurs
+et éventuellement d'appels de méthodes. Les expressions peuvent être utilisées :
+\begin{itemize}
+  \item dans une affectation : \texttt{x = expr;}
+  \item comme condition : \texttt{if (expr) \{...\}} (expr doit être un \texttt{boolean})
+  \item comme argument d'affichage : \texttt{println(expr);}
+\end{itemize}
+
+\subsubsection{Littéraux}
+\begin{decabox}
+42
+3.14
+true
+false
+"texte"
+null   // uniquement en contexte objet
+\end{decabox}
+
+\subsubsection{Affectation}
+\begin{decabox}
+int a,b,x;
+boolean ok = true;
+x = 3;
+a = b = 4;
+\end{decabox}
+
+\subsubsection{Opérateurs arithmétiques}
+\begin{decabox}
+x + 1
+a - b
+a * b
+a / b
+a % b   
+\end{decabox}
+
+\subsubsection{Comparaisons}
+\begin{decabox}
+a < b       
+a <= b
+a > b
+a >= b
+a == b      // a EQUALS b
+a != b      // a NOT EQUALS b
+\end{decabox}
+
+\subsubsection{Opérateurs logiques (booléens)}
+\begin{decabox}
+!flag       // NOT flag
+a && b      // a AND b
+a || b      // a OR b
+\end{decabox}
+
+\subsubsection{Parenthèses}
+Les parenthèses permettent de forcer l’ordre de calcul.
+\begin{decabox}
+(2 + 3) * 4
+(a < b) && !flag
+\end{decabox}
+
+\subsubsection{Expressions orientées objet}
+Accès à un champ et appel de méthode :
+\begin{decabox}
+obj.x
+obj.f(1, 2)
+this.x
+this.f()
+\end{decabox}
+
+
+% =========================================================
+\subsection{Éléments lexicaux utiles (syntaxe pratique)}
+
+Cette section décrit des constructions reconnues dès l'analyse lexicale
+et qui sont importantes pour écrire des programmes Deca lisibles.
+
+\subsubsection{Inclusion de fichiers : \texttt{\#include}}
+
+\begin{decabox}
+#include "Math.decah"
+
+{
+  Math m = new Math();
+  println(m.sin(1.0));
+}
+\end{decabox}
+
+\textbf{Remarques :}
+\begin{itemize}
+  \item La directive doit être écrite sous la forme \texttt{\#include "nomDuFichier"}.
+  \item Le nom de fichier peut contenir des lettres, chiffres, \texttt{.}, \texttt{-}, \texttt{\_}.
+\end{itemize}
+
+\subsubsection{Chaînes de caractères : \texttt{STRING}}
+
+\begin{decabox}
+{
+  println("Bonjour");
+  println("Ligne avec un \n saut de ligne");
+}
+
+\end{decabox}
+Affiche : \\
+\begin{align*}
+    &> \quad \quad \texttt{Bonjour} \\
+&> \quad \quad \texttt{Ligne avec un} \\
+&> \quad \quad \texttt{saut de ligne}\\
+\end{align*}
+
+
+
+
+Une chaîne de caractères est écrite entre guillemets \texttt{"..."}.
+Elle ne peut pas contenir de saut de ligne.
+
+
+\subsubsection{Chaînes multi-lignes : \texttt{MULTI\_LINE\_STRING}}
+Le langage supporte également des chaînes qui peuvent contenir des sauts de ligne.
+Elles sont particulièrement utiles pour fournir un bloc de texte (par exemple dans un \texttt{asm("...")}).
+
+\begin{decabox}
+{
+  println("Premiere ligne
+           Deuxieme ligne
+           Troisieme ligne
+          ");
+}
+\end{decabox}
+
+\subsubsection{Espaces et retours à la ligne : \texttt{WS}}
+Les espaces, tabulations et retours à la ligne sont ignorés par l'analyse lexicale
+(en dehors des chaînes de caractères). Ils peuvent donc être utilisés librement
+pour indenter le code et améliorer la lisibilité.
+
+\begin{decabox}
+{
+  int x=3;
+  int y = 4;
+
+  println( x + y );
+}
+\end{decabox}
+
+\subsubsection{Commentaires sur une ligne : \texttt{// ...}}
+Tout texte après \texttt{//} jusqu'à la fin de la ligne est ignoré.
+
+
+\begin{decabox}
+{
+  int x = 3; // ceci est un commentaire
+  println(x);
+}
+\end{decabox}
+
+\subsubsection{Commentaires en bloc : \texttt{/* ... */}}
+Les commentaires en bloc commencent par \texttt{/*} et se terminent par \texttt{*/}.
+Ils peuvent s'étendre sur plusieurs lignes.
+\begin{decabox}
+/*
+  Commentaire multi-lignes
+  utile pour documenter un bloc de code
+*/
+{
+  println("ok");
+}
+\end{decabox}
+
+\subsection{Entrées / Sorties}
+
+\subsubsection{Lecture}
+
+\begin{center}
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+{
+    int n = readInt();
+    println(n);
+}
+\end{decabox}
+\small
+\textbf{readInt(): }Lit un entier sur l'entrée standard.
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+{
+    float x = readFloat();
+    println(x);
+}
+\end{decabox}
+\small
+\textbf{readFloat()}: Lit un flottant sur l'entrée standard.
+\end{minipage}
+\end{center}
+
+\subsection{Affichages / impression en Deca}
+\subsubsection{Affichage décimal : \texttt{print} et \texttt{println}}
+
+\begin{center}
+\begin{minipage}{0.98\linewidth}
+\begin{decabox}
+{
+    int x = 3;
+    print("x=");
+    println(x);
+}
+\end{decabox}
+\small
+\textbf{print/println}: Affichent des \texttt{int}, \texttt{float} ou \texttt{string}. \\ \texttt{println} ajoute un saut de ligne.
+\end{minipage}
+\end{center}
+
+\subsubsection{Affichage hexadécimal : \texttt{printx} et \texttt{printlnx}}
+
+Les instructions \texttt{printx} et \texttt{printlnx} permettent d'afficher des
+valeurs de type \texttt{float} en notation hexadécimale.
+Elles sont principalement destinées au débogage et à la vérification précise
+des valeurs flottantes.
+
+\begin{center}
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+{
+    float a = 3;
+    printx(a);
+}
+\end{decabox}
+
+\small
+Affiche :
+\texttt{0x1.8p+1}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+{
+    float b = 1.0;
+    printlnx(b);
+}
+\end{decabox}
+
+\small
+Affiche :
+\texttt{0x1.0p+0}
+\end{minipage}
+\end{center}
+
+\small
+La notation affichée suit la forme :
+\[
+\texttt{0xMANTISSE p EXPOSANT}
+\]
+où la mantisse est exprimée en base 16 et l'exposant en base 2.
+
+\subsection{ Conversion explicite : \texttt{(type) (expr)}}
+
+\textbf{Cast: }Conversion explicite entre types numériques (selon les règles de la spécification).
+On peut convertir un objet de type int en type float et inversement.
+
+\begin{center}
+\begin{decabox}
+{
+    int a = 3;
+    float x = (float) (a);
+    int b = (int) (3.7);
+}
+\end{decabox}
+
+NB : Les parenthèses sont \textbf{obligatoires} pour éviter des erreurs syntaxique.
+\end{center}
+
+
+% =========================================================
+\subsection{Structures de contrôle}
+
+\subsubsection{Conditions}
+
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+{
+    if ( x < 0 ) {
+        print("negatif");
+    } else if ( x == 0 ) {
+        print("nul");
+    } else {
+        print("positif");
+    }
+} 
+\end{decabox}
+\end{minipage} \\
+
+\texttt{NB} : \texttt{else if} peut être utilisé plusieurs fois dans un seul \texttt{if}.
+
+\subsubsection{Boucles}
+
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+while (x > 0) {
+    x = x - 1;
+}
+\end{decabox}
+\end{minipage}
+
+% =========================================================
+\section{Création d'objets : \texttt{new}}
+
+\begin{center}
+\begin{minipage}{0.98\linewidth}
+\begin{decabox}
+class Point {
+    int x;
+    int y;
+}
+
+{
+    Point p = new Point();
+    p.x = 2;
+    p.y = 3;
+    println(p.x);
+}
+\end{decabox}
+\small
+\textbf{new}: Instancie un objet. L'accès aux champs se fait avec \texttt{obj.champ}.
+\end{minipage}
+\end{center}
+
+% ======================================================
+\section{Héritage en Deca}
+
+La notion d'\textbf{héritage des classes} est permise en Déca avec le mot clé \texttt{extends}. Ce qui est important lors d'une redéfinition de méthodes ou la factorisation d'un code. En fin, le fait qu'une classe fille A hérite d'une classe mère (ou encore super classe) B se traduit de la manière suivante : \texttt{class A extends B}. \\
+
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+class B {}
+
+class A extends B {
+    int x;
+
+    int getX() {
+        return x;
+    }
+}
+\end{decabox}
+\end{minipage}
+
+% ======================================================
+
+\section{Méthodes en Deca}
+
+La signature d'une méthode en Deca implique :
+\begin{enumerate}
+    \item La visibilité
+    \item Le type de retour
+    \item Le nom de la méthode
+    \item Le(s) paramètre(s) si elle en possède et son/leur type.
+\end{enumerate}
+
+\subsection{Méthodes simples}
+
+\begin{center}
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+protected int methodX(int x) {
+    return x + 1;
+}
+\end{decabox}
+\small
+- Visibilité : protected \\
+- Type de retour : int \\
+- nom de méthode : methodX \\
+- Paramètre : x de type int
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\linewidth}
+\begin{decabox}
+void methodY(int x) {
+    print(x);
+}
+\end{decabox}
+\small
+- Visibilité : public \\
+- Type de retour : void \\
+- nom de méthode : methodY \\
+- Paramètre : x de type int
+\end{minipage}
+\end{center}
+
+\subsection{Méthodes avec corps assembleur : \texttt{asm}}
+
+Le mot-clé \texttt{asm} permet de définir une méthode dont le corps est écrit
+directement en assembleur IMA. Ce type de méthode est principalement utilisé
+pour implémenter des fonctionnalités de bas niveau ou des bibliothèques standard.
+
+La syntaxe consiste à remplacer le corps classique de la méthode par un bloc
+\texttt{asm("...")} contenant les instructions assembleur.
+
+\begin{decabox}
+class A {
+    int foo() 
+        asm("LOAD #0, R0
+             ADD #1, R0
+        ");
+}
+
+\end{decabox}
+\textbf{Remarque :} les méthodes utilisant \texttt{asm} sont généralement destinées
+aux bibliothèques et ne sont pas recommandées pour un usage courant dans les
+programmes utilisateurs.
+
+\subsection{Appel de méthode}
+
+\begin{center}
+\begin{minipage}{0.98\linewidth}
+\begin{decabox}
+class A {
+    int f(int a) {
+        return a + 1;
+    }
+}
+
+{
+    A obj = new A();
+    println(obj.f(3));
+}
+\end{decabox}
+\small
+\textbf{Appel: }\texttt{obj.methode(params)}. Le type retourné dépend de la signature.
+\end{minipage}
+\end{center}
+
+
+\subsection{Redéfinition de méthode (override)}
+
+Une classe fille peut redéfinir une méthode héritée de sa classe mère
+en conservant \textbf{la même signature}. Pour se faire il suffit de caster l'objet fille \texttt{B} en objet mère \texttt{A}. Ce qui se fait selon cette syntaxe : \texttt{((A)(this)).<methodeARedefinir>}. Cette manière de faire est une représentation du mot clé \texttt{super} en Java.
+
+L'exemple suivant illustre bien le critère de redéfinition
+
+\begin{decabox}
+class Personne {
+int num;
+
+void init (int nb) {
+  this.num = nb;
+}
+void afficherNb () {
+  print(this.num) ;
+}
+}
+
+class Etudiant extends Personne {
+  int age ;
+
+void init(int n) {
+  ((Personne)(this)).init(n) ;  // cast
+  this.age = 23;
+}
+void afficherAge () {
+  println(age) ;
+}
+}
+{
+Etudiant e = new Etudiant () ;
+e.init (1) ;
+e . afficherNb () ; // Etudiant herite de afficheNb ()
+print (" - toto : ") ;
+e . afficherAge () ;
+}
+\end{decabox}
+
+\textit{Retour attendu :}  \texttt{1 - toto : 23}
+
+NB: La méthode appelée dépend du type dynamique de l'objet.
+
+\subsection{Retour de méthode : \texttt{return}}
+
+\begin{center}
+\begin{minipage}{0.98\linewidth}
+\begin{decabox}
+class A {
+    int f(int a) {
+        return a + 1;
+    }
+}
+\end{decabox}
+\small
+\textbf{{return}: }Termine la méthode et renvoie une valeur compatible avec le type de retour.
+\end{minipage}
+\end{center}
+
+% ======================================================
+
+\section{Test de type : \texttt{instanceof}}
+
+\begin{center}
+\begin{minipage}{0.98\linewidth}
+\begin{decabox}
+class A {}
+class B extends A {}
+
+{
+    A obj = new B();
+    if (obj instanceof B) {
+        println("obj est une instance de B");
+    }
+}
+\end{decabox}
+\small
+\textbf{instanceof: }Teste dynamiquement si un objet appartient à une classe (ou sous-classe).
+\end{minipage}
+\end{center}
+
+% ======================================================
+
+\section{Mot-clé \texttt{this}}
+
+\begin{center}
+\begin{minipage}{0.98\linewidth}
+\begin{decabox}
+class A {
+    int x;
+
+    void setX(int x) {
+        this.x = x;
+    }
+}
+\end{decabox}
+\end{minipage}
+\end{center}
+
+\subsection{Utilisation implicite de \texttt{this} dans les classes}
+
+Dans notre compilateur, l’accès aux attributs et aux méthodes d’une classe peut, dans certains cas, se faire sans utiliser explicitement le mot-clé \texttt{this}. Cependant, cette omission n’est valide que lorsqu’il n’existe aucune ambiguïté de nom.
+
+\paragraph{Accès aux attributs sans ambiguïté}
+
+Considérons l’exemple suivant :
+
+\begin{decabox}
+class A {
+    int x;
+    void setX(int c) {
+        x = c;
+    }
+}
+
+{
+    A a = new A();
+    a.setX(5);
+    println(a.x);
+}
+\end{decabox}
+
+Dans la méthode \texttt{setX}, l’affectation \texttt{x = c} fonctionne sans préfixer \texttt{x} par \texttt{this}, car :
+\begin{itemize}
+    \item \texttt{x} est un attribut de la classe,
+    \item \texttt{c} est un paramètre de la méthode,
+    \item il n’existe aucune ambiguïté entre les deux identificateurs.
+\end{itemize}
+
+Le compilateur résout donc automatiquement \texttt{x} comme étant \texttt{this.x}.
+
+\paragraph{Cas d’ambiguïté avec les paramètres}
+
+En revanche, lorsque le paramètre de la méthode porte le même nom qu’un attribut, l’utilisation explicite de \texttt{this} devient obligatoire.
+
+\begin{decabox}
+    class A {
+    int x;
+    void setX(int x) {
+        this.x = x;
+    }
+}
+\end{decabox}
+
+Dans ce cas, l’identificateur \texttt{x} fait référence par défaut au paramètre local. Sans l’utilisation de \texttt{this.x}, l’attribut de la classe serait masqué et la méthode ne fonctionnerait pas comme attendu.
+
+\paragraph{Appel de méthodes au sein d’une même classe}
+
+De manière similaire, lorsqu’une méthode appelle une autre méthode de la même classe, l’utilisation explicite de \texttt{this} est nécessaire.
+
+\begin{center}
+\begin{minipage}{0.98\linewidth}
+\begin{decabox}
+class A {
+    int p = 2;
+
+    void init(int n) {
+        p = n;
+    }
+
+    void reInit(int m) {
+        this.init(m);
+    }
+
+    void affiche() {
+        println(p);
+    }
+}
+
+{
+    A a = new A();
+    a.init(3);
+    a.reInit(5);
+    a.affiche();
+}
+\end{decabox}
+\end{minipage}
+\end{center}
+
+% =========================================================
+
+\section{Messages d'erreur}
+
+Le compilateur peut produire différents types d'erreurs au cours de la
+compilation ou de l'exécution. 
+
+\subsection{Erreurs lexicales}
+Ces erreurs surviennent lors de l'analyse lexicale, par exemple :
+\begin{itemize}[label=\textbullet]
+    \item \textbf{caractère non reconnu}
+
+\begin{decabox}
+    {
+        "chaine pas finie
+    }
+    Erreur :<filename>:2:4: token recognition error at: '"chaine pas finie\n}\n\n'
+\end{decabox}
+
+    \item \textbf{chaîne de caractères mal formée}
+\begin{decabox}
+{
+print("hello);
+}
+Erreur :<filename>:2:6: token recognition error at: '"hello);'
+\end{decabox}
+
+
+\end{itemize}
+
+\subsection{Erreurs syntaxiques}
+Les erreurs syntaxiques indiquent :
+\begin{itemize}[label=\textbullet]
+    \item \textbf{la ligne}
+    \item \textbf{la colonne}
+    \item \textbf{le symbole fautif}
+\end{itemize}
+
+\begin{decabox}
+{
+    int x;
+    iff (x = 0) {
+        x = 2;
+    } else {
+        x = 3;
+    }
+}
+Erreur :
+<filename>:3:16: no viable alternative at input '{'
+
+\end{decabox}
+
+
+Certaines erreurs de syntaxe peuvent être signalées sur un symbole situé
+après la cause réelle de l’erreur. Cela est dû au fonctionnement de l’analyse
+syntaxique, qui détecte l’erreur au moment où aucune règle grammaticale valide
+ne peut être appliquée .
+Dans cet exemple, l’erreur provient de l’utilisation du mot-clé invalide
+\texttt{iff}. Le message est toutefois déclenché -- lors de la lecture du
+symbole \texttt{\{} car il s'attendait à un \texttt{;} supposant que c'est une appelle de fonction \texttt{iff(args)}-- lorsque le parseur ne trouve plus de règle valide.
+\subsection{Erreurs contextuelles}
+Ces erreurs sont détectées lors des vérifications contextuelles
+(typage, déclarations, portées).
+\begin{longtable}{|p{5.5cm}|p{4.5cm}|p{5.5cm}|}
+\hline
+\textbf{Message d'erreur} &
+\textbf{Règle violée} &
+\textbf{Configuration provoquant l'erreur} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Message d'erreur} &
+\textbf{Règle violée} &
+\textbf{Configuration provoquant l'erreur} \\
+\hline
+\endhead
+
+% =====================================================
+\multicolumn{3}{|l|}{\textbf{Erreurs de typage arithmétique et conversions}} \\
+\hline
+Incompatible types for arithmetic operation: [type1] and [type2] &
+Les opérateurs arithmétiques s'appliquent uniquement aux types numériques &
+Opération arithmétique entre types incompatibles (ex. \texttt{boolean + int}) \\
+\hline
+Incompatible types for modulo operation: [type1] and [type2] &
+L'opérateur modulo est réservé aux entiers &
+Utilisation de \% avec des types non entiers \\
+\hline
+Modulo requires integer operands &
+Les opérandes de \% doivent être de type int &
+Application du modulo à un float \\
+\hline
+Operator MINUS cannot be applied on type [type] &
+L'opérateur unaire - s'applique uniquement aux types numériques &
+moins unaire appliquée à un booléen \\
+\hline
+Operator CONV\_FLOAT cannot be applied on type [type] &
+La conversion implicite en float est autorisée uniquement depuis int &
+Tentative de conversion depuis un type non numérique \\
+\hline
+
+% =====================================================
+\multicolumn{3}{|l|}{\textbf{Erreurs sur les expressions booléennes et conditions}} \\
+\hline
+Condition expression must be of boolean type &
+Les conditions de contrôle doivent être booléennes &
+Condition de if ou while non booléenne \\
+\hline
+Boolean operations require boolean operands &
+Les opérateurs logiques nécessitent des booléens &
+Utilisation de \texttt{\&\&} ou \texttt{||} avec des types non booléens \\
+\hline
+Operator NOT cannot be applied on type [type] &
+L'opérateur ! s'applique uniquement aux booléens &
+Négation appliquée à un type non booléen \\
+\hline
+
+% =====================================================
+\multicolumn{3}{|l|}{\textbf{Erreurs sur les comparaisons}} \\
+\hline
+Comparison operators require int or float operands &
+Les comparaisons sont définies sur les types numériques &
+Comparaison impliquant des booléens \\
+\hline
+Invalid types for equality comparison: [type1] and [type2] &
+Les comparaisons d'égalité nécessitent des types compatibles &
+Comparaison entre types incompatibles \\
+\hline
+
+% =====================================================
+\multicolumn{3}{|l|}{\textbf{Erreurs d'affectation et de conversion}} \\
+\hline
+Type mismatch: cannot assign/cast [exprType] to [targetType] &
+Compatibilité des types lors de l'affectation &
+Affectation d'un float à un int \\
+\hline
+Type mismatch: cannot cast [exprType] to [targetType] &
+Conversions explicites autorisées uniquement &
+Cast invalide entre types incompatibles \\
+\hline
+Identifier [name] is not assignable &
+Une affectation doit cibler une LValue &
+Affectation sur une expression non assignable \\
+\hline
+
+% =====================================================
+\multicolumn{3}{|l|}{\textbf{Erreurs sur les identificateurs et déclarations}} \\
+\hline
+Identifier [name] is unknown &
+Tout identificateur doit être déclaré avant usage &
+Utilisation d'une variable non déclarée \\
+\hline
+Type [name] is unknown &
+Les types doivent être définis &
+Utilisation d'un type inexistant \\
+\hline
+Variable [name] is already defined in this scope &
+Un identificateur ne peut être redéfini dans le même environnement &
+Double déclaration dans un même bloc \\
+\hline
+Parameter [name] already defined &
+Les paramètres doivent avoir des noms distincts &
+Deux paramètres portant le même nom \\
+\hline
+A variable cannot have type void &
+Le type void est interdit pour les variables &
+Déclaration d'une variable de type void \\
+\hline
+A parameter cannot have type void &
+Les paramètres ne peuvent pas être de type void &
+Paramètre déclaré avec le type void \\
+\hline
+
+% =====================================================
+\multicolumn{3}{|l|}{\textbf{Erreurs liées aux entrées / sorties}} \\
+\hline
+Only strings, ints and floats can be printed &
+Les fonctions d'affichage acceptent uniquement certains types &
+Tentative d'affichage d'une expression non autorisée \\
+\hline
+
+% =====================================================
+\multicolumn{3}{|l|}{\textbf{Erreurs d'exécution du code assembleur}} \\
+\hline
+Erreur d'exécution (division par zéro, débordement, accès mémoire) &
+Contraintes non vérifiables statiquement &
+Dépend des valeurs manipulées à l'exécution \\
+\hline
+
+\end{longtable}
+
+
+\subsection{Erreurs à l'exécution}
+Ces erreurs sont détectées lors de l'exécution du code assembleur généré :
+\begin{itemize}[label=\textbullet]
+    \item\textbf{Débordement arithmétique}{
+
+
+\begin{decabox}
+{
+    int a = 2147483647;
+    a = a + 1;
+    print(a);
+}
+Resultat :
+-2147483648
+\end{decabox}
+On obtient un débordement arithmétique silencieux. En effet le programme compile mais ne fait pas le calcul attendu ($2147483647 = {2}^{31} -1$ est la plus grande valeur possible pour un int donc quand on ajoute 1 à $a$ la valeur reboucle et on obtient ${-2}^{31}$).
+
+    \item \textbf{Erreur d'entrée/sortie}
+    {
+\begin{decabox}
+{
+int a = readInt();
+print(a);
+
+}
+Saisie utilisateur : Hello
+Resultat :
+Erreur: D'entree incompatible avec la variable 
+\end{decabox}}
+    
+    \item \textbf{Dépassement de pile}
+    {
+\begin{decabox}
+class A{
+    int f(){
+        return this.f();
+    }
+}
+{
+A a = new A();
+a.f();
+}
+Resultat :
+Erreur:   ** IMA ** ERREUR ** Ligne 59 : 
+    BSR : Debordement de la pile
+\end{decabox}}
+
+    
+    \item \textbf{{Erreurs internes du compilateur}}
+
+Dans certains cas, une erreur de typage (par exemple l'utilisation d'un
+identifiant inconnu comme \texttt{prnt}) peut provoquer une erreur interne
+du compilateur au lieu d’un message contextuel approprié.
+
+Ce comportement correspond à une limitation actuelle de l’implémentation
+de la partie orientée objet.
+
+\end{itemize}
+
+
+\section{Utilisation du compilateur}
+
+
+Le compilateur \texttt{decac} compile un ou plusieurs fichiers \texttt{.deca}
+en un programme assembleur pour la machine abstraite IMA (fichier \texttt{.ass}).
+
+\subsection{Syntaxe générale}
+
+\begin{verbatim}
+decac [[-p | -v] [-n] [-r X] [-d]* [-P] <fichier.deca>...] | [-b]
+\end{verbatim}
+
+\begin{itemize}
+    \item \texttt{<fichier.deca>...} : un ou plusieurs (valable pour -P) fichier(s) source Deca.
+    \item Les options \texttt{-p} et \texttt{-v} sont \textbf{mutuellement exclusives}.
+\end{itemize}
+
+\subsection{Configuration de la commande \texttt{decac}}
+
+Afin de faciliter l’utilisation du compilateur \texttt{decac} depuis n’importe quel répertoire, un script shell nommé \texttt{runDecac} est fourni à la racine du projet (répertoire \texttt{gl54}).
+
+\subsubsection{Objectif}
+
+Ce script permet d’ajouter automatiquement le répertoire contenant le binaire \texttt{decac} au \texttt{PATH} de l’utilisateur.  
+Une fois configuré, le compilateur peut être invoqué depuis n’importe quel dossier sans avoir à spécifier son chemin absolu.
+
+\subsubsection{Procédure d’installation}
+\label{sec:redirection}
+
+\begin{enumerate}
+    \item Se placer à la racine du projet :
+\begin{verbatim}
+cd gl54
+\end{verbatim}
+
+    \item Rendre le script exécutable (la première fois) :
+\begin{verbatim}
+chmod +x runDecac
+\end{verbatim}
+
+    \item Lancer le script :
+\begin{verbatim}
+./runDecac
+\end{verbatim}
+
+    \item Appliquer immédiatement la modification du \texttt{PATH} selon le message affiché sur terminal d'exécution (de forme : \texttt{source /...)}.
+
+\end{enumerate}
+
+\subsubsection{Fonctionnement interne}
+
+Le script :
+\begin{itemize}
+    \item détecte automatiquement le shell utilisé (\texttt{bash}, \texttt{zsh}, ou autre),
+    \item sélectionne le fichier de configuration correspondant,
+    \item ajoute le répertoire \texttt{src/main/bin} au \texttt{PATH} si et seulement s’il n’est pas déjà présent.
+\end{itemize}
+
+Pour éviter toute duplication, le script vérifie la présence exacte de la ligne suivante dans le fichier de configuration :
+
+\begin{verbatim}
+export PATH="$PATH:/chemin/absolu/vers/src/main/bin"
+\end{verbatim}
+
+Cette vérification empêche les faux positifs qui pourraient survenir si le chemin apparaissait ailleurs dans le fichier (commentaires, anciennes configurations, etc.).
+
+\subsubsection{Résultat}
+
+Une fois la configuration terminée, l’utilisateur peut compiler un fichier \texttt{.deca} depuis n’importe quel répertoire :
+
+\begin{verbatim}
+decac mon_fichier.deca
+\end{verbatim}
+
+\subsubsection{Remarque importante}
+
+Le script \texttt{runDecac} doit impérativement être exécuté depuis la racine du projet (\texttt{gl54}).  
+Un lancement depuis un autre répertoire empêcherait la résolution correcte du chemin vers le binaire \texttt{decac}.
+
+\subsection{Outil complémentaire : \texttt{decac-energy}}
+
+Dans le cadre du projet GL, un script expérimental nommé \texttt{decac-energy}
+est fourni afin d'estimer l'impact d'une compilation et de l'exécution
+d'un programme Deca.
+
+\subsubsection{Objectif}
+
+L'objectif de cet outil est de fournir des indicateurs simples
+(performance, nombre d'instructions générées, temps d'exécution, consommation mémoire)
+permettant de raisonner sur le coût d'exécution d'un programme,
+et indirectement sur son impact énergétique.
+
+\subsubsection{Principe de fonctionnement}
+
+Le script :
+\begin{itemize}
+  \item compile un fichier \texttt{.deca} à l'aide de \texttt{decac},
+  \item estime le nombre d'instructions IMA générées à partir du fichier assembleur,
+  \item mesure le temps d'exécution et la consommation mémoire via l'outil \texttt{time}.
+\end{itemize}
+
+Les valeurs obtenues constituent des indicateurs approximatifs et ne représentent
+pas une mesure directe de consommation énergétique.
+
+\subsubsection{Utilisation}
+
+Le script s'utilise sur un fichier \texttt{.deca} de la manière suivante :
+\begin{enumerate}
+    \item Exécuter le script \texttt{runDecac} et recharger la configuration du shell depuis la racine du projet comme décrit dans la section~\nameref{sec:redirection} si ce n'est pas encore fait
+    \item Lancer \texttt{decac-energy} sur un programme \texttt{.deca} comme tel : \\
+    \texttt{decac-energy mon\_programme.deca}
+\end{enumerate}
+
+\subsubsection{Remarque}
+
+Cet outil est fourni à titre expérimental et pédagogique.
+Il ne modifie en aucun cas le comportement du compilateur \texttt{decac}.
+
+
+
+
+\subsection{Options disponibles}
+
+\begin{itemize}
+    \item \texttt{-b} \quad (banner) : affiche la bannière du compilateur. Dans ce mode, aucun
+    fichier n’est compilé.
+    
+    \item \texttt{-p} \quad (parse) : mode \textit{parse}. Affiche le programme après décompilation
+    (sortie texte) et n’effectue pas la génération de code.
+
+    \item \texttt{-v} \quad (verification) : mode \textit{verify}. Effectue les vérifications contextuelles
+    et affiche les informations associées (diagnostics / traces), sans lancer
+    la génération de code.
+
+    \item \texttt{-n} \quad (no check) : désactive certaines vérifications à l’exécution lors de la
+    génération du code (par exemple certaines protections ou tests runtime).
+
+    \item \texttt{-r $X$} \quad (registers) : fixe le nombre de registres utilisables à $X$, avec $4 \le X \le 16$. 
+    \textbf{Une valeur en dehors de cet intervalle provoque
+    une erreur.}
+
+    \item \texttt{-d} \quad (debug) : augmente le niveau de traces (option répétable).
+    Plusieurs occurrences augmentent la verbosité : \texttt{-d}, \texttt{-dd},
+    \texttt{-ddd}, etc.
+    \item \texttt{-P} \quad (parallel) : lance la compilation des fichiers en parallèle (pour accélérer la compilation) s'il y a plusieurs fichiers sources.
+\end{itemize}
+
+\subsection{Exemples d’utilisation}
+
+Compilation standard :
+\begin{verbatim}
+decac prog.deca
+\end{verbatim}
+
+Compilation de plusieurs fichiers :
+\begin{verbatim}
+decac prog1.deca prog2.deca
+\end{verbatim}
+
+Affichage du programme décompilé (sans génération de code) :
+\begin{verbatim}
+decac -p prog.deca
+\end{verbatim}
+
+Vérifications contextuelles (sans génération de code) :
+\begin{verbatim}
+decac -v prog.deca
+\end{verbatim}
+
+Compilation en désactivant certaines vérifications à l’exécution :
+\begin{verbatim}
+decac -n prog.deca
+\end{verbatim}
+
+Compilation en limitant le nombre de registres à 8 :
+\begin{verbatim}
+decac -r 8 prog.deca
+\end{verbatim}
+
+Augmentation du niveau de traces :
+\begin{verbatim}
+decac -d prog.deca
+decac -dd prog.deca
+\end{verbatim}
+
+\subsection{Exécution des programmes compilés}
+
+Après la compilation d’un programme \texttt{.deca} à l’aide du compilateur \texttt{decac}, un fichier assembleur \texttt{.ass} est généré. Ce fichier contient le code IMA correspondant au programme source et constitue l’entrée du simulateur IMA pour l’exécution.
+
+\subsubsection{Commande d’exécution}
+
+L’exécution d’un programme compilé se fait à l’aide de la commande suivante :
+
+\begin{verbatim}
+ima nom-fichier.ass
+\end{verbatim}
+
+Pour avoir les statistiques de l'exécution (nombre d'instructions et temps d'exécution) : 
+\begin{verbatim}
+ima -s nom-fichier.ass
+\end{verbatim}
+
+où \texttt{nom-fichier.ass} est le fichier assembleur produit par \texttt{decac}.  
+Le simulateur \texttt{ima} interprète ce fichier et exécute les instructions IMA qu’il contient.
+
+\subsubsection{Remarque sur l’extension \texttt{.ass}}
+
+Il est nécessaire de fournir explicitement l’extension \texttt{.ass} lors de l’appel à \texttt{ima}. En effet, le simulateur IMA ne possède pas de mécanisme de résolution automatique des extensions, contrairement à certains environnements comme Java où la commande \texttt{java} se base sur le nom de la classe.
+
+Par exemple, la commande suivante est incorrecte et ne fonctionnera pas :
+
+\begin{verbatim}
+ima nom-fichier
+\end{verbatim}
+
+\subsection{Compilation et exécution simplifiées}
+
+Afin d'améliorer l'expérience utilisateur, nous avons ajouté un script Bash permettant
+de simplifier la compilation et l'exécution des programmes Deca.
+
+\paragraph{Script \texttt{exec-decac}}
+Le script \texttt{exec-decac}, situé dans \texttt{src/main/bin/}, permet de compiler et
+d'exécuter un programme Deca en une seule commande.
+Il automatise les étapes suivantes :
+\begin{itemize}
+    \item Compilation du fichier \texttt{.deca} avec \texttt{decac}
+    \item Exécution du fichier assembleur généré avec l'interpréteur \texttt{ima}
+\end{itemize}
+
+Son utilisation est la suivante :
+\begin{quote}
+\texttt{exec-decac nom\_programme}
+\end{quote}
+
+
+\paragraph{Test de la fonctionnalité}
+Pour tester cette amélioration, il suffit de :
+\begin{enumerate}
+    \item Exécuter le script \texttt{runDecac} et recharger la configuration du shell depuis la racine du projet comme décrit dans la section~\nameref{sec:redirection} si ce n'est pas encore fait
+    \item Lancer \texttt{exec-decac} sur un fichier \texttt{.deca}
+\end{enumerate}
+
+\subsection{Erreurs de ligne de commande}
+
+Le compilateur peut refuser l’exécution dans les cas suivants :
+\begin{itemize}
+    \item option inconnue (toute option commençant par \texttt{-} non supportée) ;
+    \item options \texttt{-p} et \texttt{-v} utilisées simultanément ;
+    \item utilisation de \texttt{-r} sans argument ;
+    \item argument de \texttt{-r} non entier ou hors de l’intervalle \texttt{[4,16]} ;
+    \item aucun fichier fourni (hors cas \texttt{-b}) : affichage de l’aide.
+\end{itemize}
+
+
+\section{Limitations connues}
+
+\subsection{Limitation concernant les méthodes \texttt{asm}}
+
+Notre compilateur permet d’intégrer du code assembleur IMA directement dans une méthode Deca via la construction \texttt{asm("...")}.  
+Cependant, cette fonctionnalité présente une limitation concernant l’utilisation de chaînes de caractères avec l’instruction  d'affichage \texttt{WSTR}.
+
+En assembleur IMA, l’instruction \texttt{WSTR} attend une chaîne de caractères écrite sous la forme suivante :
+\begin{quote}
+\texttt{WSTR "message"}
+\end{quote}
+
+Or, dans le langage Deca, les chaînes de caractères sont également délimitées par des guillemets (\texttt{"}).  
+Ainsi, écrire directement l’instruction suivante dans un bloc \texttt{asm} :
+\begin{quote}
+\texttt{WSTR "message"}
+\end{quote}
+entraîne une erreur de syntaxe lors de l’analyse du programme Deca, car les guillemets internes ne sont pas échappés.
+
+Une tentative de correction consiste à échapper les guillemets :
+\begin{quote}
+\texttt{WSTR \textbackslash"message\textbackslash"}
+\end{quote}
+Cette écriture permet au compilateur Deca de réussir l’analyse syntaxique.  
+Cependant, lors de la génération du code assembleur IMA, les caractères d’échappement (\texttt{\textbackslash}) sont conservés, ce qui produit le code suivant :
+\begin{quote}
+\texttt{WSTR \textbackslash"message\textbackslash"}
+\end{quote}
+Or, l’assembleur IMA ne reconnaît pas le caractère \texttt{\textbackslash}, ce qui provoque une erreur à l’exécution.
+
+Cette limitation ne peut pas être corrigée à l’étape de génération de code (étape C), car l’information sur l’échappement des chaînes est déjà figée lors des phases précédentes d’analyse lexicale et syntaxique.  
+Une correction nécessiterait une modification du traitement des chaînes de caractères dans la grammaire ou dans l’analyse lexicale.
+
+En conséquence, l’utilisation de l’instruction \texttt{WSTR} avec une chaîne de caractères littérale n’est pas supportée dans les blocs \texttt{asm} de notre compilateur.
+
+\subsection{Appel de méthodes au sein d'une même classe }
+
+La version finale de notre compilateur n'implémente pas l'appel de méthodes --même issue de la même classe-- sans le mot clé \texttt{this}. IL faut obligatoirement précéder l'appel à la méthode d'un \texttt{this}. 
+Ainsi le programme suivant déclenchera une erreur à l'exécution et demandera de fournir un objet sur lequel appeler la méthode à la ligne 9.
+
+\begin{decabox}
+1 class A {
+2    int p = 2;
+3
+4    void init(int n) {
+5        p = n;
+6    }
+7
+8    void reInit(int m) {
+9        init(m);
+10    }
+11
+12    void affiche() {
+13        println(p);
+14    }
+15 }
+16
+17 {
+18    A a = new A();
+19    a.init(3);
+20    a.reInit(5);
+21    a.affiche();
+22 }
+\end{decabox}
+
+
+\section{Utilisation de l'extensions trigo}
+\subsection{Activation de l’extension}
+
+L’extension \texttt{TRIGO} est intégrée à la bibliothèque standard du compilateur.
+Aucune option supplémentaire n’est nécessaire pour l’activer.
+
+La compilation d’un programme utilisant les fonctions trigonométriques
+se fait de la même manière qu’un programme Deca standard :
+\begin{verbatim}
+decac programme.deca
+\end{verbatim}
+
+\subsection{Utilisation dans un programme Deca}
+
+Les fonctions trigonométriques sont fournies par la classe \texttt{Math}.
+Cette classe est rendue disponible via l’inclusion du fichier correspondant
+en début de programme :
+
+\begin{verbatim}
+#include "Math.decah"
+\end{verbatim}
+
+Les attributs constantes disponibles :
+\begin{itemize}
+    \item \texttt{PI} : valeur de PI 
+\end{itemize}
+
+Les fonctions disponibles sont les suivantes :
+\begin{itemize}
+  \item \texttt{sin(float)} : sinus
+  \item \texttt{cos(float)} : cosinus
+  \item \texttt{atan(float)} : arc tangente
+  \item \texttt{asin(float)} : arc sinus
+  \item \texttt{ulp(float)} : précision du flottant
+\end{itemize}
+
+Toutes ces fonctions prennent un paramètre de type \texttt{float} et
+renvoient une valeur de type \texttt{float}.
+
+Pour utiliser une fonction, il est nécessaire de créer une instance de la classe
+\texttt{Math}, puis d’appeler la méthode souhaitée.
+
+\begin{decabox}
+{
+  Math m = new Math();
+  float y = m.cos(m.PI/2);
+  println(x);
+}
+\end{decabox}
+
+\subsection{Options de compilation}
+
+Aucune option spécifique de la commande \texttt{decac} n’est requise pour
+utiliser cette extension.
+
+
+\section{Limitations des extensions}
+
+
+Cette section analyse les marges d'erreur obtenues lors de la validation de l'extension \texttt{TRIGO} (\texttt{sin}, \texttt{cos}, \texttt{atan}, \texttt{asin}). Elle démontre que les erreurs observées sont les conséquences inévitables de l'architecture 32 bits et de la segmentation des intervalles de calcul.
+
+\subsection{La Barrière de Précision : Le Mur des 23 bits}
+
+La contrainte fondamentale de notre implémentation est l'utilisation exclusive du format \texttt{float} IEEE 754. Ce format alloue \textbf{23 bits} à la mantisse, ce qui fixe la précision relative théorique à :
+\[
+\epsilon = 2^{-23} \approx 1,19 \times 10^{-7}
+\]
+Toute opération arithmétique élémentaire introduit une erreur d'arrondi potentielle de 0,5 ULP (\textit{Unit in the Last Place}). Dans un polynôme de degré élevé, ces erreurs s'accumulent.
+En conséquence, même avec un algorithme mathématiquement optimal, il est impossible de garantir 23 bits de précision sur le résultat final. Nous visons une précision effective de \textbf{21 à 22 bits}, ce qui correspond à une perte de 1 à 2 bits due au "bruit" de calcul.
+
+\subsection{Analyse Spécifique des Fonctions Inverses (\texttt{arctan}, \texttt{asin})}
+
+Nos implémentations des fonctions inverses reposent sur une découpe du domaine de définition pour assurer la convergence des séries. Cette méthode introduit structurellement des discontinuités de précision aux points de raccordement.
+
+\subsubsection{L'Arc-Tangente (\texttt{arctan}) : Le Pivot de $\pi/4$}
+Pour la fonction \texttt{arctan}, nous changeons de formule d'approximation autour de la valeur $|x| = 1$ (soit un angle de $\pm \pi/4$).
+\begin{itemize}
+    \item \textbf{Phénomène observé :} Une légère dégradation locale de la précision est visible exactement à ce point de bascule.
+    \item \textbf{Cause technique :} Le raccordement entre les deux polynômes n'est jamais parfait en arithmétique flottante. Les erreurs d'arrondi des deux méthodes s'additionnent de manière imprévisible à la frontière, créant un pic d'erreur localisé.
+\end{itemize}
+
+\subsubsection{Arcsinus (\texttt{asin}) : Le Pivot de 0.5}
+Pour la fonction \texttt{asin}, la segmentation se fait à $|x| = 0.5$. Comme illustré par nos mesures, l'erreur maximale atteint \textbf{3.0 ULP} spécifiquement à ce point de transition.
+\begin{itemize}
+    \item \textbf{Traduction en bits :} Une erreur de 3 ULP signifie que l'incertitude porte sur les $\log_2(3) \approx 1.58$ derniers bits.
+    \item \textbf{Conclusion :} Sur les 23 bits disponibles, nous en perdons environ 1.6 à cause de la discontinuité algorithmique. La précision réelle garantie est donc de \textbf{21.4 bits}, ce qui reste une performance très satisfaisante pour une bibliothèque sans type \texttt{double}.
+\end{itemize}
+
+\subsection{Le Problème de la Réduction d'Argument (\texttt{sin}, \texttt{cos})}
+
+Pour les fonctions périodiques, la limitation majeure provient du stockage des constantes. Pour calculer $\sin(x)$ sur un grand angle, nous devons effectuer la réduction $r = x - k\pi$. Or, la spécification nous contraint à stocker $\pi$ sur 32 bits.
+
+\begin{itemize}
+    \item \textbf{Catastrophic Cancellation :} Lorsque l'entrée $x$ est grande (ex: $x > 10^4$), sa partie entière occupe la majorité des bits de la mantisse. Lors de la soustraction, les bits significatifs s'annulent et le résultat ne contient plus que les bits de poids faible, qui sont pollués par l'erreur d'approximation de $\pi$.
+    \item \textbf{Conséquence :} La précision s'effondre linéairement avec la grandeur de $x$. C'est une limitation physique de la machine \textit{ima} : sans type 64 bits pour stocker une valeur précise de $\pi$, il est impossible de maintenir la précision trigonométrique pour les grands angles.
+\end{itemize}
+
+\subsection{L'Observabilité Tronquée : Le Masque WFLOAT}
+
+Enfin, la validation fine de nos résultats se heurte à l'instruction d'affichage \texttt{WFLOAT}, qui tronque la sortie à \textbf{5 décimales}.
+
+\begin{itemize}
+    \item Une erreur de 2 ou 3 ULP (notre marge critique) affecte généralement la 7ème décimale. Elle est donc \textbf{invisible} via l'affichage standard.
+    
+\end{itemize}
+
+\bigskip
+
+\noindent \textbf{Note aux évaluateurs :} Pour une analyse plus approfondie incluant les courbes d'erreur détaillées (graphes) et les justifications mathématiques complètes des polynômes utilisés, nous vous invitons à consulter la section \textit{Optimisation et Justification des choix d'approximation} dans la documentation de l'extension.

@@ -1,0 +1,22 @@
+// Description:
+//    test des operations arithmetiques avec des println multiples
+//
+// Resultats:
+//    Ok
+//
+{
+    int i = 10;
+    float f = 3.14;
+    int x = 5;
+    int z;
+    // On sépare chaque type par une virgule
+    println(" i =  ", i , ",  x =  ", x, " et i + x = ", 10 + 5);
+    println(" i =  ", i , ",  x =  ", x, " et i - x = ", 10 - 5);
+    println(" i =  ", i , ",  x =  ", x, " et i / x = ", 10 / 5);
+    println(" i =  ", i , ",  x =  ", x, " et i % x = ", 10 % 5);
+    println(" i =  ", i , ",  x =  ", x, " et i * x = ", 10 * 5);
+    println(" x =  ", x , " et -x = ", -x);
+    println(" f =  ", f , " et -f = ", -f);
+
+    
+}

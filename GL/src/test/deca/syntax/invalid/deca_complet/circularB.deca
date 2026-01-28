@@ -1,0 +1,9 @@
+// Description :
+// test inclusion circulaire (en boucle)
+//
+// Resultat :
+// Erreur lexicale 
+// Ligne 8 : Circular include for file circularB
+
+#include "circularA.deca"
+

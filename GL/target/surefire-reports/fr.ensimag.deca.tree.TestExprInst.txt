@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: fr.ensimag.deca.tree.TestExprInst
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.085 s -- in fr.ensimag.deca.tree.TestExprInst

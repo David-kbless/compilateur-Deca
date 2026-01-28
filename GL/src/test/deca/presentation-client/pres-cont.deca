@@ -1,0 +1,45 @@
+// class A {
+//     protected int x;
+
+//     void initX(int x) {
+//         x = x;
+//         // this.x = x;
+//     }
+
+//     int getX() {
+//         return x;
+//     }
+
+// }
+
+class B extends A{
+    int initX(int x, boolean y) {
+        (A) (this).initX(x * 2);
+    }
+
+    // int initX(int x){
+    //     (A) (this).initX(x * 2);
+    // }
+    
+    // void initX(int x) {
+    //     (A) (this).initX(x * 2);
+    // }
+    
+}
+
+{
+    int y;
+    A a = new B();
+    B b = new B();
+    print(a instanceof A);
+    // if (a instanceof B) {
+    //     print("true\n");
+    // }
+    b.x = 10 * 2.0;
+    // b.initX(10);
+    // y = a.getX() % 3.0;
+    println(b.getX());
+    println(20/3);
+    y = b.getX() % 3;
+    println(y);
+}

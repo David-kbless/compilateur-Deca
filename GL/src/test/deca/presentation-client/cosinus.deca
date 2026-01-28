@@ -1,0 +1,7 @@
+#include "Math.decah"
+{
+    Math math = new Math();
+    float x = math.cos(1.5707963267948966/2); 
+    print("Cosinus de 1.5707963267948966/2 : ");
+    println(x);
+}

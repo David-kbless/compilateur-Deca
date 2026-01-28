@@ -1,0 +1,21 @@
+// Description:
+//    test objet fournit par le cahier de charge
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+class A{
+    void meth1(){}
+    void meth2(){
+        meth1();
+    }
+}
+
+class B extends A{
+    void meth2(){
+        meth1();
+    }
+}

@@ -1,0 +1,12 @@
+
+// Description :
+// test include fichier inexistant
+//
+// Resultat :
+// Erreur lexicale
+// Ligne 9 : Include file not found: missing.deca
+
+#include "missing.deca"
+{
+int x = 1;
+}

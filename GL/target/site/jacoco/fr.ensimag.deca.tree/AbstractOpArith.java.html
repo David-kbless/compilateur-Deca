@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractOpArith.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">AbstractOpArith.java</span></div><h1>AbstractOpArith.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.instructions.BOV;
+import fr.ensimag.ima.pseudocode.instructions.FLOAT;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+import fr.ensimag.ima.pseudocode.instructions.POP;
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import org.apache.commons.lang.Validate;
+
+/**
+ * Arithmetic binary operations (+, -, /, ...)
+ * 
+ * @author gl54
+ * @date 01/01/2026
+ */
+public abstract class AbstractOpArith extends AbstractBinaryExpr {
+
+    public AbstractOpArith(AbstractExpr leftOperand, AbstractExpr rightOperand) {
+<span class="fc" id="L27">        super(leftOperand, rightOperand);</span>
+<span class="fc" id="L28">    }</span>
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv,
+            ClassDefinition currentClass) throws ContextualError {
+        
+        //Récupération des types des opérandes
+<span class="fc" id="L35">        Type type1 = this.getLeftOperand().verifyExpr(compiler, localEnv, currentClass);</span>
+<span class="fc" id="L36">        Type type2 = this.getRightOperand().verifyExpr(compiler, localEnv, currentClass);</span>
+<span class="fc" id="L37">        Validate.notNull(type1, &quot;Left operand type cannot be null&quot;);</span>
+<span class="fc" id="L38">        Validate.notNull(type2, &quot;Right operand type cannot be null&quot;);</span>
+
+        //Vérification de la compatibilité des types des opérandes
+<span class="fc" id="L41">        Type resultType = this.typeOfOperation(compiler, type1, type2);</span>
+<span class="fc" id="L42">        Validate.notNull(resultType, &quot;Result type cannot be null&quot;);</span>
+
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (resultType.isFloat()) {</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">            if (type1.isInt()) {</span>
+<span class="fc" id="L46">                setLeftOperand(new ConvFloat(getLeftOperand()));</span>
+<span class="fc" id="L47">                getLeftOperand().verifyExpr(compiler, localEnv, currentClass);</span>
+            }
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            if (type2.isInt()) {</span>
+<span class="fc" id="L50">                setRightOperand(new ConvFloat(getRightOperand()));</span>
+<span class="fc" id="L51">                getRightOperand().verifyExpr(compiler, localEnv, currentClass);</span>
+            }
+        }
+
+        //décoration du noeud avec le type résultat
+<span class="fc" id="L56">        this.setType(resultType);</span>
+<span class="fc" id="L57">        return resultType;</span>
+    }
+
+    protected Type typeOfOperation(DecacCompiler compiler, Type t1, Type t2) throws ContextualError {
+    // Toutes les opérations sauf modulo
+<span class="fc bfc" id="L62" title="All 4 branches covered.">        if ((t1.isInt() &amp;&amp; t2.isInt())) return compiler.environmentType.INT;</span>
+<span class="pc bpc" id="L63" title="2 of 12 branches missed.">        if ((t1.isInt() &amp;&amp; t2.isFloat()) || (t1.isFloat() &amp;&amp; t2.isInt()) || (t1.isFloat() &amp;&amp; t2.isFloat()))</span>
+<span class="fc" id="L64">            return compiler.environmentType.FLOAT;</span>
+
+<span class="fc" id="L66">        throw new ContextualError(&quot;Incompatible types for arithmetic operation: &quot; + t1 + &quot; and &quot; + t2, getLocation());</span>
+}
+
+    @Override
+    public boolean isArtihmeticOp() {
+<span class="nc" id="L71">        return true;</span>
+    }
+
+    @Override
+    protected DVal codeGenInst(DecacCompiler compiler){
+
+        // @Ousmane a modifier
+        // on evalue les deux operandes
+<span class="fc" id="L79">        AbstractExpr leftOperand = getLeftOperand();</span>
+<span class="fc" id="L80">        DVal tmpOp1 = leftOperand.codeGenInst(compiler);</span>
+        GPRegister operande1;
+
+        // selon si l'operande gauche est une constante ou pas :     
+<span class="pc bpc" id="L84" title="1 of 4 branches missed.">        if(leftOperand instanceof IntLiteral || leftOperand instanceof FloatLiteral){</span>
+<span class="fc" id="L85">            operande1 = compiler.utiliserRegistre();</span>
+<span class="fc" id="L86">            compiler.addInstruction(new LOAD(tmpOp1, operande1));</span>
+        }else{
+<span class="fc" id="L88">            operande1 = (GPRegister)tmpOp1;</span>
+        }
+ 
+        // on evalue l'operande droite
+<span class="fc" id="L92">        AbstractExpr rightOperand = getRightOperand();</span>
+<span class="fc" id="L93">        DVal tmpOp2 = rightOperand.codeGenInst(compiler);</span>
+<span class="fc" id="L94">        DVal operande2 = tmpOp2;</span>
+<span class="fc" id="L95">        boolean libereOperande2 = false;</span>
+
+        // gestion de la convertion lorsqu'une op est int et l'autre float
+<span class="pc bpc" id="L98" title="1 of 4 branches missed.">        if(rightOperand.getType().isInt() &amp;&amp; leftOperand.getType().isFloat()){</span>
+<span class="nc bnc" id="L99" title="All 4 branches missed.">            if(rightOperand instanceof IntLiteral || rightOperand instanceof FloatLiteral){</span>
+<span class="nc" id="L100">                operande2 = compiler.utiliserRegistre();</span>
+<span class="nc" id="L101">                compiler.addInstruction(new LOAD(tmpOp2, (GPRegister)operande2));</span>
+<span class="nc" id="L102">                libereOperande2 = true;</span>
+            }
+<span class="nc" id="L104">            compiler.addInstruction(new FLOAT(operande2, (GPRegister)operande2));</span>
+<span class="pc bpc" id="L105" title="1 of 4 branches missed.">        }else if(leftOperand.getType().isInt() &amp;&amp; rightOperand.getType().isFloat()){</span>
+<span class="nc" id="L106">            compiler.addInstruction(new FLOAT(operande1, operande1));</span>
+        }
+
+
+        
+
+        // si on a fait un push dans la pile de operande1
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if(operande1 == operande2){</span>
+<span class="fc" id="L114">            compiler.addInstruction(new POP((Register.R0)));</span>
+<span class="fc" id="L115">            codeGenOperationBinaire(compiler, Register.R0, operande2);</span>
+            // on transvase le resultat dans operande2
+<span class="fc" id="L117">            compiler.addInstruction(new LOAD(Register.R0, (GPRegister)operande2));</span>
+<span class="fc" id="L118">            operande1 = (GPRegister) operande2;</span>
+        }
+        // sinon on effectue l'operation binaire normalement
+<span class="fc" id="L121">        codeGenOperationBinaire(compiler, operande1, operande2);</span>
+        
+        // liberation des registres utilises
+<span class="pc bpc" id="L124" title="1 of 4 branches missed.">        if(libereOperande2 || operande2 instanceof GPRegister){</span>
+<span class="fc" id="L125">            compiler.libererRegistre();</span>
+        }
+
+
+        // vérification overflow pour les float
+<span class="pc bpc" id="L130" title="1 of 4 branches missed.">        if (!compiler.getCompilerOptions().getNoCheck() &amp;&amp; getType().isFloat()) {</span>
+<span class="fc" id="L131">            compiler.addInstruction(new BOV(new Label(&quot;overflow_error&quot;)));</span>
+<span class="fc" id="L132">            compiler.addOverflowLabel();</span>
+        }
+        
+        
+
+<span class="fc" id="L137">        return operande1;</span>
+    }
+
+    
+
+    @Override
+    public int simuleExecutionNbRegistres(DecacCompiler compiler){
+        // On sauvegarde l'état du simulateur avant d'évaluer la branche gauche.
+<span class="fc" id="L145">        int compteurAvant = compiler.getCompteurRegistre();</span>
+<span class="fc" id="L146">        int stokesAvant = compiler.getNbRegStokes();</span>
+
+<span class="fc" id="L148">        int maxRegGauche = getLeftOperand().simuleExecutionNbRegistres(compiler);</span>
+
+        // Maintenant, on prépare la simulation pour la branche droite.
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        if (compiler.getNbRegStokes() &gt; stokesAvant) {</span>
+            // Un &quot;spill&quot; (sauvegarde en pile) a eu lieu dans la branche gauche.
+            // Le résultat est donc sur la pile. On peut restaurer tous les registres
+            // pour la branche droite, en notant qu'un élément de plus est sur la pile.
+<span class="nc" id="L155">            compiler.setCompteurRegistre(compteurAvant);</span>
+<span class="nc" id="L156">            compiler.setNbRegStokes(stokesAvant + 1);</span>
+        } else {
+            // Pas de &quot;spill&quot;. Le résultat de la branche gauche occupe un registre.
+            // On libère tous les autres registres temporaires utilisés pour son calcul
+            // en remettant le compteur à &quot;compteur d'avant + 1&quot;.
+<span class="fc" id="L161">            compiler.setCompteurRegistre(compteurAvant + 1);</span>
+<span class="fc" id="L162">            compiler.setNbRegStokes(stokesAvant);</span>
+        }
+
+<span class="fc" id="L165">        int maxRegDroit = getRightOperand().simuleExecutionNbRegistres(compiler);</span>
+
+        // Le pic d'utilisation est le maximum de ce qu'on a vu à gauche et à droite.
+<span class="fc" id="L168">        return Math.max(maxRegGauche, maxRegDroit);</span>
+    }
+
+    protected abstract GPRegister codeGenOperationBinaire(DecacCompiler compiler, GPRegister operande1, DVal operande2);
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

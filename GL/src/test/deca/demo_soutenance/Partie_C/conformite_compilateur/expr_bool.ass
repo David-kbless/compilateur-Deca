@@ -1,0 +1,181 @@
+; start main program
+	TSTO #12
+	BOV stack_overflow_error
+	ADDSP #9
+;  ************************************************************
+;  *           CONSTRUCTION DES VTABLES DES CLASSES           *
+;  ************************************************************
+; Construction de la VTable de la classe Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de BooleanExpr
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+	LOAD code.BooleanExpr.Epsilon, R2
+	STORE R2, 5(GB)
+	LOAD code.BooleanExpr.courtCircuit, R2
+	STORE R2, 6(GB)
+	LOAD code.BooleanExpr.equivalence, R2
+	STORE R2, 7(GB)
+	LOAD code.BooleanExpr.or, R2
+	STORE R2, 8(GB)
+; Variable Declarations : 
+	LOAD #null, R0
+	STORE R0, 9(GB)
+; Beginning of main instructions:
+	NEW #1, R2
+	BOV tas_plein
+	LEA 3(GB), R3
+	STORE R3, 0(R2)
+	PUSH R2
+	BSR init.BooleanExpr
+	POP R2
+	STORE R2, 9(GB)
+	ADDSP #1
+	LOAD 9(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #1
+	ADDSP #1
+	LOAD 9(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 3(R2)
+	SUBSP #1
+	ADDSP #1
+	LOAD 9(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 4(R2)
+	SUBSP #1
+	ADDSP #1
+	LOAD 9(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 5(R2)
+	SUBSP #1
+	HALT
+; end main program
+;  ************************************************************
+;  *  GENERATION DES INITS ET DES BODY METHODES DES CLASSES   *
+;  ************************************************************
+init.BooleanExpr:
+	LOAD -2(LB), R2
+	LOAD -2(LB), R2
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+code.BooleanExpr.Epsilon:
+	WSTR "Epsilon OK"
+	WNL
+	BRA E_Fin_if.1
+E_Sinon.1:
+E_Fin_if.1:
+fin.BooleanExpr.Epsilon:
+	RTS
+code.BooleanExpr.courtCircuit:
+	TSTO #3
+	BOV stack_overflow_error
+	ADDSP #1
+	PUSH R2
+	PUSH R3
+	LOAD #0, R0
+	STORE R0, 1(LB)
+	LOAD 1(LB), R2
+	CMP #0, R2
+	BEQ E_Sinon.2
+	LOAD #1, R2
+	LOAD #0, R1
+	CMP #0, R1
+	BEQ div_zero_error
+	QUO #0, R2
+	CMP #1, R2
+	BNE E_Sinon.2
+	WSTR "Erreur"
+	WNL
+	BRA E_Fin_if.2
+E_Sinon.2:
+	WSTR "Short-circuit AND OK"
+	WNL
+E_Fin_if.2:
+fin.BooleanExpr.courtCircuit:
+	POP R3
+	POP R2
+	SUBSP #1
+	RTS
+code.BooleanExpr.equivalence:
+	BRA E_Sinon.3
+	WSTR "Erreur"
+	WNL
+	BRA E_Fin_if.3
+E_Sinon.3:
+	WSTR "Equivalence OK"
+	WNL
+E_Fin_if.3:
+fin.BooleanExpr.equivalence:
+	RTS
+code.BooleanExpr.or:
+	TSTO #5
+	BOV stack_overflow_error
+	ADDSP #1
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	LOAD #1, R0
+	STORE R0, 1(LB)
+	LOAD 1(LB), R2
+	CMP #0, R2
+	BNE E_Fin_Or.1
+	BRA E_Sinon.4
+E_Fin_Or.1:
+	WSTR "OR OK"
+	WNL
+	BRA E_Fin_if.4
+E_Sinon.4:
+E_Fin_if.4:
+fin.BooleanExpr.or:
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	SUBSP #1
+	RTS
+;  ************************************************************
+;  * AJOUT DES LABELS ERREURS DEMANDÉES PAR LE PROGRAMME DECA *
+;  ************************************************************
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+div_zero_error:
+	WSTR "Erreur : division par 0"
+	WNL
+	ERROR
+tas_plein:
+	WSTR "Erreur : le tas est plein, impossible d'allouer de la memoire"
+	WNL
+	ERROR
+dereferencement.null:
+	WSTR "Erreur : Dereferencement null"
+	WNL
+	ERROR

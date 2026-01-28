@@ -1,0 +1,12 @@
+// Description:
+//    test d'initialisation 
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+        int x = 2 + 5 ;
+}

@@ -1,0 +1,27 @@
+// Démonstration technico-commerciale de l'extension TRIGO
+// Fonctions testées : sin, cos, atan, asin, ulp
+
+// commande de compilation :
+//  decac src/test/deca/demo_soutenance/Partie_A/demo_trigo.deca
+//  ima src/test/deca/demo_soutenance/Partie_A/demo_trigo.ass
+
+
+// exec-decac intro.deca
+
+#include "Math.decah"
+
+{
+  Math m = new Math();
+  float x, z, t;
+  float y = m.sin(m.PI);
+  float k = m.asin(1.0);
+  x = m.cos(m.PI);
+  t = m.sin(m.PI/2) + 3;
+  z = m.atan(0.5);
+  println(k);
+  println(x);
+  println(y);
+  println(z);
+  println(t);
+  
+}

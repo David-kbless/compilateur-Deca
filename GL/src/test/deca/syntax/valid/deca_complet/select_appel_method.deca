@@ -1,0 +1,15 @@
+// Description :
+//  Teste diverses expressions et appels de méthodes avec objet.
+//
+// Resultats :
+// OK
+{
+    // Simple
+    a.b();
+
+    // Appel methode
+    a.b(1, 2);
+
+    // Appel statique (sans objet)
+    foo(3);
+}

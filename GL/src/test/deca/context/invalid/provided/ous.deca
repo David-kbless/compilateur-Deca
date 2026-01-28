@@ -1,0 +1,13 @@
+class A{
+    protected int x;
+    
+
+
+}
+
+
+{
+    A a = new A();
+    a.x = 19262;
+    print(a.x);
+}

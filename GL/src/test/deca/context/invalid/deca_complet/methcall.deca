@@ -1,0 +1,18 @@
+// Description:
+//    Affectation impossible entre deux classes "sœurs".
+// Resultats:
+//    Ligne 17: Erreur (appel de méthode dans main sans objet)
+
+class A{
+    void meth1(){}
+}
+
+class B extends A{
+    void meth2(){
+        meth1();
+    }
+}
+
+{
+    meth1();
+}

@@ -1,0 +1,891 @@
+; start main program
+	TSTO #19
+	BOV stack_overflow_error
+	ADDSP #14
+;  ************************************************************
+;  *           CONSTRUCTION DES VTABLES DES CLASSES           *
+;  ************************************************************
+; Construction de la VTable de la classe Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de Grille
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+	LOAD code.Grille.afficherCase, R2
+	STORE R2, 5(GB)
+	LOAD code.Grille.afficher, R2
+	STORE R2, 6(GB)
+	LOAD code.Grille.jouer, R2
+	STORE R2, 7(GB)
+	LOAD code.Grille.gagnant, R2
+	STORE R2, 8(GB)
+; Variable Declarations : 
+	NEW #10, R2
+	BOV tas_plein
+	LEA 3(GB), R3
+	STORE R3, 0(R2)
+	PUSH R2
+	BSR init.Grille
+	POP R2
+	STORE R2, 9(GB)
+	LOAD #1, R0
+	STORE R0, 10(GB)
+	LOAD #0, R0
+	STORE R0, 11(GB)
+	LOAD #0, R0
+	STORE R0, 12(GB)
+	LOAD #0, R0
+	STORE R0, 13(GB)
+	LOAD #0, R0
+	STORE R0, 14(GB)
+; Beginning of main instructions:
+	WSTR "======== Jeu du morpion ========"
+	WNL
+	WSTR "1 2 3"
+	WNL
+	WSTR "4 5 6"
+	WNL
+	WSTR "7 8 9"
+	WNL
+	WNL
+	BRA E_Cond.1
+E_Debut.1:
+	LOAD 14(GB), R2
+	CMP #0, R2
+	BEQ E_Sinon.1
+	LOAD #10, R0
+	STORE R0, 11(GB)
+	BRA E_Fin_if.1
+E_Sinon.1:
+E_Fin_if.1:
+	ADDSP #1
+	LOAD 9(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 3(R2)
+	SUBSP #1
+	LOAD 10(GB), R2
+	CMP #1, R2
+	BNE E_Sinon.2
+	WSTR "Joueur X, choisissez une case : "
+	BRA E_Fin_if.2
+E_Sinon.2:
+	WSTR "Joueur O, choisissez une case : "
+E_Fin_if.2:
+	RINT
+	BOV io_error
+	LOAD R1, R2
+	STORE R2, 12(GB)
+	ADDSP #3
+	LOAD 9(GB), R2
+	STORE R2, 0(SP)
+	LOAD 12(GB), R2
+	STORE R2, -1(SP)
+	LOAD 10(GB), R2
+	STORE R2, -2(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 4(R2)
+	SUBSP #3
+	STORE R0, 13(GB)
+	LOAD 13(GB), R2
+	CMP #0, R2
+	BNE E_Sinon.3
+	WSTR "Coup invalide, recommencez."
+	WNL
+	BRA E_Fin_if.3
+E_Sinon.3:
+	LOAD 11(GB), R2
+	ADD #1, R2
+	STORE R2, 11(GB)
+	ADDSP #1
+	LOAD 9(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 5(R2)
+	SUBSP #1
+	STORE R0, 14(GB)
+	LOAD 14(GB), R2
+	CMP #0, R2
+	BNE E_Sinon.4
+	LOAD 10(GB), R2
+	CMP #1, R2
+	BNE E_Sinon.5
+	LOAD #2, R0
+	STORE R0, 10(GB)
+	BRA E_Fin_if.5
+E_Sinon.5:
+	LOAD #1, R0
+	STORE R0, 10(GB)
+E_Fin_if.5:
+	BRA E_Fin_if.4
+E_Sinon.4:
+E_Fin_if.4:
+E_Fin_if.3:
+E_Cond.1:
+	LOAD 11(GB), R2
+	CMP #9, R2
+	BLT E_Debut.1
+	ADDSP #1
+	LOAD 9(GB), R2
+	STORE R2, 0(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 3(R2)
+	SUBSP #1
+	LOAD 14(GB), R2
+	CMP #1, R2
+	BNE E_Sinon.6
+	WSTR "Victoire de X !"
+	WNL
+	BRA E_Fin_if.6
+E_Sinon.6:
+	LOAD 14(GB), R2
+	CMP #2, R2
+	BNE E_Sinon.7
+	WSTR "Victoire de O !"
+	WNL
+	BRA E_Fin_if.7
+E_Sinon.7:
+	WSTR "Match nul."
+	WNL
+E_Fin_if.7:
+E_Fin_if.6:
+	HALT
+; end main program
+;  ************************************************************
+;  *  GENERATION DES INITS ET DES BODY METHODES DES CLASSES   *
+;  ************************************************************
+init.Grille:
+	TSTO #0
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0, R0
+	STORE R0, 1(R2)
+	STORE R0, 2(R2)
+	STORE R0, 3(R2)
+	STORE R0, 4(R2)
+	STORE R0, 5(R2)
+	STORE R0, 6(R2)
+	STORE R0, 7(R2)
+	STORE R0, 8(R2)
+	STORE R0, 9(R2)
+	LOAD -2(LB), R2
+	LOAD #0, R0
+	STORE R0, 1(R2)
+	LOAD #0, R0
+	STORE R0, 2(R2)
+	LOAD #0, R0
+	STORE R0, 3(R2)
+	LOAD #0, R0
+	STORE R0, 4(R2)
+	LOAD #0, R0
+	STORE R0, 5(R2)
+	LOAD #0, R0
+	STORE R0, 6(R2)
+	LOAD #0, R0
+	STORE R0, 7(R2)
+	LOAD #0, R0
+	STORE R0, 8(R2)
+	LOAD #0, R0
+	STORE R0, 9(R2)
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+code.Grille.afficherCase:
+	TSTO #4
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	LOAD -3(LB), R2
+	CMP #0, R2
+	BNE E_Sinon.8
+	WSTR " "
+	BRA E_Fin_if.8
+E_Sinon.8:
+	LOAD -3(LB), R2
+	CMP #1, R2
+	BNE E_Sinon.9
+	WSTR "X"
+	BRA E_Fin_if.9
+E_Sinon.9:
+	WSTR "O"
+E_Fin_if.9:
+E_Fin_if.8:
+fin.Grille.afficherCase:
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.Grille.afficher:
+	TSTO #5
+	BOV stack_overflow_error
+	PUSH R2
+	ADDSP #2
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 1(R2), R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #2
+	WSTR " | "
+	ADDSP #2
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 2(R2), R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #2
+	WSTR " | "
+	ADDSP #2
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 3(R2), R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #2
+	WNL
+	WSTR "---------"
+	WNL
+	ADDSP #2
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 4(R2), R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #2
+	WSTR " | "
+	ADDSP #2
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 5(R2), R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #2
+	WSTR " | "
+	ADDSP #2
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 6(R2), R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #2
+	WNL
+	WSTR "---------"
+	WNL
+	ADDSP #2
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 7(R2), R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #2
+	WSTR " | "
+	ADDSP #2
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 8(R2), R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #2
+	WSTR " | "
+	ADDSP #2
+	LOAD -2(LB), R2
+	STORE R2, 0(SP)
+	LOAD -2(LB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 9(R2), R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	BSR 2(R2)
+	SUBSP #2
+	WNL
+fin.Grille.afficher:
+	POP R2
+	RTS
+code.Grille.jouer:
+	TSTO #14
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	PUSH R6
+	PUSH R7
+	PUSH R8
+	PUSH R9
+	PUSH R10
+	PUSH R11
+	PUSH R12
+	PUSH R13
+	PUSH R14
+	PUSH R15
+	LOAD -3(LB), R2
+	CMP #1, R2
+	BNE E_Sinon.10
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.11
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.11
+E_Sinon.11:
+E_Fin_if.11:
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 1(R3)
+	LOAD #1, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.10
+E_Sinon.10:
+E_Fin_if.10:
+	LOAD -3(LB), R2
+	CMP #2, R2
+	BNE E_Sinon.12
+	LOAD -2(LB), R3
+	LOAD 2(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.13
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.13
+E_Sinon.13:
+E_Fin_if.13:
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 2(R3)
+	LOAD #1, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.12
+E_Sinon.12:
+E_Fin_if.12:
+	LOAD -3(LB), R2
+	CMP #3, R2
+	BNE E_Sinon.14
+	LOAD -2(LB), R3
+	LOAD 3(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.15
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.15
+E_Sinon.15:
+E_Fin_if.15:
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 3(R3)
+	LOAD #1, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.14
+E_Sinon.14:
+E_Fin_if.14:
+	LOAD -3(LB), R2
+	CMP #4, R2
+	BNE E_Sinon.16
+	LOAD -2(LB), R3
+	LOAD 4(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.17
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.17
+E_Sinon.17:
+E_Fin_if.17:
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 4(R3)
+	LOAD #1, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.16
+E_Sinon.16:
+E_Fin_if.16:
+	LOAD -3(LB), R2
+	CMP #5, R2
+	BNE E_Sinon.18
+	LOAD -2(LB), R3
+	LOAD 5(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.19
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.19
+E_Sinon.19:
+E_Fin_if.19:
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 5(R3)
+	LOAD #1, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.18
+E_Sinon.18:
+E_Fin_if.18:
+	LOAD -3(LB), R2
+	CMP #6, R2
+	BNE E_Sinon.20
+	LOAD -2(LB), R3
+	LOAD 6(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.21
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.21
+E_Sinon.21:
+E_Fin_if.21:
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 6(R3)
+	LOAD #1, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.20
+E_Sinon.20:
+E_Fin_if.20:
+	LOAD -3(LB), R2
+	CMP #7, R2
+	BNE E_Sinon.22
+	LOAD -2(LB), R3
+	LOAD 7(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.23
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.23
+E_Sinon.23:
+E_Fin_if.23:
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 7(R3)
+	LOAD #1, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.22
+E_Sinon.22:
+E_Fin_if.22:
+	LOAD -3(LB), R2
+	CMP #8, R2
+	BNE E_Sinon.24
+	LOAD -2(LB), R3
+	LOAD 8(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.25
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.25
+E_Sinon.25:
+E_Fin_if.25:
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 8(R3)
+	LOAD #1, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.24
+E_Sinon.24:
+E_Fin_if.24:
+	LOAD -3(LB), R2
+	CMP #9, R2
+	BNE E_Sinon.26
+	LOAD -2(LB), R3
+	LOAD 9(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.27
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.27
+E_Sinon.27:
+E_Fin_if.27:
+	LOAD -4(LB), R2
+	LOAD -2(LB), R3
+	STORE R2, 9(R3)
+	LOAD #1, R0
+	BRA fin.Grille.jouer
+	BRA E_Fin_if.26
+E_Sinon.26:
+E_Fin_if.26:
+	LOAD #0, R0
+	BRA fin.Grille.jouer
+	BRA absence_return_error
+fin.Grille.jouer:
+	POP R15
+	POP R14
+	POP R13
+	POP R12
+	POP R11
+	POP R10
+	POP R9
+	POP R8
+	POP R7
+	POP R6
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.Grille.gagnant:
+	TSTO #14
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	PUSH R6
+	PUSH R7
+	PUSH R8
+	PUSH R9
+	PUSH R10
+	PUSH R11
+	PUSH R12
+	PUSH R13
+	PUSH R14
+	PUSH R15
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.28
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	LOAD -2(LB), R4
+	LOAD 2(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.29
+	LOAD -2(LB), R3
+	LOAD 2(R3), R2
+	LOAD -2(LB), R4
+	LOAD 3(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.30
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	LOAD R2, R0
+	BRA fin.Grille.gagnant
+	BRA E_Fin_if.30
+E_Sinon.30:
+E_Fin_if.30:
+	BRA E_Fin_if.29
+E_Sinon.29:
+E_Fin_if.29:
+	BRA E_Fin_if.28
+E_Sinon.28:
+E_Fin_if.28:
+	LOAD -2(LB), R3
+	LOAD 4(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.31
+	LOAD -2(LB), R3
+	LOAD 4(R3), R2
+	LOAD -2(LB), R4
+	LOAD 5(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.32
+	LOAD -2(LB), R3
+	LOAD 5(R3), R2
+	LOAD -2(LB), R4
+	LOAD 6(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.33
+	LOAD -2(LB), R3
+	LOAD 4(R3), R2
+	LOAD R2, R0
+	BRA fin.Grille.gagnant
+	BRA E_Fin_if.33
+E_Sinon.33:
+E_Fin_if.33:
+	BRA E_Fin_if.32
+E_Sinon.32:
+E_Fin_if.32:
+	BRA E_Fin_if.31
+E_Sinon.31:
+E_Fin_if.31:
+	LOAD -2(LB), R3
+	LOAD 7(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.34
+	LOAD -2(LB), R3
+	LOAD 7(R3), R2
+	LOAD -2(LB), R4
+	LOAD 8(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.35
+	LOAD -2(LB), R3
+	LOAD 8(R3), R2
+	LOAD -2(LB), R4
+	LOAD 9(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.36
+	LOAD -2(LB), R3
+	LOAD 7(R3), R2
+	LOAD R2, R0
+	BRA fin.Grille.gagnant
+	BRA E_Fin_if.36
+E_Sinon.36:
+E_Fin_if.36:
+	BRA E_Fin_if.35
+E_Sinon.35:
+E_Fin_if.35:
+	BRA E_Fin_if.34
+E_Sinon.34:
+E_Fin_if.34:
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.37
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	LOAD -2(LB), R4
+	LOAD 4(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.38
+	LOAD -2(LB), R3
+	LOAD 4(R3), R2
+	LOAD -2(LB), R4
+	LOAD 7(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.39
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	LOAD R2, R0
+	BRA fin.Grille.gagnant
+	BRA E_Fin_if.39
+E_Sinon.39:
+E_Fin_if.39:
+	BRA E_Fin_if.38
+E_Sinon.38:
+E_Fin_if.38:
+	BRA E_Fin_if.37
+E_Sinon.37:
+E_Fin_if.37:
+	LOAD -2(LB), R3
+	LOAD 2(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.40
+	LOAD -2(LB), R3
+	LOAD 2(R3), R2
+	LOAD -2(LB), R4
+	LOAD 5(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.41
+	LOAD -2(LB), R3
+	LOAD 5(R3), R2
+	LOAD -2(LB), R4
+	LOAD 8(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.42
+	LOAD -2(LB), R3
+	LOAD 2(R3), R2
+	LOAD R2, R0
+	BRA fin.Grille.gagnant
+	BRA E_Fin_if.42
+E_Sinon.42:
+E_Fin_if.42:
+	BRA E_Fin_if.41
+E_Sinon.41:
+E_Fin_if.41:
+	BRA E_Fin_if.40
+E_Sinon.40:
+E_Fin_if.40:
+	LOAD -2(LB), R3
+	LOAD 3(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.43
+	LOAD -2(LB), R3
+	LOAD 3(R3), R2
+	LOAD -2(LB), R4
+	LOAD 6(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.44
+	LOAD -2(LB), R3
+	LOAD 6(R3), R2
+	LOAD -2(LB), R4
+	LOAD 9(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.45
+	LOAD -2(LB), R3
+	LOAD 3(R3), R2
+	LOAD R2, R0
+	BRA fin.Grille.gagnant
+	BRA E_Fin_if.45
+E_Sinon.45:
+E_Fin_if.45:
+	BRA E_Fin_if.44
+E_Sinon.44:
+E_Fin_if.44:
+	BRA E_Fin_if.43
+E_Sinon.43:
+E_Fin_if.43:
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.46
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	LOAD -2(LB), R4
+	LOAD 5(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.47
+	LOAD -2(LB), R3
+	LOAD 5(R3), R2
+	LOAD -2(LB), R4
+	LOAD 9(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.48
+	LOAD -2(LB), R3
+	LOAD 1(R3), R2
+	LOAD R2, R0
+	BRA fin.Grille.gagnant
+	BRA E_Fin_if.48
+E_Sinon.48:
+E_Fin_if.48:
+	BRA E_Fin_if.47
+E_Sinon.47:
+E_Fin_if.47:
+	BRA E_Fin_if.46
+E_Sinon.46:
+E_Fin_if.46:
+	LOAD -2(LB), R3
+	LOAD 3(R3), R2
+	CMP #0, R2
+	BEQ E_Sinon.49
+	LOAD -2(LB), R3
+	LOAD 3(R3), R2
+	LOAD -2(LB), R4
+	LOAD 5(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.50
+	LOAD -2(LB), R3
+	LOAD 5(R3), R2
+	LOAD -2(LB), R4
+	LOAD 7(R4), R3
+	CMP R3, R2
+	BNE E_Sinon.51
+	LOAD -2(LB), R3
+	LOAD 3(R3), R2
+	LOAD R2, R0
+	BRA fin.Grille.gagnant
+	BRA E_Fin_if.51
+E_Sinon.51:
+E_Fin_if.51:
+	BRA E_Fin_if.50
+E_Sinon.50:
+E_Fin_if.50:
+	BRA E_Fin_if.49
+E_Sinon.49:
+E_Fin_if.49:
+	LOAD #0, R0
+	BRA fin.Grille.gagnant
+	BRA absence_return_error
+fin.Grille.gagnant:
+	POP R15
+	POP R14
+	POP R13
+	POP R12
+	POP R11
+	POP R10
+	POP R9
+	POP R8
+	POP R7
+	POP R6
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+;  ************************************************************
+;  * AJOUT DES LABELS ERREURS DEMANDÉES PAR LE PROGRAMME DECA *
+;  ************************************************************
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+tas_plein:
+	WSTR "Erreur : le tas est plein, impossible d'allouer de la memoire"
+	WNL
+	ERROR
+absence_return_error:
+	WSTR "Erreur : Absence de return dans le corps d'une methode "
+	WNL
+	ERROR
+dereferencement.null:
+	WSTR "Erreur : Dereferencement null"
+	WNL
+	ERROR
+io_error:
+	WSTR "Erreur: D'entree incompatible avec la variable "
+	WNL
+	ERROR

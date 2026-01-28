@@ -1,0 +1,25 @@
+// {
+//     // La valeur max d'un float est environ 3.4028235e38
+//     float f = 3.0e38;
+    
+//     println("Test de depassement flottant...");
+//     println("Valeur de f : ", f);
+    
+//     // Cette multiplication va depasser la limite (6.0e38 > 3.4e38)
+//     f = f * 2.0; 
+    
+//     // Si BOV fonctionne, on n'arrivera jamais ici
+//     println("Resultat apres overflow : ", f);
+// }
+
+
+{
+    float f = 1000000.0; // 1.0e6
+    println("Test d'overflow manuel...");
+    
+    f = f * f; // 1.0e12
+    f = f * f; // 1.0e24
+    f = f * f; // 1.0e48 -> BOUM !
+    
+    println("Si tu vois ca, l'overflow n'a pas ete detecte : ", f);
+}

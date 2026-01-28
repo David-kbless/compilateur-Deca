@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InstanceOf.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">InstanceOf.java</span></div><h1>InstanceOf.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import java.io.PrintStream;
+
+import org.apache.commons.lang.Validate;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.ima.pseudocode.DAddr;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.NullOperand;
+import fr.ensimag.ima.pseudocode.RegisterOffset;
+import fr.ensimag.ima.pseudocode.instructions.BEQ;
+import fr.ensimag.ima.pseudocode.instructions.BNE;
+import fr.ensimag.ima.pseudocode.instructions.BRA;
+import fr.ensimag.ima.pseudocode.instructions.CMP;
+import fr.ensimag.ima.pseudocode.instructions.FLOAT;
+import fr.ensimag.ima.pseudocode.instructions.INT;
+import fr.ensimag.ima.pseudocode.instructions.LEA;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+public class InstanceOf extends AbstractExpr {
+    private final AbstractExpr expr;
+    private final AbstractIdentifier type;
+
+<span class="fc" id="L30">    public InstanceOf(AbstractExpr expr, AbstractIdentifier type) {</span>
+<span class="fc" id="L31">        Validate.notNull(expr);</span>
+<span class="fc" id="L32">        Validate.notNull(type);</span>
+<span class="fc" id="L33">        this.expr = expr;</span>
+<span class="fc" id="L34">        this.type = type;</span>
+<span class="fc" id="L35">    }</span>
+
+    public AbstractExpr getExpr() {
+<span class="nc" id="L38">        return expr;</span>
+    }
+    public AbstractIdentifier getTypeIdentifier() {
+<span class="nc" id="L41">        return type;</span>
+    }
+
+    public void setLocation(Location location) {
+<span class="fc" id="L45">        super.setLocation(location);</span>
+<span class="fc" id="L46">    }</span>
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv,
+        ClassDefinition currentClass) throws ContextualError {
+
+<span class="fc" id="L52">        Type type1 = expr.verifyExpr(compiler, localEnv, currentClass);</span>
+<span class="fc" id="L53">        Type type2 = type.verifyType(compiler);</span>
+
+<span class="pc bpc" id="L55" title="1 of 6 branches missed.">        if ((type1.isClass() || type1.isNull()) &amp;&amp; type2.isClass()) {</span>
+<span class="fc" id="L56">            setType(compiler.environmentType.BOOLEAN);</span>
+<span class="fc" id="L57">            return compiler.environmentType.BOOLEAN;</span>
+        }
+
+<span class="fc" id="L60">        throw new ContextualError(&quot;instanceof requires a class type on the right and a class or null on the left&quot;, getLocation());</span>
+    }
+
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="fc" id="L65">        s.print(&quot;(&quot;);</span>
+<span class="fc" id="L66">        expr.decompile(s);</span>
+<span class="fc" id="L67">        s.print(&quot; instanceof &quot;);</span>
+<span class="fc" id="L68">        type.decompile(s);</span>
+<span class="fc" id="L69">        s.print(&quot;)&quot;);</span>
+<span class="fc" id="L70">    }</span>
+
+    @Override
+    protected void prettyPrintChildren(PrintStream s, String prefix) {
+<span class="fc" id="L74">        expr.prettyPrint(s, prefix, true);</span>
+<span class="fc" id="L75">        type.prettyPrint(s, prefix, false);</span>
+<span class="fc" id="L76">    }</span>
+
+    @Override
+    protected void iterChildren(TreeFunction f) {
+<span class="fc" id="L80">        expr.iterChildren(f);</span>
+<span class="fc" id="L81">        type.iterChildren(f);</span>
+<span class="fc" id="L82">    }</span>
+    
+    @Override
+    protected GPRegister codeGenInst(DecacCompiler compiler) {
+        // 1. On réserve les registres
+<span class="fc" id="L87">        GPRegister regObj = (GPRegister)expr.codeGenInst(compiler); // Registre contenant l'objet</span>
+<span class="fc" id="L88">        GPRegister regResult = compiler.utiliserRegistre(); // Registre pour le booléen (0 ou 1)</span>
+
+        // Labels pour la boucle de recherche
+<span class="fc" id="L91">        Label startLoop = new Label(&quot;start_instanceof_&quot; + getFieldName());</span>
+<span class="fc" id="L92">        Label isInstance = new Label(&quot;is_instance_&quot; + getFieldName());</span>
+<span class="fc" id="L93">        Label notInstance = new Label(&quot;not_instance_&quot; + getFieldName());</span>
+<span class="fc" id="L94">        Label endInstance = new Label(&quot;end_instanceof_&quot; + getFieldName());</span>
+
+        // 2. Si l'objet est null, ce n'est l'instance de rien (sauf cas spécial, mais ici false)
+<span class="fc" id="L97">        compiler.addInstruction(new CMP(new NullOperand(), regObj));</span>
+<span class="fc" id="L98">        compiler.addInstruction(new BEQ(notInstance));</span>
+
+        // 3. On récupère l'adresse de la VTable de la classe cible
+        // L'adresse de la VTable de la classe cible est à son adresse en GB
+<span class="fc" id="L102">        DAddr addrTargetVTable = type.getClassDefinition().getVTableAddr();</span>
+<span class="fc" id="L103">        GPRegister regTargetVTable = compiler.utiliserRegistre();</span>
+<span class="fc" id="L104">        compiler.addInstruction(new LEA(addrTargetVTable, regTargetVTable));</span>
+
+        // 4. On récupère l'adresse de la VTable de l'objet actuel
+        // On réutilise regObj pour stocker la VTable courante (économie de registres)
+<span class="fc" id="L108">        compiler.addInstruction(new LOAD(new RegisterOffset(0, regObj), regObj));</span>
+
+        // 5. Boucle de remontée de l'héritage
+<span class="fc" id="L111">        compiler.addLabel(startLoop);</span>
+        
+        // Comparaison : est-ce la bonne VTable ?
+<span class="fc" id="L114">        compiler.addInstruction(new CMP(regTargetVTable, regObj));</span>
+<span class="fc" id="L115">        compiler.addInstruction(new BEQ(isInstance));</span>
+
+        // Sinon, on remonte au père : la VTable du père est à l'offset 0 de la VTable actuelle
+<span class="fc" id="L118">        compiler.addInstruction(new LOAD(new RegisterOffset(0, regObj), regObj));</span>
+        
+        // Si le père est null, on a fini de remonter et on n'a pas trouvé
+<span class="fc" id="L121">        compiler.addInstruction(new CMP(new NullOperand(), regObj));</span>
+<span class="fc" id="L122">        compiler.addInstruction(new BNE(startLoop));</span>
+
+        // 6. Gestion des résultats
+<span class="fc" id="L125">        compiler.addLabel(notInstance);</span>
+<span class="fc" id="L126">        compiler.addInstruction(new LOAD(0, regResult)); // False</span>
+<span class="fc" id="L127">        compiler.addInstruction(new BRA(endInstance));</span>
+
+<span class="fc" id="L129">        compiler.addLabel(isInstance);</span>
+<span class="fc" id="L130">        compiler.addInstruction(new LOAD(1, regResult)); // True</span>
+
+<span class="fc" id="L132">        compiler.addLabel(endInstance);</span>
+
+        // Nettoyage des registres temporaires
+<span class="fc" id="L135">        compiler.libererRegistre(); // libère regTargetVTable</span>
+<span class="fc" id="L136">        compiler.libererRegistre(); // libère regObj (utilisé pour expr)</span>
+
+<span class="fc" id="L138">        return regResult;</span>
+    }
+
+    // Petite méthode utilitaire pour des labels uniques
+    private String getFieldName() {
+<span class="fc" id="L143">        return type.getName().getName() + &quot;_&quot; + getLocation().getLine() + &quot;_&quot; + getLocation().getPositionInLine();</span>
+    }
+
+    // @Ousmane, a refaire quand j'aurai fini le body des methodes
+
+    @Override
+    public int simuleExecutionNbRegistres(DecacCompiler compiler){
+<span class="fc" id="L150">        return expr.simuleExecutionNbRegistres(compiler);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

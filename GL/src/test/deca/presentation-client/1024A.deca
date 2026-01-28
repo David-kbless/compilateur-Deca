@@ -1,0 +1,22 @@
+class A{
+    int m(){
+        return 3;
+    }
+}
+
+class B extends A{
+    int m;
+}
+
+
+{
+    B b;
+    int x;
+
+    b = new B();
+    b.m = 5;
+    x = b.m();
+    println(x);
+    println(b.m);
+
+}

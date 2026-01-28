@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Program.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">Program.java</span></div><h1>Program.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.Definition;
+import fr.ensimag.deca.context.MethodDefinition;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.ima.gencodeobjet.genCodeBodyMethods;
+import fr.ensimag.ima.gencodeobjet.genCodeInitFields;
+import fr.ensimag.ima.pseudocode.DAddr;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.LabelOperand;
+import fr.ensimag.ima.pseudocode.NullOperand;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.RegisterOffset;
+import fr.ensimag.ima.pseudocode.instructions.*;
+import java.io.PrintStream;
+import org.apache.commons.lang.Validate;
+import org.apache.log4j.Logger;
+import fr.ensimag.deca.context.ClassDefinition;
+
+/**
+ * Deca complete program (class definition plus main block)
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class Program extends AbstractProgram {
+<span class="fc" id="L30">    private static final Logger LOG = Logger.getLogger(Program.class);</span>
+    
+<span class="fc" id="L32">    public Program(ListDeclClass classes, AbstractMain main) {</span>
+<span class="fc" id="L33">        Validate.notNull(classes);</span>
+<span class="fc" id="L34">        Validate.notNull(main);</span>
+<span class="fc" id="L35">        this.classes = classes;</span>
+<span class="fc" id="L36">        this.main = main;</span>
+<span class="fc" id="L37">    }</span>
+    public ListDeclClass getClasses() {
+<span class="fc" id="L39">        return classes;</span>
+    }
+    public AbstractMain getMain() {
+<span class="fc" id="L42">        return main;</span>
+    }
+    private ListDeclClass classes;
+    private AbstractMain main;
+
+    @Override
+    public void verifyProgram(DecacCompiler compiler) throws ContextualError {
+<span class="fc" id="L49">        LOG.debug(&quot;verify program: start&quot;);</span>
+<span class="fc" id="L50">        classes.verifyListClass(compiler); </span>
+<span class="fc" id="L51">        classes.verifyListClassMembers(compiler);</span>
+<span class="fc" id="L52">        classes.verifyListClassBody(compiler);</span>
+<span class="fc" id="L53">        main.verifyMain(compiler);</span>
+<span class="fc" id="L54">        LOG.debug(&quot;verify program: end&quot;);</span>
+<span class="fc" id="L55">    }</span>
+
+    @Override
+    public void codeGenProgram(DecacCompiler compiler) {
+        // A FAIRE: compléter ce squelette très rudimentaire de code
+
+        // 1ere passe du prog
+        // on genere la vtable
+<span class="fc" id="L63">        genCodeVTable(compiler);</span>
+
+
+        // pour que les NEW puissent fonctionner dans le main : 
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">        for (AbstractDeclClass abstractClass : classes.getList()) {</span>
+<span class="nc" id="L68">            DeclClass classe = (DeclClass) abstractClass;</span>
+<span class="nc" id="L69">            Label labelInit = new Label(&quot;init.&quot; + classe.getName().getName().getName());</span>
+<span class="nc" id="L70">            classe.getName().getClassDefinition().setLabelInit(labelInit);</span>
+<span class="nc" id="L71">        }</span>
+
+<span class="fc" id="L73">        main.codeGenMain(compiler);</span>
+<span class="fc" id="L74">        compiler.addInstruction(new HALT());</span>
+<span class="fc" id="L75">        compiler.addComment(&quot;end main program&quot;);</span>
+
+        
+        
+
+        // partie bodymethod des classes 
+
+<span class="fc" id="L82">        new genCodeInitFields(compiler, classes.getList());</span>
+<span class="fc" id="L83">        new genCodeBodyMethods(compiler, classes.getList());</span>
+
+<span class="fc" id="L85">        ajouteLabelErreurDemandee(compiler);</span>
+
+<span class="fc" id="L87">    }</span>
+
+
+    private void genCodeVTable(DecacCompiler compiler){
+<span class="fc" id="L91">        ClassDefinition objectDef = (ClassDefinition) compiler.environmentType.defOfType(compiler.createSymbol(&quot;Object&quot;));</span>
+    
+        // 2. Générer la VTable d'Object d'abord
+<span class="fc" id="L94">        DAddr addrObj = new RegisterOffset(compiler.getAndAddIndexGB(), Register.GB);</span>
+<span class="fc" id="L95">        objectDef.setVtableAddr(addrObj);</span>
+        
+        
+
+<span class="fc" id="L99">        compiler.addComment(&quot;Construction de la VTable de de Object&quot;);</span>
+        // vTable de l'objet Object qui est tjrs present meme sans aucune classe dans le prog.deca
+<span class="fc" id="L101">        compiler.addInstruction(new LOAD(new NullOperand(), Register.R0),&quot;    // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! &quot;);  // on garde la valeur 0 dans R0 pendant tout le process</span>
+                                                                            // ceci nous permet d'eviter de multiple load 0, RO
+<span class="fc" id="L103">        compiler.addInstruction(new STORE(Register.R0, addrObj));</span>
+
+        // on charge egalement l'adresse de la methode equal de objet juste après: 
+<span class="fc" id="L106">        compiler.addInstruction(new LOAD(new LabelOperand(new Label(&quot;code.Object.equals&quot;)), Register.R1), &quot;    // On garde Dans R1 le label 'code.Object.equals' pour la meme raison &quot;);  // egalement, j'ai decider de garder la valeur du label equal </span>
+                                                                                                                    // dans le registre R1 car il ya plusieur load de celui ci !
+<span class="fc" id="L108">        compiler.addInstruction(new STORE(Register.R1, new RegisterOffset(compiler.getAndAddIndexGB(), Register.GB)));</span>
+
+
+
+
+        // on construit les autres tables des methodes des autres classes 
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">        for(AbstractDeclClass abstractClass : classes.getList()){</span>
+            
+
+            // @ousmane :  je fais ça pour avoir acces au classes getname et getdefinition : 
+<span class="nc" id="L118">            DeclClass classe = (DeclClass)abstractClass;</span>
+
+<span class="nc" id="L120">            ClassDefinition defClasse = (ClassDefinition)classe.getName().getDefinition();</span>
+
+            // commentaire que j'ai  @Ousmane fait pour mieux debugger les .ass
+<span class="nc" id="L123">            compiler.addComment(&quot;Construction de la VTable de &quot; + classe.getName().getName());</span>
+
+
+            // on creer une nouvelle entree pour la classe actuelle :
+<span class="nc" id="L127">            DAddr classeAddr = new RegisterOffset(compiler.getAndAddIndexGB(), Register.GB);</span>
+            // on enregistre l'addr pour garder en Mem afin de generer bien les instructions lié a cette clss 
+<span class="nc" id="L129">            defClasse.setVtableAddr(classeAddr);</span>
+
+            // stockage de l'adresse de la mere en en premiere case : 
+<span class="nc" id="L132">            DAddr addressParent = defClasse.getSuperClass().getVTableAddr();</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">            if (addressParent == null) {</span>
+                    // Si c'est encore null, c'est que l'ordre est mauvais ou superClass est mal mis.
+                    // On force l'adresse d'Object si superClass est null 
+<span class="nc" id="L136">                    addressParent = objectDef.getVTableAddr();</span>
+                }
+            
+<span class="nc" id="L139">            GPRegister reg = Register.getR(2);</span>
+<span class="nc" id="L140">            compiler.addInstruction(new LEA(addressParent, reg));</span>
+<span class="nc" id="L141">            compiler.addInstruction(new STORE(reg, classeAddr));</span>
+            
+
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            for (MethodDefinition meth : defClasse.getMethodTable().values()) {</span>
+                // Si c'est equals, on utilise R1 (déjà chargé au début du programme)
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                if (meth.getLabel().toString().equals(&quot;code.Object.equals&quot;)) {</span>
+<span class="nc" id="L147">                    compiler.addInstruction(new STORE(Register.R1, new RegisterOffset(compiler.getAndAddIndexGB(), Register.GB)));</span>
+                } else {
+                    // Sinon on charge l'étiquette spécifique
+<span class="nc" id="L150">                    compiler.addInstruction(new LOAD(new LabelOperand(meth.getLabel()), reg));</span>
+<span class="nc" id="L151">                    compiler.addInstruction(new STORE(reg, new RegisterOffset(compiler.getAndAddIndexGB(), Register.GB)));</span>
+                }
+<span class="nc" id="L153">            }</span>
+        
+<span class="nc" id="L155">        }</span>
+
+        // ... (ton code précédent)
+        
+        // on construit les autres tables des methodes des autres classes 
+        // for(AbstractDeclClass abstractClass : classes.getList()){
+        //     DeclClass classe = (DeclClass)abstractClass;
+        //     ClassDefinition defClasse = (ClassDefinition)classe.getName().getClassDefinition();
+
+        //     compiler.addComment(&quot;Construction de la VTable de &quot; + classe.getName().getName());
+
+        //     // 1. On réserve l'emplacement pour le pointeur vers la classe mère (LEA)
+        //     DAddr currentClassAddr = new RegisterOffset(compiler.getAndAddIndexGB(), Register.GB);
+        //     defClasse.setVtableAddr(currentClassAddr);
+
+        //     // 2. On charge l'adresse de la VTable de la classe mère
+        //     // Grâce à ton initialisation d'Object avant la boucle, ceci ne sera plus null !
+        //     DAddr addrParent = defClasse.getSuperClass().getVTableAddr();
+
+        //     if (addrParent == null) {
+        //         // Si c'est encore null, c'est que l'ordre est mauvais ou superClass est mal mis.
+        //         // On force l'adresse d'Object si superClass est null (sécurité)
+        //         addrParent = objectDef.getVTableAddr();
+        //     }
+        //     compiler.addInstruction(new LEA(addrParent, Register.R0));
+        //     compiler.addInstruction(new STORE(Register.R0, currentClassAddr));
+
+        //     // 3. On remplit les slots des méthodes (héritées ou propres)
+        //     // On utilise la methodTable (MT) que Safwane remplit par index à l'étape B
+        //     for (MethodDefinition meth : defClasse.getMethodTable().values()) {
+                
+        //         // Optimisation : si c'est equals d'Object (non redéfini), on utilise R1
+        //         if (meth.getLabel().toString().equals(&quot;code.Object.equals&quot;)) {
+        //             compiler.addInstruction(new STORE(Register.R1, 
+        //                 new RegisterOffset(compiler.getAndAddIndexGB(), Register.GB)));
+        //         } else {
+        //             // Sinon on charge le label de la méthode (ex: code.A.maMethode)
+        //             compiler.addInstruction(new LOAD(new LabelOperand(meth.getLabel()), Register.R0));
+        //             compiler.addInstruction(new STORE(Register.R0, 
+        //                 new RegisterOffset(compiler.getAndAddIndexGB(), Register.GB)));
+        //         }
+        //     }
+        // }
+    
+
+<span class="fc" id="L200">    }</span>
+
+
+    private void ajouteLabelErreurDemandee(DecacCompiler compiler){
+
+        // definition des content des labels d'erreurs d'overflow du stack : 
+<span class="fc" id="L206">        Label StackOverflowErr = new Label(&quot;stack_overflow_error&quot;);</span>
+<span class="fc" id="L207">        compiler.addLabel(StackOverflowErr);</span>
+<span class="fc" id="L208">        compiler.addInstruction(new WSTR(&quot;Error: Stack Overflow&quot;));</span>
+<span class="fc" id="L209">        compiler.addInstruction(new WNL());</span>
+<span class="fc" id="L210">        compiler.addInstruction(new ERROR());</span>
+
+
+        // ajout des labels si le programme l'exige, c'est lui le bossssss :
+<span class="fc bfc" id="L214" title="All 2 branches covered.">        if(compiler.getOverflowLabel()){</span>
+<span class="fc" id="L215">            compiler.addLabel(new Label(&quot;overflow_error&quot;));</span>
+<span class="fc" id="L216">            compiler.addInstruction(new WSTR(&quot;Error: Overflow sur Float&quot;));</span>
+<span class="fc" id="L217">            compiler.addInstruction(new WNL());</span>
+<span class="fc" id="L218">            compiler.addInstruction(new ERROR());</span>
+        }
+
+<span class="fc bfc" id="L221" title="All 2 branches covered.">        if(compiler.getDivisionByZeroLabel()){</span>
+<span class="fc" id="L222">            compiler.addLabel(new Label(&quot;div_zero_error&quot;));</span>
+<span class="fc" id="L223">            compiler.addInstruction(new WSTR(&quot;Erreur : division par 0&quot;));</span>
+<span class="fc" id="L224">            compiler.addInstruction(new WNL());</span>
+<span class="fc" id="L225">            compiler.addInstruction(new ERROR());</span>
+        }
+
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">        if(compiler.getTasOverflowLabel()){</span>
+<span class="nc" id="L229">            compiler.addLabel(new Label(&quot;tas_plein&quot;));</span>
+<span class="nc" id="L230">            compiler.addInstruction(new WSTR(&quot;Erreur : le tas est plein, impossible d'allouer de la memoire&quot;));</span>
+<span class="nc" id="L231">            compiler.addInstruction(new WNL());</span>
+<span class="nc" id="L232">            compiler.addInstruction(new ERROR());</span>
+        }
+
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">       if(compiler.getAbsenceReturnLabel()){</span>
+<span class="nc" id="L236">            compiler.addLabel(new Label(&quot;absence_return_error&quot;));</span>
+<span class="nc" id="L237">            compiler.addInstruction(new WSTR(&quot;Erreur : Absence de return dans le corps d'une methode &quot;));</span>
+<span class="nc" id="L238">            compiler.addInstruction(new WNL());</span>
+<span class="nc" id="L239">            compiler.addInstruction(new ERROR());</span>
+        }
+
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">        if(compiler.getConversionImpossibleLabel()){</span>
+<span class="nc" id="L243">            compiler.addLabel(new Label(&quot;conversion_impossible_error&quot;));</span>
+<span class="nc" id="L244">            compiler.addInstruction(new WSTR(&quot;Erreur : Conversion impossible&quot;));</span>
+<span class="nc" id="L245">            compiler.addInstruction(new WNL());</span>
+<span class="nc" id="L246">            compiler.addInstruction(new ERROR());</span>
+        }
+
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">        if(compiler.getDereferencementNullLabel()){</span>
+<span class="nc" id="L250">            compiler.addLabel(new Label(&quot;dereferencement.null&quot;));</span>
+<span class="nc" id="L251">            compiler.addInstruction(new WSTR(&quot;Erreur : Dereferencement null&quot;));</span>
+<span class="nc" id="L252">            compiler.addInstruction(new WNL());</span>
+<span class="nc" id="L253">            compiler.addInstruction(new ERROR());</span>
+        }
+
+<span class="fc bfc" id="L256" title="All 2 branches covered.">        if(compiler.getIOErreurLabel()){</span>
+<span class="fc" id="L257">            compiler.addLabel(new Label(&quot;io_error&quot;));</span>
+<span class="fc" id="L258">            compiler.addInstruction(new WSTR(&quot;Erreur: D'entree incompatible avec la variable &quot;));</span>
+<span class="fc" id="L259">            compiler.addInstruction(new WNL());</span>
+<span class="fc" id="L260">            compiler.addInstruction(new ERROR());</span>
+        }
+
+
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">        if(compiler.getAccesVarNonInitLabel()){</span>
+<span class="nc" id="L265">            compiler.addLabel(new Label(&quot;acces_var_non_init&quot;));</span>
+<span class="nc" id="L266">            compiler.addInstruction(new WSTR(&quot;Erreur : Accès à une variable non initialisée&quot;));</span>
+<span class="nc" id="L267">            compiler.addInstruction(new WNL());</span>
+<span class="nc" id="L268">            compiler.addInstruction(new ERROR());</span>
+        }
+
+
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">        if(compiler.getMethodeIncompatibleLabel()){</span>
+<span class="nc" id="L273">            compiler.addLabel(new Label(&quot;methode_incompatible&quot;));</span>
+<span class="nc" id="L274">            compiler.addInstruction(new WSTR(&quot;Erreur : Methode incompatible&quot;));</span>
+<span class="nc" id="L275">            compiler.addInstruction(new WNL());</span>
+<span class="nc" id="L276">            compiler.addInstruction(new ERROR());</span>
+        }
+<span class="fc" id="L278">    }</span>
+
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="fc" id="L282">        getClasses().decompile(s);</span>
+<span class="fc" id="L283">        getMain().decompile(s);</span>
+<span class="fc" id="L284">    }</span>
+    
+    @Override
+    protected void iterChildren(TreeFunction f) {
+<span class="fc" id="L288">        classes.iter(f);</span>
+<span class="fc" id="L289">        main.iter(f);</span>
+<span class="fc" id="L290">    }</span>
+    @Override
+    protected void prettyPrintChildren(PrintStream s, String prefix) {
+<span class="fc" id="L293">        classes.prettyPrint(s, prefix, false);</span>
+<span class="fc" id="L294">        main.prettyPrint(s, prefix, true);</span>
+<span class="fc" id="L295">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

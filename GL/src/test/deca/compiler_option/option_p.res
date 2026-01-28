@@ -1,0 +1,53 @@
+{
+	int dividende;
+	int diviseur;
+	float resultat;
+	int i;
+	println("--- Generateur d'erreurs controlees ---");
+	print("Entrez un nombre entier (dividende) : ");
+	(dividende = readInt());
+	print("Entrez un diviseur (int): ");
+	(diviseur = readInt());
+	println();
+	println();
+	println("Determination du signe du diviseur... : ");
+	print("saisissez un entier pour continuer  : ");
+	readInt();
+	if ((diviseur == 0)) {
+		println(" Vous avez saisie un diviseur null");
+	} else {
+		if ((diviseur < 0)) {
+			println(" Vous avez saisie un diviseur negatif");
+		} else {
+			println(" Vous avez saisie un diviseur positif");
+		}
+
+	}
+
+	println();
+	println();
+	println("Calcul de la division de ", dividende, " par ", diviseur);
+	print("saisissez un entier pour continuer  : ");
+	readInt();
+	(resultat = (dividende / diviseur));
+	println("Le resultat brut est : ", resultat);
+	println();
+	println();
+	println("Test du while : ");
+	print("saisissez un entier pour continuer  : ");
+	(i = readInt());
+	print("Attention, vous etes pret ? On compte : ");
+	while ((i > 0)) {
+		print(i, " ");
+		(i = (i - 1));
+	}
+	println("-> C'est parti !");
+	println();
+	println();
+	println("Tentative de provoquer un overflow...");
+	print("saisissez un entier pour continuer  : ");
+	readInt();
+	(resultat = (resultat * 0x1.2ced32p126));
+	println(resultat);
+	println("Si vous voyez ce message, l'overflow n'a pas ete detecte.");
+}

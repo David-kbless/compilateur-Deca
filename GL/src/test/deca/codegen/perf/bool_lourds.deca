@@ -1,0 +1,18 @@
+// Calcul booléen fréquent --
+// Négation + modulo --
+// Dépendance séquentielle --
+
+{
+    int i;
+    boolean b;
+
+    i = 0;
+    b = true;
+
+    while (i < 1000000) {
+        b = !(b && (i % 2 == 0));
+        i = i + 1;
+    }
+
+    println(b);
+}

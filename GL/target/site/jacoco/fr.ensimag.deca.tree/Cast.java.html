@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Cast.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">Cast.java</span></div><h1>Cast.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+import java.io.PrintStream;
+
+import org.apache.commons.lang.Validate;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ClassType;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.NullOperand;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.RegisterOffset;
+import fr.ensimag.ima.pseudocode.instructions.BEQ;
+import fr.ensimag.ima.pseudocode.instructions.BNE;
+import fr.ensimag.ima.pseudocode.instructions.BRA;
+import fr.ensimag.ima.pseudocode.instructions.CMP;
+import fr.ensimag.ima.pseudocode.instructions.FLOAT;
+import fr.ensimag.ima.pseudocode.instructions.INT;
+import fr.ensimag.ima.pseudocode.instructions.LEA;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+
+public class Cast extends AbstractExpr {
+    private final AbstractIdentifier type;
+    private final AbstractExpr expr;
+
+<span class="fc" id="L32">    public Cast(AbstractIdentifier type, AbstractExpr expr) {</span>
+<span class="fc" id="L33">        Validate.notNull(type);</span>
+<span class="fc" id="L34">        Validate.notNull(expr);</span>
+<span class="fc" id="L35">        this.type = type;</span>
+<span class="fc" id="L36">        this.expr = expr;</span>
+<span class="fc" id="L37">    }</span>
+    public AbstractIdentifier getTypeId() {
+<span class="fc" id="L39">        return type;</span>
+    }
+    public AbstractExpr getExpr() {
+<span class="fc" id="L42">        return expr;</span>
+    }
+    public void setLocation(Location location) {
+<span class="fc" id="L45">        super.setLocation(location);</span>
+<span class="fc" id="L46">    }</span>
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv, ClassDefinition currentClass)
+            throws ContextualError {
+<span class="fc" id="L50">        Type t = getExpr().verifyExpr(compiler, localEnv, currentClass);</span>
+<span class="fc" id="L51">        Type typeId = getTypeId().verifyType(compiler);</span>
+<span class="fc" id="L52">        castCompatible(typeId, t);</span>
+<span class="fc" id="L53">        this.setType(typeId);</span>
+<span class="fc" id="L54">        return typeId;</span>
+    }
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="nc" id="L58">        s.print('(');</span>
+<span class="nc" id="L59">        getTypeId().decompile(s);</span>
+<span class="nc" id="L60">        s.print(&quot;) &quot;);</span>
+<span class="nc" id="L61">        getExpr().decompile(s);</span>
+<span class="nc" id="L62">    }</span>
+    @Override
+    protected void prettyPrintChildren(PrintStream s, String prefix) {
+<span class="fc" id="L65">        type.prettyPrint(s, prefix, true);</span>
+<span class="fc" id="L66">        expr.prettyPrint(s, prefix, false);</span>
+<span class="fc" id="L67">    }</span>
+    @Override
+    protected void iterChildren(TreeFunction f) {
+<span class="fc" id="L70">        type.iter(f);</span>
+<span class="fc" id="L71">        expr.iter(f);</span>
+<span class="fc" id="L72">    }</span>
+
+
+
+
+    // @Override
+    // protected GPRegister codeGenInst(DecacCompiler compiler) {
+    //     GPRegister reg = expr.codeGenInst(compiler);
+
+    //     Type tOld = expr.getType();
+    //     Type tNew = this.getType();
+        
+
+    //     if(tOld.isInt() &amp;&amp; tNew.isFloat()){
+    //         compiler.addInstruction(new FLOAT(reg, reg));
+    //     }else if(tOld.isFloat() &amp;&amp; tNew.isInt()){
+    //         compiler.addInstruction(new INT(reg, reg));
+    //     }
+
+    //     // après validation par @Safwane, on verra s'il d'autres type de cast 
+    //     // @Rappel : safwane
+    //     return reg;
+    // }
+
+
+
+    @Override
+    protected DVal codeGenInst(DecacCompiler compiler) {
+<span class="fc" id="L100">        DVal reg = expr.codeGenInst(compiler);</span>
+<span class="fc" id="L101">        Type tOld = expr.getType();</span>
+<span class="fc" id="L102">        Type tNew = this.getType();</span>
+
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">        if(reg instanceof GPRegister == false){</span>
+<span class="nc" id="L105">            compiler.addInstruction(new LOAD(reg, Register.R0));</span>
+<span class="nc" id="L106">            reg = Register.R0;</span>
+        }
+
+        //  Cast numérique : int &lt; = &gt; float
+<span class="pc bpc" id="L110" title="3 of 4 branches missed.">        if (tOld.isInt() &amp;&amp; tNew.isFloat()) {</span>
+<span class="nc" id="L111">            compiler.addInstruction(new FLOAT(reg, (GPRegister) reg));</span>
+<span class="pc bpc" id="L112" title="2 of 4 branches missed.">        } else if (tOld.isFloat() &amp;&amp; tNew.isInt()) {</span>
+<span class="fc" id="L113">            compiler.addInstruction(new INT(reg, (GPRegister)reg));</span>
+        } 
+        // Cast d'objets 
+<span class="nc bnc" id="L116" title="All 4 branches missed.">        else if (tOld.isClass() &amp;&amp; tNew.isClass()) {</span>
+            ClassType from;
+            ClassType to;
+            try
+            {
+<span class="nc" id="L121">                from = tOld.asClassType(&quot;&quot;, getLocation());</span>
+<span class="nc" id="L122">                to = tNew.asClassType(&quot;&quot;, getLocation());</span>
+<span class="nc" id="L123">            }catch(ContextualError e)</span>
+            {
+                // ne devrait jamais arriver
+<span class="nc" id="L126">                throw new UnsupportedOperationException(&quot;Cast codeGenInst: impossible de caster en ClassType&quot;);</span>
+<span class="nc" id="L127">            }</span>
+
+            // Si c'est un Downcast (Parent -&gt; Enfant), on doit vérifier à l'exécution
+<span class="nc bnc" id="L130" title="All 4 branches missed.">            if (to.isSubClassOf(from) &amp;&amp; !from.sameType(to)) {</span>
+<span class="nc" id="L131">                genRuntimeCastCheck(compiler, (GPRegister)reg, to);</span>
+            }
+            // Si c'est un Upcast (Enfant -&gt; Parent), on ne fait rien !
+        }
+        
+<span class="fc" id="L136">        return reg;</span>
+    }
+
+    private void genRuntimeCastCheck(DecacCompiler compiler, GPRegister regObj, ClassType targetType) {
+<span class="nc" id="L140">        int labelId = compiler.getLabelCastId();</span>
+<span class="nc" id="L141">        Label startLoop = new Label(&quot;start_cast_&quot; + labelId);</span>
+<span class="nc" id="L142">        Label endCast = new Label(&quot;end_cast_&quot; + labelId);</span>
+        
+        // Si l'objet est null, le cast est toujours valide en Deca
+<span class="nc" id="L145">        compiler.addInstruction(new CMP(new NullOperand(), regObj));</span>
+<span class="nc" id="L146">        compiler.addInstruction(new BEQ(endCast));</span>
+
+        // On prépare la comparaison
+<span class="nc" id="L149">        GPRegister currentVTable = compiler.utiliserRegistre();</span>
+<span class="nc" id="L150">        GPRegister targetVTable = compiler.utiliserRegistre();</span>
+        
+        // Charger la VTable de la classe cible
+<span class="nc" id="L153">        compiler.addInstruction(new LEA(targetType.getDefinition().getVTableAddr(), targetVTable));</span>
+        // Charger la VTable de l'objet
+<span class="nc" id="L155">        compiler.addInstruction(new LOAD(new RegisterOffset(0, regObj), currentVTable));</span>
+
+<span class="nc" id="L157">        compiler.addLabel(startLoop);</span>
+<span class="nc" id="L158">        compiler.addInstruction(new CMP(targetVTable, currentVTable));</span>
+<span class="nc" id="L159">        compiler.addInstruction(new BEQ(endCast)); // Trouvé !</span>
+
+        // Remonter au père (offset 0 de la VTable)
+<span class="nc" id="L162">        compiler.addInstruction(new LOAD(new RegisterOffset(0, currentVTable), currentVTable));</span>
+<span class="nc" id="L163">        compiler.addInstruction(new CMP(new NullOperand(), currentVTable));</span>
+<span class="nc" id="L164">        compiler.addInstruction(new BNE(startLoop));</span>
+
+        // Si on arrive ici, le cast est invalide
+<span class="nc" id="L167">        compiler.addInstruction(new BRA(new Label(&quot;cast_error&quot;)));</span>
+        
+<span class="nc" id="L169">        compiler.addLabel(endCast);</span>
+        
+<span class="nc" id="L171">        compiler.libererRegistre(); // targetVTable</span>
+<span class="nc" id="L172">        compiler.libererRegistre(); // currentVTable</span>
+<span class="nc" id="L173">    }</span>
+    @Override
+    public int simuleExecutionNbRegistres(DecacCompiler compiler){
+<span class="nc" id="L176">        return expr.simuleExecutionNbRegistres(compiler);</span>
+    }
+
+    private void castCompatible(Type target, Type exprType) throws ContextualError {
+        // Void case
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        if (target.isVoid()){</span>
+<span class="fc" id="L182">             throw new ContextualError(&quot;Type mismatch: cannot cast &quot; + exprType + &quot; to &quot; + target, getLocation());</span>
+        }
+
+        // Same type OK!
+<span class="pc bpc" id="L186" title="1 of 6 branches missed.">        if (exprType.sameType(target) &amp;&amp; !(target.isClass() || exprType.isClassOrNull())) return;</span>
+
+        // int -&gt; float and float -&gt; int OK!
+<span class="pc bpc" id="L189" title="3 of 4 branches missed.">        if (target.isFloat() &amp;&amp; exprType.isInt()) return;</span>
+<span class="pc bpc" id="L190" title="1 of 4 branches missed.">        if (target.isInt() &amp;&amp; exprType.isFloat()) return;</span>
+
+        // Class case
+<span class="pc bpc" id="L193" title="2 of 4 branches missed.">        if(target.isClass() &amp;&amp; exprType.isClassOrNull()){</span>
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">            if(exprType.isNull()) return;</span>
+
+<span class="fc" id="L196">            ClassType targetClass = target.asClassType(&quot;Conversion from type &quot; + target + &quot; to ClassType failed&quot;, getLocation());</span>
+<span class="fc" id="L197">            ClassType exprClass = exprType.asClassType(&quot;Conversion from type &quot; + exprType + &quot; to ClassType failed&quot;, getLocation());</span>
+
+<span class="pc bpc" id="L199" title="1 of 4 branches missed.">            if(exprClass.isSubClassOf(targetClass) || targetClass.isSubClassOf(exprClass)) return;</span>
+        }
+
+<span class="fc" id="L202">        throw new ContextualError(&quot;Type mismatch: cannot cast &quot; + exprType + &quot; to &quot; + target, getLocation());</span>
+    }
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

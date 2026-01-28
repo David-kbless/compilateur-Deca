@@ -1,0 +1,13 @@
+// Description :
+// test de déclaration des variables
+//
+// Resultats :
+// Ligne 12: type incompatible pour readint
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+  boolean b;
+  b = readInt();
+}

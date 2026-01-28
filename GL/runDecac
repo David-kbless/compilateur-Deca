@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# ce script doit etre lance depuis la racine du projet GL, sinon, il se peut que le path de l'alias soit corrompu !
+
+# d'abord, on determine  le chemin absolu vers le binaire decac
+RELATIVE_PATH="src/main/bin"
+ABS_PATH=$(pwd)/$RELATIVE_PATH
+
+if [ ! -d "$ABS_PATH" ]; then
+    echo "Erreur : Le dossier $ABS_PATH n'existe pas."
+    echo "Lance ce script depuis la racine de ton projet GL."
+    exit 1
+fi
+
+# on determine le fichier de configuration du shell (.zshrc ou .bashrc) car on sait pas lequel le client M. Freire utilise
+if [[ $SHELL == *"zsh"* ]]; then
+    CONFIG_FILE="$HOME/.zshrc"
+elif [[ $SHELL == *"bash"* ]]; then
+    CONFIG_FILE="$HOME/.bashrc"
+else
+    
+    CONFIG_FILE="$HOME/.profile"
+fi
+
+
+# On ajoute le dossier au PATH pour que decac soit reconnu partout
+PATH_LINE="export PATH=\"\$PATH:$ABS_PATH\""
+
+if grep -Fxq "$PATH_LINE" "$CONFIG_FILE"; then
+    echo "Le PATH est déjà configuré dans $CONFIG_FILE."
+else
+    echo "" >> "$CONFIG_FILE"
+    echo "# Alias pour le projet Deca" >> "$CONFIG_FILE"
+    echo "$PATH_LINE" >> "$CONFIG_FILE"
+    echo "Configuration ajoutée à $CONFIG_FILE."
+fi
+
+
+echo "Terminé ! Cher Client, pour appliquer les changements immédiatement, tapez :"
+echo "source $CONFIG_FILE"

@@ -1,0 +1,41 @@
+; start main program
+	TSTO #3
+	BOV stack_overflow_error
+	ADDSP #3
+; Construction de la VTable de de Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Variable Declarations : 
+; Beginning of main instructions:
+	LOAD #0x1.4p1, R0
+	STORE R0, 3(GB)
+	BRA E_Cond.1
+E_Debut.1:
+	LOAD 3(GB), R2
+	LOAD R2, R1
+	WFLOAT
+	LOAD 3(GB), R2
+	SUB #0x1.0p-1, R2
+	BOV overflow_error
+	STORE R2, 3(GB)
+E_Cond.1:
+	LOAD 3(GB), R2
+	CMP #0x0.0p0, R2
+	BGT E_Debut.1
+	HALT
+; end main program
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+overflow_error:
+	WSTR "Error: Overflow sur Float"
+	WNL
+	ERROR

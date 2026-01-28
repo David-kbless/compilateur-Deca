@@ -1,0 +1,16 @@
+// Description :
+// test asm avec chaine non fermee
+//
+// Resultat :
+// Erreur lexicale
+// Ligne 9 : chaine non fermee
+{
+
+asm("LOAD #1 R1);
+}
+                                               
+
+
+
+
+

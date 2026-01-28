@@ -1,0 +1,12 @@
+// Description :
+// test de déclaration des variables
+//
+// Resultats :
+// Ligne 11: variable non declarée
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+  x = 3;
+}

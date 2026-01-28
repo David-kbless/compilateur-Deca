@@ -1,0 +1,11 @@
+// Description :
+// Test de cast implicite d'entier vers flottant dans une multiplication.
+//
+// Resultats :
+// 9.00000e+00
+
+{
+    int x = 3;
+    float y = 3.0;
+    print(x*y);
+}

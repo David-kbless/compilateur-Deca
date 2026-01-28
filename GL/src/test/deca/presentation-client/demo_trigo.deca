@@ -1,0 +1,142 @@
+#include "Math.decah"
+
+/*
+ * Démonstration technico-commerciale de l'extension TRIGO
+ * Fonctions testées : sin, cos, atan, asin, ulp
+ *
+ * Principe :
+ *  - Certaines lignes provoquent volontairement des erreurs
+ *  - On les commente / décommente pour illustrer les bonnes pratiques
+ */
+
+{
+    Math m = new Math();
+
+    float x;
+    float y;
+    float ulp;
+    float err;
+
+    println("===== DEMONSTRATION EXTENSION TRIGO =====");
+
+    /* ======================================================
+     * 1) CAS D'ERREUR : asin hors domaine
+     *    Domaine valide : [-1 ; 1]
+     * ======================================================
+     */
+
+    println("\n--- Test asin : erreur de domaine ---");
+
+    // ERREUR : valeur hors domaine
+    // x = m.asin(1.5);
+
+    // CORRECTION :
+    x = m.asin(0.5);
+    print("asin(0.5) = ");
+    println(x);
+
+    err = m.PI/6 - x; // valeur théorique
+    print("Erreur absolue = ");
+    println(err);
+
+    ulp= m.ulp(m.PI/6);
+    print("ULP(asin(0.5)) = ");
+    println(ulp);
+
+    print("L'erreur en ULP : ");
+    println(err / ulp);
+
+
+    /* ======================================================
+     * 2) PRECISION : sin(pi/4)
+     *    Théoriquement sin(pi/4) = sqrt(2)/2 = 0.7071067811865476...
+     * ======================================================
+     */
+
+    println("\n--- Test sin(pi/4) ---");
+
+    x = m.sin(m.PI / 4);
+    print("sin(pi/4) = ");
+    println(x);
+
+    err = 0.707107 - x;
+    print("Erreur absolue = ");
+    println(err);
+
+    ulp= m.ulp(m.PI / 4);
+    print("ULP(sin(pi/4)) = ");
+    println(ulp);
+
+    print("L'erreur en ULP : ");
+    println(err / ulp);
+
+    /* ======================================================
+     * 3) COMPARAISON sin(pi/2)
+     * ======================================================
+     */
+
+    println("\n--- Test sin(pi/2) ---");
+
+    x = m.sin(m.PI / 2);
+    print("sin(pi/2) = ");
+    println(x);
+
+    err = 1.0 - x;
+    print("Erreur absolue = ");
+    println(err);
+
+    ulp= m.ulp(m.PI / 2);
+    print("ULP(sin(pi/2)) = ");
+    println(ulp);
+
+    print("L'erreur en ULP : ");
+    println(err / ulp);
+    
+
+    /* ======================================================
+     * 4) atan : comportement stable : atan(0.8) = 0.674741
+     * ======================================================
+     */
+
+    println("\n--- Test atan ---");
+
+    x = m.atan(0.8);
+    print("atan(0.8) = ");
+    println(x);
+
+    err = 0.674741 - x;
+    print("Erreur absolue = ");
+    println(err);
+
+    ulp= m.ulp(0.674741);
+    print("ULP(atan(0.8)) = ");
+    println(ulp);
+
+    print("L'erreur en ULP : ");
+    println(err / ulp);
+
+    /* ======================================================
+     * 5) cos(pi) : valeur attendue -1
+     * ======================================================
+     */
+
+    println("\n--- Test cos(pi) ---");
+
+    x = m.cos(m.PI);
+    print("cos(pi) = ");
+    println(x);
+
+    err = -1.0 - x;
+    print("Erreur absolue = ");
+    println(err);
+
+    ulp= m.ulp(-1.0);
+    print("ULP(cos(pi)) = ");
+    println(ulp);
+
+    print("L'erreur en ULP : ");
+    println(err / ulp);
+
+
+    println("\n===== FIN DEMONSTRATION =====");
+}

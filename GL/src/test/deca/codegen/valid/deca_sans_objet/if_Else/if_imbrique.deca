@@ -1,0 +1,15 @@
+// Description :
+// Test de if imbriqués.
+//
+// Resultats :
+// 5
+
+{
+    int x;
+    x = 5;
+    if (x > 0) {
+        if (x < 10) {
+            print(x);
+        }
+    }
+}

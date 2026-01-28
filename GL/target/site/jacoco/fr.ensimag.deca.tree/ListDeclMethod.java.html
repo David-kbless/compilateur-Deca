@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ListDeclMethod.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">ListDeclMethod.java</span></div><h1>ListDeclMethod.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.ClassDefinition;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.context.MethodDefinition;
+import fr.ensimag.deca.tools.IndentPrintStream;
+
+<span class="fc" id="L11">public class ListDeclMethod extends TreeList&lt;AbstractDeclMethod&gt; {</span>
+
+    // // Pass 1 of [SyntaxeContextuelle] A revoir ...
+    // public EnvironmentExp verifyListMethodMembers(DecacCompiler compiler, ClassDefinition superClass,
+    //                                      ClassDefinition currentClass)
+    //         throws ContextualError {
+
+    //     EnvironmentExp envExpR = new EnvironmentExp(null);
+    //     int index = currentClass.getNumberOfMethods();
+    //     for (AbstractDeclMethod method : getList()) {
+    //         EnvironmentExp envExp = method.verifyDeclMethodMembers(compiler, superClass, index);
+    //         try {
+    //             envExpR.add(envExp);
+    //         } catch (EnvironmentExp.DoubleDefException e) {
+    //             //throw new ContextualError(&quot;Method &quot; + method.getName().getName() + &quot; is already defined&quot;, method.getLocation());
+    //         }
+    //         currentClass.incNumberOfMethods();
+    //         index++;
+    //     }
+    //     return envExpR;
+    // }
+
+    public EnvironmentExp verifyListMethodMembers(DecacCompiler compiler, ClassDefinition superClass,
+                                     ClassDefinition currentClass)
+        throws ContextualError {
+
+<span class="fc" id="L37">        EnvironmentExp envExpR = new EnvironmentExp(null);</span>
+        
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        for (AbstractDeclMethod method : getList()) {</span>
+            // On récupère l'index actuel DISPONIBLE dans la classe
+<span class="fc" id="L41">            int index = currentClass.getNumberOfMethods();</span>
+            
+            // On passe cet index à la méthode
+<span class="fc" id="L44">            EnvironmentExp envExp = method.verifyDeclMethodMembers(compiler, currentClass, index);</span>
+            
+            try {
+<span class="fc" id="L47">                envExpR.add(envExp);</span>
+                
+                // --- MODIFICATION MINIMALE ICI ---
+                // On récupère la définition qu'on vient de créer pour vérifier son index
+<span class="fc" id="L51">                DeclMethod m = (DeclMethod) method;</span>
+<span class="fc" id="L52">                MethodDefinition def = envExp.get(m.getName().getName()).asMethodDefinition(&quot;error&quot;, m.getLocation());</span>
+                
+                // Si l'index de la méthode est celui qu'on a proposé (index), 
+                // c'est une nouvelle méthode : on incrémente le compteur global.
+<span class="fc bfc" id="L56" title="All 2 branches covered.">                if (def.getIndex() == index) {</span>
+<span class="fc" id="L57">                    currentClass.incNumberOfMethods();</span>
+                }
+                // Si def.getIndex() est plus petit que index, c'est un override,
+                // donc on ne touche pas au compteur de la classe !
+                // ----------------------------------
+                
+<span class="nc" id="L63">            } catch (EnvironmentExp.DoubleDefException e) {</span>
+                // ...
+<span class="fc" id="L65">            }</span>
+<span class="fc" id="L66">        }</span>
+<span class="fc" id="L67">        return envExpR;</span>
+    }
+    // Pass 2 of [SyntaxeContextuelle] A revoir ...
+    public void verifyListMethodBody(DecacCompiler compiler, EnvironmentExp envExp,
+                                     ClassDefinition currentClass)
+            throws ContextualError {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        for (AbstractDeclMethod method : getList()) {</span>
+<span class="fc" id="L74">            method.verifyMethodBody(compiler, envExp, currentClass);</span>
+<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">    }</span>
+    
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        for (AbstractDeclMethod method : getList()) {</span>
+<span class="nc" id="L81">            method.decompile(s);</span>
+<span class="nc" id="L82">            s.println();</span>
+<span class="nc" id="L83">        }</span>
+<span class="nc" id="L84">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

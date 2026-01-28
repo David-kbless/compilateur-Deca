@@ -1,0 +1,10 @@
+// Description :
+// test d’un littéral entier valide
+//
+// Resultat :
+// ok
+
+{
+println("test d’un littéral entier valide");
+42;
+}

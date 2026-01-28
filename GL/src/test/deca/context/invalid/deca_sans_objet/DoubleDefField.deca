@@ -1,0 +1,13 @@
+// Description:
+//    test objet fournit par le cahier de charge
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+class A {
+    int x;
+    float x;
+}

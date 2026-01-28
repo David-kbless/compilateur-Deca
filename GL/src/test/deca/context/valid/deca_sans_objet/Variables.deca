@@ -1,0 +1,13 @@
+// Description :
+// test de déclarationde variables
+//
+// Resultats :
+// Ok pour l'instant
+
+// JE NE SAIS PAS SI C'EST CENSÉ PASSER CAR JE NE TROUVE PAS DE REGLE QUI GARANTI QU'UNE VARIABLE A ÉTÉ INITIALISÉE
+
+{
+        int x = 2 ;
+        int y ;
+        x = x + y ;
+}

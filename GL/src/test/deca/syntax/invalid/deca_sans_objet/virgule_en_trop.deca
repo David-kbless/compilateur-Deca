@@ -1,0 +1,9 @@
+// Description :
+//  test virgule en trop
+//
+// Resultat :
+// Erreur lexicale
+// Ligne 8 : caractère inattendu ')'
+{
+    print(1,);
+}

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Selection.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">Selection.java</span></div><h1>Selection.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import java.io.PrintStream;
+
+import org.apache.commons.lang.Validate;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.FieldDefinition;
+import fr.ensimag.deca.context.ClassType;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.context.ExpDefinition;
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.ima.pseudocode.DAddr;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.NullOperand;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.RegisterOffset;
+import fr.ensimag.ima.pseudocode.instructions.BEQ;
+import fr.ensimag.ima.pseudocode.instructions.CMP;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+
+public class Selection extends AbstractLValue {
+    private final AbstractExpr object;
+    private final AbstractIdentifier fieldName;
+
+<span class="fc" id="L31">    public Selection(AbstractExpr expr, AbstractIdentifier fieldName) {</span>
+<span class="fc" id="L32">        Validate.notNull(expr);</span>
+<span class="fc" id="L33">        Validate.notNull(fieldName);</span>
+<span class="fc" id="L34">        this.object = expr;</span>
+<span class="fc" id="L35">        this.fieldName = fieldName;</span>
+<span class="fc" id="L36">    }</span>
+
+    public AbstractExpr getObject() {
+<span class="nc" id="L39">        return object;</span>
+    }
+
+    public AbstractIdentifier getFieldName() {
+<span class="nc" id="L43">        return fieldName;</span>
+    }
+
+    public void setLocation(Location location) {
+<span class="fc" id="L47">        super.setLocation(location);</span>
+<span class="fc" id="L48">    }</span>
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv, ClassDefinition currentClass)
+            throws ContextualError {
+<span class="fc" id="L53">        Type typeClass2 = object.verifyExpr(compiler, localEnv, currentClass);</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (!typeClass2.isClass()) {</span>
+<span class="nc" id="L55">            throw new ContextualError(&quot;The object is not of class type&quot;, getLocation());</span>
+        }
+<span class="fc" id="L57">        ClassDefinition defClass2 = typeClass2.asClassType(&quot;The object is not of class type&quot;, getLocation()).getDefinition();</span>
+<span class="fc" id="L58">        EnvironmentExp envExp2 = defClass2.getMembers();</span>
+<span class="fc" id="L59">        ExpDefinition def = fieldName.verifyIdent(envExp2);</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if (!def.isField()) {</span>
+<span class="nc" id="L61">            throw new ContextualError(&quot;The field is not defined&quot;, getLocation());</span>
+        }
+<span class="fc" id="L63">        FieldDefinition fieldDef = def.asFieldDefinition(&quot;The field is not defined&quot;, getLocation());</span>
+<span class="fc" id="L64">        Visibility vis = fieldDef.getVisibility();</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (vis == Visibility.PROTECTED) {</span>
+<span class="fc" id="L66">            ClassDefinition classField = fieldDef.getContainingClass();</span>
+<span class="fc" id="L67">            ClassType typeClass = typeClass2.asClassType(&quot;could not convert to ClassType&quot;, getLocation());</span>
+<span class="fc" id="L68">            ClassType typeClassField = classField.getType().asClassType(&quot;could not convert to ClassType&quot;, getLocation());</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            if (currentClass == null){</span>
+<span class="fc" id="L70">                throw new ContextualError(&quot;The field &quot; + fieldName.getName() + &quot; is protected and not accessible in main&quot;, getLocation());</span>
+            }
+<span class="fc" id="L72">            ClassType typeClassCurrent = currentClass.getType().asClassType(&quot;could not convert to ClassType&quot;, getLocation());</span>
+<span class="pc bpc" id="L73" title="3 of 4 branches missed.">            if (!typeClass.isSubClassOf(typeClassCurrent) &amp;&amp; typeClassCurrent.isSubClassOf(typeClassField)) {</span>
+<span class="nc" id="L74">                throw new ContextualError(&quot;The field &quot; + fieldName.getName() + &quot; is not accessible&quot;, getLocation());</span>
+            }
+            
+        }
+<span class="fc" id="L78">        setType(def.getType());</span>
+<span class="fc" id="L79">        return def.getType();</span>
+    }
+
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="nc" id="L84">        getObject().decompile(s);</span>
+<span class="nc" id="L85">        s.print(&quot;.&quot;);</span>
+<span class="nc" id="L86">        getFieldName().decompile(s);</span>
+<span class="nc" id="L87">    }</span>
+
+    @Override
+    protected void prettyPrintChildren(PrintStream s, String prefix) {
+<span class="fc" id="L91">        object.prettyPrint(s, prefix, false);</span>
+<span class="fc" id="L92">        fieldName.prettyPrint(s, prefix, true);</span>
+<span class="fc" id="L93">    }</span>
+
+    @Override
+    protected void iterChildren(TreeFunction f) {
+<span class="nc" id="L97">        object.iter(f);</span>
+<span class="nc" id="L98">        fieldName.iter(f);</span>
+<span class="nc" id="L99">    }</span>
+
+    // @Ousmane
+    @Override
+    protected DVal codeGenInst(DecacCompiler compiler) {
+
+<span class="nc" id="L105">        DVal reg = object.codeGenInst(compiler);</span>
+
+        // on verfie le derefencemeent nulle :
+<span class="nc" id="L108">        compiler.addInstruction(new CMP(new NullOperand(), (GPRegister)reg));</span>
+<span class="nc" id="L109">        compiler.addInstruction(new BEQ(new Label(&quot;dereferencement.null&quot;)));</span>
+<span class="nc" id="L110">        compiler.addDereferencementNullLabel();</span>
+
+        // on charge enfin le field dans reg
+<span class="nc" id="L113">        compiler.addInstruction(new LOAD(new RegisterOffset(fieldName.getFieldDefinition().getIndex() + 1, (GPRegister)reg), (GPRegister)reg));</span>
+        
+<span class="nc" id="L115">        return reg;</span>
+    }
+
+    
+
+    @Override
+    public int simuleExecutionNbRegistres(DecacCompiler compiler){
+<span class="fc" id="L122">        return object.simuleExecutionNbRegistres(compiler);</span>
+    }
+
+    @Override
+    public DAddr getDAddr(DecacCompiler compiler) {
+
+<span class="nc" id="L128">       DVal reg = object.codeGenInst(compiler);</span>
+
+        // on verfie le derefencemeent nulle :
+<span class="nc" id="L131">        compiler.addInstruction(new CMP(new NullOperand(), (GPRegister)reg));</span>
+<span class="nc" id="L132">        compiler.addInstruction(new BEQ(new Label(&quot;dereferencement.null&quot;)));</span>
+<span class="nc" id="L133">        compiler.addDereferencementNullLabel();</span>
+        
+<span class="nc" id="L135">        RegisterOffset offset = new RegisterOffset(fieldName.getFieldDefinition().getIndex() + 1, (GPRegister)reg);</span>
+<span class="nc" id="L136">        compiler.libererRegistre();</span>
+        
+<span class="nc" id="L138">        return offset;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

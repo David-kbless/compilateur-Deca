@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# chemin absolu vers le dossier du script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# racine du projet (si le script est dans src/main/bin)
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+
+DECAC="$PROJECT_ROOT/src/main/bin/decac"
+
+if [[ $# -ne 1 ]]; then # on veut qu'un seul fichier
+  echo "Usage: $(basename "$0") <file.deca>"
+  exit 1
+fi
+
+deca="$1"
+ass="${deca%.deca}.ass" # permet d'enlever le .deca pour le remplacer par .ass
+
+# 1) Compilation
+# On capture la sortie de decac
+compile_output="$(mktemp)" #créer un fichier temp pour recuperer la sortie d'erreur
+if ! "$DECAC" "$deca" >"$compile_output" 2>&1; then
+  # En cas d'erreur : on affiche la sortie du compilateur
+  cat "$compile_output"
+  rm -f "$compile_output"
+  exit 1
+fi
+rm -f "$compile_output"
+
+# 2) Estimation cycles ≈ nb d'instructions
+#Compte le nombre de ligne Projet Gl approximation 1 ligne ≈ 1 instruction ≈ 1 cycle
+cycles=$(
+  awk '
+    /^[[:space:]]*;/ {next}
+    /^[[:space:]]*$/ {next}
+    /^[A-Za-z_][A-Za-z0-9_]*:[[:space:]]*$/ {next}
+    {c++} 
+    END{print c+0}
+  ' "$ass"
+)
+
+# 3) Mesures d'exécution IMA (sortie programme masquée)
+tmp="$(mktemp)"
+LC_ALL=C /usr/bin/time -f "%U %S %e %M %I %O %x" -o "$tmp" ima "$ass" >/dev/null 2>&1 || true
+read -r user_s sys_s elapsed_s max_rss_kb fs_in fs_out exit_status < "$tmp"
+rm -f "$tmp"
+
+# 4) Affichage final
+echo "== $(basename "$deca") =="
+echo "IMA instructions (≈ cycles): $cycles"
+echo "time: user=${user_s}s sys=${sys_s}s elapsed=${elapsed_s}s"
+echo "memory: max_rss=${max_rss_kb} kB"
+echo "I/O: fs_in=${fs_in} fs_out=${fs_out}"
+echo "exit: $exit_status"
+
+THRESHOLD=1000 # seuil à peaufiner avec nos differents tests
+
+if (( cycles >= THRESHOLD )); then
+  echo "Le programme génère un nombre élevé d'instructions IMA ($cycles)."
+  echo "Dans un contexte de compilations ou d'exécutions répétées,"
+  echo "il peut être pertinent d'éviter une recompilation inutile"
+  echo "afin de limiter l'impact énergétique global."
+else
+  echo "Le nombre d'instructions IMA générées ($cycles) est inférieur au seuil défini (lors."
+  echo "du projet GL, basé sur une moyene de nos differents tests)"
+  echo "Dans un contexte d'utilisation comparable, ce programme présente"
+  echo "un coût d'exécution relativement modéré."
+fi

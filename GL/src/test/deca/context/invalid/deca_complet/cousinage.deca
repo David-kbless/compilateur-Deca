@@ -1,0 +1,11 @@
+// Description:
+//    Affectation impossible entre deux classes "sœurs".
+// Resultats:
+//    Ligne 10: Erreur (Règle 3.28 : types incompatibles)
+class Mere {}
+class FilleA extends Mere {}
+class FilleB extends Mere {}
+{
+    FilleA a = new FilleA();
+    FilleB b = a; // ERREUR : FilleA n'est pas sous-type de FilleB
+}

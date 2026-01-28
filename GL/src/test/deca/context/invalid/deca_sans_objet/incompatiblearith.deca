@@ -1,0 +1,13 @@
+// Description :
+// test de déclaration des variables
+//
+// Resultats :
+// Ligne 12: type d'opérande incompatible
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+  int x;
+  x = true * 3;
+}

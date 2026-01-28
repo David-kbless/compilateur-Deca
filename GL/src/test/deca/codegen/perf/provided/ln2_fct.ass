@@ -1,0 +1,261 @@
+; start main program
+	TSTO #12
+	BOV stack_overflow_error
+	ADDSP #12
+; Construction de la VTable de de Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de Polyexp
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+	LOAD code.Polyexp.pexp, R2
+	STORE R2, 5(GB)
+; Variable Declarations : 
+; Main program
+	NEW #1, R2
+	BOV tas_plein
+	LEA 3(GB), R0
+	STORE R0, 0(R2)
+	PUSH R2
+	BSR init.Polyexp
+	POP R2
+	STORE R2, 6(GB)
+	LOAD #0x0.0p0, R2
+	STORE R2, 7(GB)
+	LOAD #0x1.0p0, R2
+	STORE R2, 8(GB)
+	LOAD #0x1.0p0, R2
+	OPP R2, R2
+	BOV overflow_error
+	STORE R2, 9(GB)
+	LOAD #0x1.6fc2ecp-1, R2
+	STORE R2, 10(GB)
+; Beginning of main instructions:
+	BRA E_Cond.1
+E_Debut.1:
+	LOAD #0x0.0p0, R2
+	ADDSP #2
+	LOAD 6(GB), R3
+	STORE R3, 0(SP)
+	LOAD #0x1.0p1, R3
+	LOAD 8(GB), R4
+	LOAD 7(GB), R5
+	ADD R4, R5
+	LOAD R5, R4
+	BOV overflow_error
+	LOAD R3, R0
+	CMP #0x0.0p0, R0
+	BEQ div_zero_error
+	DIV R3, R4
+	LOAD R4, R3
+	BOV overflow_error
+	STORE R3, 11(GB)
+	STORE R3, -1(SP)
+	LOAD 0(SP), R3
+	CMP #null, R3
+	BEQ dereferencement.null
+	LOAD 0(R3), R3
+	LOAD 2(R3), R3
+	BSR R3
+	SUBSP #2
+	STORE R0, 12(GB)
+	CMP R2, R0
+	SGT R0
+	LOAD R0, R2
+	CMP #0, R2
+	BEQ E_Sinon.1
+	LOAD 11(GB), R1
+	STORE R1, 8(GB)
+	LOAD 12(GB), R2
+	STORE R2, 10(GB)
+	BRA E_Fin_if.1
+E_Sinon.1:
+	LOAD 11(GB), R3
+	STORE R3, 7(GB)
+	LOAD 12(GB), R4
+	STORE R4, 9(GB)
+E_Fin_if.1:
+E_Cond.1:
+	LOAD #0x1.0p-23, R5
+	LOAD 7(GB), R6
+	ADD R5, R6
+	LOAD R6, R5
+	BOV overflow_error
+	LOAD 8(GB), R6
+	CMP R5, R6
+	SGE R6
+	LOAD R6, R5
+	CMP #0, R5
+	BNE E_Debut.1
+	LOAD 7(GB), R5
+	LOAD R5, R1
+	WFLOAT
+	WSTR " = "
+	LOAD 7(GB), R5
+	LOAD R5, R1
+	WFLOATX
+	WNL
+	HALT
+; end main program
+init.Polyexp:
+	LOAD -2(LB), R2
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+code.Polyexp.pexp:
+	TSTO #9
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	PUSH R5
+	PUSH R6
+	PUSH R7
+	PUSH R8
+	PUSH R9
+	PUSH R10
+	LOAD #1, R2
+	FLOAT R2, R2
+	BOV overflow_error
+	LOAD #0x1.0p0, R3
+	LOAD #0x1.0p1, R4
+	LOAD #0x1.0p0, R5
+	LOAD R4, R0
+	CMP #0x0.0p0, R0
+	BEQ div_zero_error
+	DIV R4, R5
+	LOAD R5, R4
+	BOV overflow_error
+	LOAD #0x1.8p2, R5
+	LOAD #0x1.0p0, R6
+	LOAD R5, R0
+	CMP #0x0.0p0, R0
+	BEQ div_zero_error
+	DIV R5, R6
+	LOAD R6, R5
+	BOV overflow_error
+	LOAD #0x1.8p4, R6
+	LOAD #0x1.0p0, R7
+	LOAD R6, R0
+	CMP #0x0.0p0, R0
+	BEQ div_zero_error
+	DIV R6, R7
+	LOAD R7, R6
+	BOV overflow_error
+	LOAD #0x1.ep6, R7
+	LOAD #0x1.0p0, R8
+	LOAD R7, R0
+	CMP #0x0.0p0, R0
+	BEQ div_zero_error
+	DIV R7, R8
+	LOAD R8, R7
+	BOV overflow_error
+	LOAD #0x1.68p9, R8
+	LOAD #0x1.0p0, R9
+	LOAD R8, R0
+	CMP #0x0.0p0, R0
+	BEQ div_zero_error
+	DIV R8, R9
+	LOAD R9, R8
+	BOV overflow_error
+	LOAD #0x1.3bp12, R9
+	LOAD #0x1.0p0, R10
+	LOAD R9, R0
+	CMP #0x0.0p0, R0
+	BEQ div_zero_error
+	DIV R9, R10
+	LOAD R10, R9
+	BOV overflow_error
+	LOAD -3(LB), R10
+	MUL R9, R10
+	LOAD R10, R9
+	BOV overflow_error
+	ADD R8, R9
+	LOAD R9, R8
+	BOV overflow_error
+	LOAD -3(LB), R9
+	MUL R8, R9
+	LOAD R9, R8
+	BOV overflow_error
+	ADD R7, R8
+	LOAD R8, R7
+	BOV overflow_error
+	LOAD -3(LB), R8
+	MUL R7, R8
+	LOAD R8, R7
+	BOV overflow_error
+	ADD R6, R7
+	LOAD R7, R6
+	BOV overflow_error
+	LOAD -3(LB), R7
+	MUL R6, R7
+	LOAD R7, R6
+	BOV overflow_error
+	ADD R5, R6
+	LOAD R6, R5
+	BOV overflow_error
+	LOAD -3(LB), R6
+	MUL R5, R6
+	LOAD R6, R5
+	BOV overflow_error
+	ADD R4, R5
+	LOAD R5, R4
+	BOV overflow_error
+	LOAD -3(LB), R5
+	MUL R4, R5
+	LOAD R5, R4
+	BOV overflow_error
+	ADD R3, R4
+	LOAD R4, R3
+	BOV overflow_error
+	LOAD -3(LB), R4
+	MUL R3, R4
+	LOAD R4, R3
+	BOV overflow_error
+	SUB R2, R3
+	LOAD R3, R2
+	BOV overflow_error
+	LOAD R2, R0
+	BRA fin.Polyexp.pexp
+	BRA absence_return_error
+fin.Polyexp.pexp:
+	POP R10
+	POP R9
+	POP R8
+	POP R7
+	POP R6
+	POP R5
+	POP R4
+	POP R3
+	POP R2
+	RTS
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+overflow_error:
+	WSTR "Error: Overflow sur Float"
+	WNL
+	ERROR
+div_zero_error:
+	WSTR "Erreur : division par 0"
+	WNL
+	ERROR
+tas_plein:
+	WSTR "Erreur : le tas est plein, impossible d'allouer de la memoire"
+	WNL
+	ERROR
+absence_return_error:
+	WSTR "Erreur : Absence de return dans le corps d'une methode "
+	WNL
+	ERROR
+dereferencement.null:
+	WSTR "Erreur : Dereferencement null"
+	WNL
+	ERROR

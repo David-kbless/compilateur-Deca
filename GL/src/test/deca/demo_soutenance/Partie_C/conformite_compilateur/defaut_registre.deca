@@ -1,0 +1,36 @@
+// commande de compilation :
+//    decac src/test/deca/demo_soutenance/Partie_C/conformite_compilateur/defaut_registre.deca
+//    ima src/test/deca/demo_soutenance/Partie_C/conformite_compilateur/defaut_registre.ass
+
+
+
+// Description :
+//    Test de saturation des registres pour la soutenance.
+//    Force l'utilisation de plus de 14 registres pour déclencher
+//    la gestion du "spill" (sauvegarde temporaire sur la pile).
+
+
+class TestDefautRegistre{
+    int x = 1 + (2 + (3 + (4 + (5 + (6 + (7 + (8 + (9 + (10 + (11 + (12 + (13 + (14 + (15 + 16))))))))))))));
+
+    int m(){
+        int y = 1 + (2 + (3 + (4 + (5 + (6 + (7 + (8 + (9 + (10 + (11 + (12 + (13 + (14 + (15 + 16))))))))))))));
+
+        return y;
+    }
+
+}
+
+{
+    int z;
+    TestDefautRegistre t = new TestDefautRegistre();
+
+    // une variable locale pour saturer les registres
+    z = 1 + (2 + (3 + (4 + (5 + (6 + (7 + (8 + (9 + (10 + (11 + (12 + (13 + (14 + (15 + 16))))))))))))));
+    
+    
+    println("Resultat attendu : 136");
+    println("Resultat obtenu main : ", z);
+    println("Resultat obtenu m : ", t.m());
+    println("Resultat obtenu membre : ", t.x);
+}

@@ -1,0 +1,1 @@
+Short-circuit AND OK

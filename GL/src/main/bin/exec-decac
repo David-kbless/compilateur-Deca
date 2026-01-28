@@ -1,0 +1,37 @@
+#!/bin/bash
+
+
+clear
+echo "==================================================== "
+echo "  Exécution d'un programme Deca avec exec-decac "
+echo "===================================================="
+echo ""
+# ============================
+# Compilation + Exécution Deca
+# ============================
+
+if [ $# -ne 1 ]; then
+    echo "Usage : exec-decac <fichier.deca | fichier>"
+    exit 1
+fi
+
+# Nom du fichier sans extension
+FILE="$1"
+BASENAME="${FILE%.deca}"
+
+# Compilation
+decac "$BASENAME.deca"
+if [ $? -ne 0 ]; then
+    echo "Erreur lors de la compilation."
+    exit 1
+fi
+
+# Vérification du fichier assembleur
+ASS_FILE="$BASENAME.ass"
+if [ ! -f "$ASS_FILE" ]; then
+    echo "Erreur : fichier $ASS_FILE introuvable."
+    exit 1
+fi
+
+# Exécution
+ima "$ASS_FILE"

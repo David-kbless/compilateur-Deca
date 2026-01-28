@@ -1,0 +1,10 @@
+// Description :
+// Teste les comparaisons avec double négation sans objet. 
+//
+// Resultats :
+// OK
+{
+    boolean b = false;
+    boolean c = !!b;
+    println(c);
+}

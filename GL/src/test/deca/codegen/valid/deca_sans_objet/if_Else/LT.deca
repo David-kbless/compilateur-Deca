@@ -1,0 +1,13 @@
+// Description :
+// Test de l'opérateur '<'.
+//
+// Resultats :
+// 4
+
+{
+    int x = 1;
+    int y = 4;
+    if (x < y) {
+        print(4);
+    }
+}

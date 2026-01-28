@@ -1,0 +1,265 @@
+class Grille {
+
+    // 0 = vide, 1 = X, 2 = O
+    protected int c1 = 0;
+    protected int c2 = 0;
+    protected int c3 = 0;
+    protected int c4 = 0;
+    protected int c5 = 0;
+    protected int c6 = 0;
+    protected int c7 = 0;
+    protected int c8 = 0;
+    protected int c9 = 0;
+
+    void afficherCase(int v) {
+        if (v == 0) {
+            print(" ");
+        } else {
+            if (v == 1) {
+                print("X");
+            } else {
+                print("O");
+            }
+        }
+    }
+
+    void afficher() {
+
+        this.afficherCase(this.c1);
+        print(" | ");
+        this.afficherCase(this.c2);
+        print(" | ");
+        this.afficherCase(this.c3);
+        println();
+
+        print("---------");
+        println();
+
+        this.afficherCase(this.c4);
+        print(" | ");
+        this.afficherCase(this.c5);
+        print(" | ");
+        this.afficherCase(this.c6);
+        println();
+
+        print("---------");
+        println();
+
+        this.afficherCase(this.c7);
+        print(" | ");
+        this.afficherCase(this.c8);
+        print(" | ");
+        this.afficherCase(this.c9);
+        println();
+        
+        }
+
+
+
+    boolean jouer(int choix, int joueur) {
+
+        if (choix == 1) {
+            if (c1 != 0) {
+                return false;
+            }
+            c1 = joueur;
+            return true;
+        }
+
+        if (choix == 2) {
+            if (c2 != 0) {
+                return false;
+            }
+            c2 = joueur;
+            return true;
+        }
+
+        if (choix == 3) {
+            if (c3 != 0) {
+                return false;
+            }
+            c3 = joueur;
+            return true;
+        }
+
+        if (choix == 4) {
+            if (c4 != 0) {
+                return false;
+            }
+            c4 = joueur;
+            return true;
+        }
+
+        if (choix == 5) {
+            if (c5 != 0) {
+                return false;
+            }
+            c5 = joueur;
+            return true;
+        }
+
+        if (choix == 6) {
+            if (c6 != 0) {
+                return false;
+            }
+            c6 = joueur;
+            return true;
+        }
+
+        if (choix == 7) {
+            if (c7 != 0) {
+                return false;
+            }
+            c7 = joueur;
+            return true;
+        }
+
+        if (choix == 8) {
+            if (c8 != 0) {
+                return false;
+            }
+            c8 = joueur;
+            return true;
+        }
+
+        if (choix == 9) {
+            if (c9 != 0) {
+                return false;
+            }
+            c9 = joueur;
+            return true;
+        }
+
+        return false;
+    }
+
+    int gagnant() {
+
+        if (c1 != 0) {
+            if (c1 == c2) {
+                if (c2 == c3) {
+                    return c1;
+                }
+            }
+        }
+
+        if (c4 != 0) {
+            if (c4 == c5) {
+                if (c5 == c6) {
+                    return c4;
+                }
+            }
+        }
+
+        if (c7 != 0) {
+            if (c7 == c8) {
+                if (c8 == c9) {
+                    return c7;
+                }
+            }
+        }
+
+        if (c1 != 0) {
+            if (c1 == c4) {
+                if (c4 == c7) {
+                    return c1;
+                }
+            }
+        }
+
+        if (c2 != 0) {
+            if (c2 == c5) {
+                if (c5 == c8) {
+                    return c2;
+                }
+            }
+        }
+
+        if (c3 != 0) {
+            if (c3 == c6) {
+                if (c6 == c9) {
+                    return c3;
+                }
+            }
+        }
+
+        if (c1 != 0) {
+            if (c1 == c5) {
+                if (c5 == c9) {
+                    return c1;
+                }
+            }
+        }
+
+        if (c3 != 0) {
+            if (c3 == c5) {
+                if (c5 == c7) {
+                    return c3;
+                }
+            }
+        }
+
+        return 0;
+    }
+}
+
+
+{
+    Grille g = new Grille();
+
+    int joueur = 1;
+    int coups = 0;
+    int choix = 0;
+    boolean ok = false;
+    int win = 0;
+
+    println("======== Jeu du morpion ========");
+    println("1 2 3");
+    println("4 5 6");
+    println("7 8 9");
+    println("");
+
+    while (coups < 9) {
+        if (win != 0) {
+            coups = 10; // remplace break qu on a pas dans notre langage il faut trouver mieux car on continue toujours dans la boucle pour l instant je ne sais pas comment faire
+        }
+
+        g.afficher();
+
+        if (joueur == 1) {
+            print("Joueur X, choisissez une case : ");
+        } else {
+            print("Joueur O, choisissez une case : ");
+        }
+
+        choix = readInt();
+        ok = g.jouer(choix, joueur);
+
+        if (ok == false) {
+            println("Coup invalide, recommencez.");
+        } else {
+            coups = coups + 1;
+            win = g.gagnant();
+
+            if (win == 0) {
+                if (joueur == 1) {
+                    joueur = 2;
+                } else {
+                    joueur = 1;
+                }
+            }
+        }
+    }
+
+    g.afficher();
+
+    if (win == 1) {
+        println("Victoire de X !");
+    } else {
+        if (win == 2) {
+            println("Victoire de O !");
+        } else {
+            println("Match nul.");
+        }
+    }
+}

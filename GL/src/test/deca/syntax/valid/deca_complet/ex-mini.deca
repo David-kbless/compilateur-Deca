@@ -1,0 +1,35 @@
+// Description :
+// Teste diverses expressions et déclarations avec objet.
+//
+// Resultats :
+// OK
+class MyClass {
+    int value;
+}
+
+{
+    int a, b, c, d, e;
+    boolean x, y, z;
+    MyClass obj;
+
+    // or_expr / and_expr
+    x = true || false;
+    y = true && false;
+
+    // eq_neq_expr
+    z = (1 == 1) != (2 != 3);
+
+    // inequality_expr
+    a = (1 < 2) + (3 <= 4) - (5 > 6) * (7 >= 8);
+
+    // sum_expr
+    b = 1 + 2 - 3;
+
+    // mult_expr
+    c = 4 * 5 / 2;
+
+    // select_expr
+    
+    obj = new MyClass();
+    e = obj.value;
+}

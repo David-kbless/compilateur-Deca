@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MethodDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.context</a> &gt; <span class="el_source">MethodDefinition.java</span></div><h1>MethodDefinition.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.context;
+
+import fr.ensimag.deca.tree.Location;
+import fr.ensimag.ima.pseudocode.Label;
+import org.apache.commons.lang.Validate;
+
+/**
+ * Definition of a method
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class MethodDefinition extends ExpDefinition {
+
+     private Label labelDebut;
+    private Label labelFin;
+
+
+    public Label getLabelDebut() {
+<span class="nc" id="L20">        return labelDebut;</span>
+    }
+
+    public void setLabelDebut(Label labelDebut) {
+<span class="nc" id="L24">        this.labelDebut = labelDebut;</span>
+<span class="nc" id="L25">    }</span>
+
+    public Label getLabelFin() {
+<span class="nc" id="L28">        return labelFin;</span>
+    }
+
+    public void setLabelFin(Label labelFin) {
+<span class="nc" id="L32">        this.labelFin = labelFin;</span>
+<span class="nc" id="L33">    }</span>
+
+    @Override
+    public boolean isMethod() {
+<span class="fc" id="L37">        return true;</span>
+    }
+
+    public Label getLabel() {
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        Validate.isTrue(label != null,</span>
+                &quot;setLabel() should have been called before&quot;);
+<span class="nc" id="L43">        return label;</span>
+    }
+
+    public void setLabel(Label label) {
+<span class="fc" id="L47">        this.label = label;</span>
+<span class="fc" id="L48">    }</span>
+
+    public int getIndex() {
+<span class="fc" id="L51">        return index;</span>
+    }
+
+    private int index;
+
+    @Override
+    public MethodDefinition asMethodDefinition(String errorMessage, Location l)
+            throws ContextualError {
+<span class="fc" id="L59">        return this;</span>
+    }
+
+    private final Signature signature;
+    private Label label;
+    
+    /**
+     * 
+     * @param type Return type of the method
+     * @param location Location of the declaration of the method
+     * @param signature List of arguments of the method
+     * @param index Index of the method in the class. Starts from 0.
+     */
+    public MethodDefinition(Type type, Location location, Signature signature, int index) {
+<span class="fc" id="L73">        super(type, location);</span>
+<span class="fc" id="L74">        this.signature = signature;</span>
+<span class="fc" id="L75">        this.index = index;</span>
+<span class="fc" id="L76">    }</span>
+
+    public Signature getSignature() {
+<span class="fc" id="L79">        return signature;</span>
+    }
+
+    @Override
+    public String getNature() {
+<span class="fc" id="L84">        return &quot;method&quot;;</span>
+    }
+
+    @Override
+    public boolean isExpression() {
+<span class="nc" id="L89">        return false;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

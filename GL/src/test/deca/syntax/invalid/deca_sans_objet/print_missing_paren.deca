@@ -1,0 +1,9 @@
+// Description :
+// test print sans parenthese
+//
+// Resultat :
+// Erreur syntaxique
+// Ligne 8 : parenthese attendue
+{
+print 1;
+}

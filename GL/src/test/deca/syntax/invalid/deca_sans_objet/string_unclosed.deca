@@ -1,0 +1,9 @@
+// Description :
+// test d’une chaine non fermee
+//
+// Resultat :
+// Erreur lexicale
+// Ligne 8 : chaine non fermee
+{
+"bonjour
+}

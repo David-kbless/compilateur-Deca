@@ -1,0 +1,133 @@
+\newpage
+
+\section{Etape C du compilateur : Génération du code ASM}
+
+La phase de génération de code (Gencode) traduit l'arbre syntaxique abstrait décoré en instructions pour la machine virtuelle IMA. Cette étape repose principalement sur les classes situées dans le package \texttt{fr.ensimag.deca.tree} pour la structure du langage et \texttt{fr.ensimag.deca.codegen} pour la gestion des ressources machine.
+
+Nous avons privilégié une approche modulaire où le \texttt{DecacCompiler} centralise l'état global (options, drapeaux d'erreurs, gestionnaires), tandis que chaque nœud de l'arbre est responsable de sa propre génération de code.
+
+
+
+\subsection{Le Gestionnaire de Registres}
+
+La classe \texttt{fr.ensimag.deca.codegen.GestionnaireRegistre} est un composant central de l'étape de génération de code. Elle a pour responsabilité d'abstraire les contraintes physiques de la machine cible (IMA) en fournissant une interface d'allocation de registres virtuellement illimitée aux nœuds de l'arbre syntaxique.
+
+Elle gère l'ensemble des registres banalisés disponibles, de $R_2$ à $R_{MAX}$ (généralement $R_{15}$), et implémente la stratégie de "Spill" (débordement sur pile) ainsi qu'un mode de simulation pour le calcul de la taille de la pile.
+
+\subsubsection{Stratégie d'Allocation et de Spill}
+
+L'algorithme d'allocation implémenté dans la méthode \texttt{utiliserRegistre} suit une logique gloutonne linéaire avec gestion de saturation :
+
+\begin{enumerate}
+    \item \textbf{Cas Nominal (Registres disponibles) :}
+    Tant que le \texttt{compteurRegistre} est strictement inférieur à $R_{MAX}$, la méthode retourne le registre correspondant à l'index courant et incrémente le compteur. Cela garantit une utilisation optimale des registres rapides.
+
+    \item \textbf{Cas de Saturation (Spill) :}
+    Lorsque tous les registres physiques sont occupés (\texttt{compteurRegistre} $\ge$ $R_{MAX}$), le gestionnaire bascule en mode débordement :
+    \begin{itemize}
+        \item Il incrémente le compteur \texttt{nbRegStokes}.
+        \item Il génère immédiatement une instruction \texttt{PUSH} du dernier registre physique ($R_{MAX}-1$) sur la pile.
+        \item Il retourne ce même registre ($R_{MAX}-1$) pour qu'il soit réutilisé par l'opération courante.
+    \end{itemize}
+\end{enumerate}
+
+
+
+La méthode \texttt{libererRegistre} effectue l'opération inverse : elle décrémente \texttt{nbRegStokes} si des registres ont été "spillés", ou décrémente \texttt{compteurRegistre} sinon. Elle assure la cohérence de l'état interne du gestionnaire sans générer d'instruction \texttt{POP} (cette responsabilité est déléguée à l'appelant, typiquement \texttt{AbstractOpArith}, pour permettre des optimisations contextuelles).
+
+\subsubsection{Mode Simulation pour le Calcul du TSTO}
+
+Une fonctionnalité clé de cette classe est sa capacité à simuler une allocation sans émettre d'instructions assembleur. Ce mécanisme est indispensable pour prédire la taille de pile nécessaire (\texttt{TSTO}) avant le début de la génération du code d'une méthode.
+
+Le gestionnaire maintient un état sauvegardé via les attributs \texttt{saveCompteurRegistre} et \texttt{saveNbRegStokes}.
+\begin{itemize}
+    \item \textbf{Début de simulation :} La méthode \texttt{commencerSimulationRegistre} sauvegarde l'état actuel des compteurs.
+    \item \textbf{Simulation :} Les méthodes \texttt{simulerAllocationRegistre} et \texttt{simulerLiberationRegistre} modifient les compteurs comme lors d'une exécution réelle, permettant de calculer le pic d'utilisation des registres et de la pile (variable \texttt{nbRegStokes}).
+    \item \textbf{Restauration :} La méthode \texttt{resetGestionnaireRegistre} permet de revenir à l'état sauvegardé une fois la simulation terminée, garantissant que la génération de code réelle démarre avec un état cohérent.
+\end{itemize}
+
+Cette architecture permet de dissocier l'analyse des besoins en ressources de la génération effective des instructions (Passe 3), tout en réutilisant la même logique algorithmique.
+
+\subsubsection{Le Gestionnaire de Pile}
+La classe \texttt{fr.ensimag.deca.codegen.GestionnairePile} a été conçue pour suivre dynamiquement l'évolution de la pile lors de la génération de code. Elle maintient deux compteurs : \texttt{tailleCourante} et \texttt{maxTaillePile}.
+À chaque instruction influant sur la pile (\texttt{PUSH}, \texttt{POP}, \texttt{ADDSP}, \texttt{BSR}), les méthodes \texttt{incrementer()} ou \texttt{decrementer()} sont appelées. Le maximum atteint est mémorisé pour générer l'instruction \texttt{TSTO} adéquate au début de chaque bloc (Main, Méthode, Init).
+
+\subsubsection{Génération des Erreurs Runtime}
+Afin d'optimiser la taille du code assembleur généré, les blocs de gestion d'erreurs (Overflow, Division par zéro, Tas plein, etc.) ne sont pas dupliqués à chaque occurrence.
+Nous utilisons un système de drapeaux booléens dans \texttt{DecacCompiler} (ex: \texttt{getOverflowLabel()}). Lorsqu'un nœud de l'arbre a besoin d'une vérification (par exemple une division), il active le drapeau correspondant.
+À la fin de la méthode \texttt{codeGenProgram} dans \texttt{Program.java}, la méthode \texttt{ajouteLabelErreurDemandee} génère uniquement les étiquettes d'erreurs qui ont été sollicitées durant la compilation.
+
+Liste des erreurs gérées :
+\begin{itemize}
+    \item \texttt{stack\_overflow\_error} : Débordement de pile.
+    \item \texttt{overflow\_error} : Débordement arithmétique sur flottant (si option \texttt{-n} absente).
+    \item \texttt{div\_zero\_error} : Division par 0 (entier ou flottant).
+    \item \texttt{tas\_plein} : Échec d'allocation mémoire (\texttt{NEW}).
+    \item \texttt{dereferencement.null} : Accès à un membre d'un objet null.
+    \item \texttt{cast\_error}, \texttt{io\_error}, \texttt{absence\_return\_error}, etc.
+\end{itemize}
+
+\subsection{Génération des Expressions Arithmétiques}
+
+La génération des expressions repose sur un contrat fort : la méthode \texttt{codeGenInst(DecacCompiler compiler)} retourne systématiquement un objet de type \texttt{DVal} (valeur directe, registre ou littéral) contenant le résultat de l'évaluation.
+
+\subsubsection{Factorisation dans \texttt{AbstractOpArith}}
+La classe abstraite \texttt{fr.ensimag.deca.tree.AbstractOpArith} implémente une logique générique robuste pour toutes les opérations binaires (+, -, *, /) :
+
+\begin{enumerate}
+    \item \textbf{Évaluation des opérandes :} L'opérande gauche est évalué. Si le résultat est un littéral, il est immédiatement chargé dans un registre alloué via \texttt{compiler.utiliserRegistre()}. Sinon, le registre résultat est conservé.
+    \item \textbf{Gestion des Conversions de Type :} Avant d'évaluer la droite, nous vérifions les types. Si une opération mixe \texttt{int} et \texttt{float}, l'instruction de conversion \texttt{FLOAT} est injectée pour l'opérande concernée (gauche ou droite).
+    \item \textbf{Gestion du Spill (Débordement de registres) :} Si l'évaluation de la droite a provoqué un "Spill" de l'opérande gauche (détecté par \texttt{operande1 == operande2}), nous utilisons le registre \texttt{R0} comme tampon pour dépiler la valeur de gauche et effectuer l'opération, avant de recharger le résultat dans le bon registre.
+    \item \textbf{Libération :} Les registres temporaires utilisés par l'opérande de droite sont libérés immédiatement après l'opération.
+\end{enumerate}
+
+\subsubsection{Cas Spécifique : Division et Modulo}
+Les classes \texttt{Divide} et \texttt{Modulo} héritent de \texttt{AbstractOpDivMod} que nous avons ajoutée à l'architecture déjà en place. Elles intègrent une vérification de la division par zéro (sauf si l'option \texttt{-n} est active).
+Pour éviter des erreurs de type lors de la comparaison, nous chargeons systématiquement le diviseur dans \texttt{R0} avant d'effectuer le \texttt{CMP \#0} (ou \texttt{0.0}). Cela garantit que la comparaison se fait toujours sur un registre, indépendamment de la nature de l'opérande (littéral, variable, etc.).
+
+\subsection{Génération des Structures de Contrôle et Booléens}
+
+Pour les expressions booléennes (\texttt{And}, \texttt{Or}, \texttt{Not}, comparaisons), nous n'utilisons pas le calcul arithmétique (0 ou 1) par défaut, mais le branchement conditionnel (Lazy Evaluation).
+
+\begin{itemize}
+    \item \textbf{Méthodes \texttt{codeGenVrai} et \texttt{codeGenFaux} :} Redéfinies dans les classes de comparaison, ces méthodes génèrent des sauts (\texttt{BEQ}, \texttt{BNE}, etc.) vers des étiquettes fournies en paramètre.
+    \item \textbf{Structures \texttt{IfThenElse} et \texttt{While} :} Elles gèrent la création des étiquettes de début, de fin et de clause \texttt{else}, déléguant la génération des sauts aux expressions booléennes contenues.
+\end{itemize}
+
+\subsection{Gestion des Chaînes de Caractères (Print)}
+La méthode \texttt{codeGenPrint} dans \texttt{StringLiteral} traite les caractères spéciaux avant l'affichage. Une analyse de la chaîne permet de découper le contenu sur les sauts de ligne (\texttt{\textbackslash n} ou saut physique) pour alterner entre les instructions \texttt{WSTR} (affichage) et \texttt{WNL} (saut de ligne assembleur), garantissant un formatage correct en sortie.
+
+\subsection{Implémentation de l'Objet}
+
+L'implémentation de la partie Objet suit une stratégie en deux passes dans \texttt{Program.java}, optimisée pour réduire la taille du code et les cycles CPU.
+
+\subsubsection{Passe 1 : Construction des VTables}
+Cette passe génère les tables virtuelles de toutes les classes.
+\textbf{Optimisation R0/R1 :} Nous avons remarqué que l'adresse de la classe \texttt{Object} (\texttt{null}) et l'adresse de la méthode \texttt{Object.equals} sont utilisées répétitivement.
+\begin{itemize}
+    \item Nous chargeons \texttt{null} dans \texttt{R0} et l'adresse de \texttt{code.Object.equals} dans \texttt{R1} au tout début du programme.
+    \item Lors de la construction des VTables, nous utilisons directement \texttt{STORE R0, ...} et \texttt{STORE R1, ...} sans avoir besoin de les recharger, économisant ainsi des cycles d'horloge précieux.
+\end{itemize}
+
+\subsubsection{Passe 2 : Corps des Méthodes et Initialisation}
+Nous générons ensuite séquentiellement :
+\begin{enumerate}
+    \item Le programme principal (\texttt{Main}).
+    \item Les méthodes d'initialisation des champs (\texttt{init.Classe}), gérant l'héritage par appel au \texttt{init} du parent.
+    \item Le corps des méthodes (\texttt{code.Classe.Methode}), incluant la protection de pile.
+\end{enumerate}
+
+\subsection{Simulation des Registres et Calcul du TSTO}
+
+Afin d'éviter une passe supplémentaire coûteuse lors de l'étape C pour calculer la taille de la pile (\texttt{TSTO}), nous avons intégré une simulation lors de la vérification contextuelle (juste avant la génération du code asm).
+
+La méthode \texttt{simuleExecutionNbRegistres(DecacCompiler compiler)} parcourt l'arbre des expressions. Elle simule l'état du gestionnaire de registres :
+\begin{verbatim}
+if (compiler.getNbRegStokes() > stokesAvant) {
+    // Un spill a eu lieu à gauche : on restaure et on incrémente le compteur
+    compiler.setNbRegStokes(stokesAvant + 1);
+}
+\end{verbatim}
+Cette méthode retourne le nombre maximum de registres utilisés simultanément. Couplée au \texttt{GestionnairePile}, elle permet de prédire exactement l'espace nécessaire pour les sauvegardes de registres (\texttt{PUSH}) et d'écrire l'instruction \texttt{TSTO} correcte dès le début de la génération de la méthode.
+
+\end{latex}

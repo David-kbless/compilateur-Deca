@@ -1,0 +1,49 @@
+// commande de compilation :
+//    decac src/test/deca/demo_soutenance/Partie_C/conformite_compilateur/expr_bool.deca
+//    ima src/test/deca/demo_soutenance/Partie_C/conformite_compilateur/expr_bool.ass
+
+// Description :
+//    Test des expressions booléennes et de leur comportement
+
+class BooleanExpr {
+    
+    void Epsilon() {
+        if (true) {
+            println("Epsilon OK");
+        }
+    }
+
+    void courtCircuit() {
+        boolean b = false;
+        if (b && (1 / 0 == 1)) {
+            println("Erreur");
+        } else {
+            println("Short-circuit AND OK");
+        }
+    }
+
+    void equivalence() {
+        if (false) {
+            println("Erreur");
+        } else {
+            println("Equivalence OK");
+        }
+    }
+
+    void or() {
+        boolean a = true;
+        if (a || false) {
+            println("OR OK");
+        }
+    }
+}
+
+
+{
+    BooleanExpr be;
+    be = new BooleanExpr();
+    be.Epsilon();
+    be.courtCircuit();
+    be.equivalence();
+    be.or();
+}

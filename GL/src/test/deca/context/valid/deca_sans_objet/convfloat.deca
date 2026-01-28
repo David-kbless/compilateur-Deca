@@ -1,0 +1,13 @@
+// Description:
+//    test de convfloat
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+{
+  float f;
+  f = 1 + 2.5;
+}

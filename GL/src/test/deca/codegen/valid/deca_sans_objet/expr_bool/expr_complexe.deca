@@ -1,0 +1,16 @@
+// Description :
+// Test d'une expression booléenne complexe.
+//
+// Resultats :
+// ok
+
+{
+    int x;
+    x = 3;
+    
+    if(x > 0 && x < 5){
+        print("ok");
+    }else{
+        print("Erreur");
+    }
+}

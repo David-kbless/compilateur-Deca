@@ -1,0 +1,2 @@
+    int x = 10;
+    print("contenue du fichier inclu : int x <- 10;");

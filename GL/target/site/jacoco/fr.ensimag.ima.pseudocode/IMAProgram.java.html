@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IMAProgram.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.ima.pseudocode</a> &gt; <span class="el_source">IMAProgram.java</span></div><h1>IMAProgram.java</h1><pre class="source lang-java linenums">package fr.ensimag.ima.pseudocode;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.LinkedList;
+
+/**
+ * Abstract representation of an IMA program, i.e. set of Lines.
+ *
+ * @author Ensimag
+ * @date 01/01/2026
+ */
+<span class="fc" id="L13">public class IMAProgram {</span>
+<span class="fc" id="L14">    private final LinkedList&lt;AbstractLine&gt; lines = new LinkedList&lt;AbstractLine&gt;();</span>
+
+    public void add(AbstractLine line) {
+<span class="nc" id="L17">        lines.add(line);</span>
+<span class="nc" id="L18">    }</span>
+
+    public void addComment(String s) {
+<span class="fc" id="L21">        lines.add(new Line(s));</span>
+<span class="fc" id="L22">    }</span>
+
+    public void addLabel(Label l) {
+<span class="fc" id="L25">        lines.add(new Line(l));</span>
+<span class="fc" id="L26">    }</span>
+
+    public void addInstruction(Instruction i) {
+<span class="fc" id="L29">        lines.add(new Line(i));</span>
+<span class="fc" id="L30">    }</span>
+
+    public void addInstruction(Instruction i, String s) {
+<span class="fc" id="L33">        lines.add(new Line(null, i, s));</span>
+<span class="fc" id="L34">    }</span>
+
+    /**
+     * Append the content of program p to the current program. The new program
+     * and p may or may not share content with this program, so p should not be
+     * used anymore after calling this function.
+     */
+    public void append(IMAProgram p) {
+<span class="nc" id="L42">        lines.addAll(p.lines);</span>
+<span class="nc" id="L43">    }</span>
+    
+    /**
+     * Add a line at the front of the program.
+     */
+    public void addFirst(Line l) {
+<span class="fc" id="L49">        lines.addFirst(l);</span>
+<span class="fc" id="L50">    }</span>
+
+    /**
+     * Add a comment at the front of the program.
+     */
+    public void addFirstComment(String s) {
+<span class="fc" id="L56">        lines.addFirst(new Line(s));</span>
+<span class="fc" id="L57">    }</span>
+
+    /**
+     * Display the program in a textual form readable by IMA to stream s.
+     */
+    public void display(PrintStream s) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        for (AbstractLine l: lines) {</span>
+<span class="fc" id="L64">            l.display(s);</span>
+<span class="fc" id="L65">        }</span>
+<span class="fc" id="L66">    }</span>
+
+    /**
+     * Return the program in a textual form readable by IMA as a String.
+     */
+    public String display() {
+<span class="fc" id="L72">        ByteArrayOutputStream out = new ByteArrayOutputStream();</span>
+<span class="fc" id="L73">        PrintStream s = new PrintStream(out);</span>
+<span class="fc" id="L74">        display(s);</span>
+<span class="fc" id="L75">        return out.toString();</span>
+    }
+
+    public void addFirst(Instruction i) {
+<span class="fc" id="L79">        addFirst(new Line(i));</span>
+<span class="fc" id="L80">    }</span>
+    
+    public void addFirst(Instruction i, String comment) {
+<span class="nc" id="L83">        addFirst(new Line(null, i, comment));</span>
+<span class="nc" id="L84">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,19 @@
+// Description :
+// Teste les comparaisons booléennes sans objet.
+//
+// Resultats :
+// OK
+{
+    // Comparaison
+    boolean b, a, c;
+    boolean x = true;
+    b = 3 < 4;
+
+    // Egalité / Inégalité
+    a = (3 == 4) || (5 != 6);
+
+    // AND / OR
+    c = true && false || true;
+    print(!x);
+
+}

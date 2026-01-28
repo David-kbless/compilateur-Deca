@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringLiteral.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">StringLiteral.java</span></div><h1>StringLiteral.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.instructions.WNL;
+import fr.ensimag.ima.pseudocode.instructions.WSTR;
+import java.io.PrintStream;
+import org.apache.commons.lang.Validate;
+
+/**
+ * String literal
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class StringLiteral extends AbstractStringLiteral {
+
+    @Override
+    public String getValue() {
+<span class="fc" id="L25">        return value;</span>
+    }
+
+    private String value;
+
+<span class="fc" id="L30">    public StringLiteral(String value) {</span>
+<span class="fc" id="L31">        Validate.notNull(value);</span>
+<span class="fc" id="L32">        this.value = value.substring(1, value.length()-1); // remove the quotes</span>
+<span class="fc" id="L33">    }</span>
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv,
+            ClassDefinition currentClass) throws ContextualError {
+                
+<span class="fc" id="L39">                Type t = compiler.environmentType.STRING; </span>
+<span class="fc" id="L40">                this.setType(t); </span>
+<span class="fc" id="L41">                return t; </span>
+    }
+
+    @Override
+    protected void codeGenPrint(DecacCompiler compiler, boolean printHex) {
+<span class="fc" id="L46">        String content = getValue(); </span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        if (content == null) return;</span>
+
+        // On remplace d'abord les doubles backslashes par un seul
+<span class="fc" id="L50">        content = content.replace(&quot;\\\\&quot;, &quot;\\&quot;);</span>
+
+        // On remplace le backslash-guillemet par un guillemet simple
+<span class="fc" id="L53">        content = content.replace(&quot;\\\&quot;&quot;, &quot;\&quot;&quot;);</span>
+
+        // on decoupe pour les sauts de ligne (EOL physique ou \n écrit)
+<span class="fc" id="L56">        String[] lines = content.split(&quot;\n|\\\\n&quot;, -1);</span>
+
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        for (int i = 0; i &lt; lines.length; i++) {</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">            if (!lines[i].isEmpty()) {</span>
+<span class="fc" id="L60">                compiler.addInstruction(new WSTR(lines[i]));</span>
+            }
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">            if (i &lt; lines.length - 1) {</span>
+<span class="nc" id="L63">                compiler.addInstruction(new WNL());</span>
+            }
+        }
+<span class="fc" id="L66">    }</span>
+
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="fc" id="L70">        s.print(&quot;\&quot;&quot; + value + &quot;\&quot;&quot;);</span>
+<span class="fc" id="L71">    }</span>
+
+    @Override
+    protected void iterChildren(TreeFunction f) {
+        // leaf node =&gt; nothing to do
+<span class="fc" id="L76">    }</span>
+
+    @Override
+    protected void prettyPrintChildren(PrintStream s, String prefix) {
+        // leaf node =&gt; nothing to do
+<span class="fc" id="L81">    }</span>
+    
+    @Override
+    String prettyPrintNode() {
+<span class="fc" id="L85">        return &quot;StringLiteral (&quot; + value + &quot;)&quot;;</span>
+    }
+
+    @Override
+    protected GPRegister codeGenInst(DecacCompiler compiler){
+<span class="nc" id="L90">        return null;</span>
+    }
+
+    @Override
+    public int simuleExecutionNbRegistres(DecacCompiler compiler){
+<span class="nc" id="L95">        return 0;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

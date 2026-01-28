@@ -1,0 +1,13 @@
+// Description :
+// test include valide
+//
+// Resultat :
+// ok
+
+#include "Math.decah"
+{
+int x = 2;
+println("test include valide");
+
+}
+

@@ -1,0 +1,11 @@
+// Description :
+// Test de if avec une chaine de caractères.
+//
+// Resultats :
+// ok
+
+{
+    if (true) {
+        print("ok");
+    }
+}

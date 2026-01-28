@@ -1,0 +1,39 @@
+; start main program
+	TSTO #4
+	BOV stack_overflow_error
+	ADDSP #4
+; Construction de la VTable de de Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Variable Declarations : 
+	LOAD #1, R0
+	STORE R0, 3(GB)
+	LOAD #0, R0
+	STORE R0, 4(GB)
+; Beginning of main instructions:
+	LOAD 3(GB), R2
+	LOAD 4(GB), R3
+	LOAD R3, R0
+	CMP #0, R0
+	BEQ div_zero_error
+	QUO R3, R2
+	LOAD R2, R1
+	WINT
+	WNL
+	HALT
+; end main program
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+div_zero_error:
+	WSTR "Erreur : division par 0"
+	WNL
+	ERROR

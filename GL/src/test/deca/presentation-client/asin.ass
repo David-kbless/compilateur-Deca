@@ -1,0 +1,847 @@
+; start main program
+	TSTO #13
+	BOV stack_overflow_error
+	ADDSP #11
+; Construction de la VTable de de Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de Math
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+	LOAD code.Math.sin, R2
+	STORE R2, 5(GB)
+	LOAD code.Math.cos, R2
+	STORE R2, 6(GB)
+	LOAD code.Math.atan, R2
+	STORE R2, 7(GB)
+	LOAD code.Math.asin, R2
+	STORE R2, 8(GB)
+	LOAD code.Math.ulp, R2
+	STORE R2, 9(GB)
+; Variable Declarations : 
+; Main program
+	PUSH R2
+	PUSH R3
+	NEW #2, R2
+	BOV tas_plein
+	LEA 3(GB), R0
+	STORE R0, 0(R2)
+	PUSH R2
+	BSR init.Math
+	POP R2
+	POP R3
+	SUBSP #1
+	STORE R2, 10(GB)
+	ADDSP #2
+	LOAD 10(GB), R2
+	STORE R2, 0(SP)
+	LOAD #0x1.0p1, R2
+	STORE R2, -1(SP)
+	LOAD 0(SP), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 0(R2), R2
+	LOAD 5(R2), R2
+	BSR R2
+	SUBSP #2
+	STORE R0, 11(GB)
+; Beginning of main instructions:
+	WSTR "Arc sinus de 2 : "
+	LOAD 11(GB), R1
+	LOAD R1, R1
+	WFLOAT
+	WNL
+	HALT
+; end main program
+init.Math:
+	TSTO #1
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0x0.0p0, R1
+	STORE R1, 1(R2)
+	LOAD #0x1.921fb6p1, R3
+	STORE R3, 1(R2)
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+code.Math.sin:
+
+        ; Beginning of main instructions:
+            ; ==========================
+            ; SIN
+            ; ==========================
+
+            ; neg = false
+            LOAD #0, R1
+            STORE R1, -4(LB)
+
+            ; if (x < 0)
+            LOAD -3(LB), R2
+            CMP #0.0, R2
+            SLT R3
+            CMP #0, R3
+            BEQ SIN_X_POX
+
+            OPP R2, R2
+            STORE R2, -3(LB)
+            LOAD #1, R1
+            STORE R1, -4(LB)
+
+        SIN_X_POX:
+
+            ; k = x * 0.636619772367581343075535
+            LOAD -3(LB), R2
+            LOAD #0.636619772367581343075535, R3
+            MUL R3, R2
+            STORE R2, -5(LB)
+
+            ; arrondi de k
+            CMP #0.0, R2
+            SGE R3
+            CMP #0, R3
+            BEQ SIN_K_NEG
+
+            LOAD #0.5, R1
+            ADD R1, R2
+            BRA SIN_K_CAST
+
+        SIN_K_NEG:
+            LOAD #-0.5, R1
+            ADD R1, R2
+
+        SIN_K_CAST:
+            INT R2, R2
+            FLOAT R2, R2
+            STORE R2, -5(LB)
+
+            ; r = x - k*pi/2 + k*eps
+            LOAD -3(LB), R1
+            LOAD #-1.57079637050628662109375, R4
+            FMA R2, R4
+
+            LOAD R4, R1
+            LOAD #4.371138828673792886547744274139404296875e-8, R4
+            FMA R2, R4
+            STORE R4, -6(LB)
+
+            ; v = k % 4
+            LOAD -5(LB), R1
+            INT R1, R1
+            LOAD R1, R2
+            SHR R2
+            SHR R2
+            SHL R2
+            SHL R2
+            SUB R2, R1
+            STORE R1, -8(LB)
+
+            ; r2 = r*r
+            LOAD -6(LB), R2
+            MUL R2, R2
+            STORE R2, -7(LB)
+
+            ; dispatch
+            LOAD -8(LB), R1
+            CMP #0, R1
+            BEQ SIN_CASE0
+            CMP #1, R1
+            BEQ SIN_CASE1
+            CMP #2, R1
+            BEQ SIN_CASE2
+            CMP #3, R1
+            BEQ SIN_CASE3
+            BRA SIN_END
+
+        SIN_CASE0:
+            LOAD -7(LB), R1
+            PUSH R1
+            LOAD -6(LB), R2
+            PUSH R2
+            BSR SIN_POLY_SIN
+            SUBSP #2
+            BRA SIGN_ADJ_SIN
+
+        SIN_CASE1:
+            LOAD -7(LB), R1
+            PUSH R1
+            BSR COS_POLY_SIN
+            SUBSP #1
+            BRA SIGN_ADJ_SIN
+
+        SIN_CASE2:
+            LOAD -7(LB), R1
+            PUSH R1
+            LOAD -6(LB), R2
+            PUSH R2
+            BSR SIN_POLY_SIN
+            SUBSP #2
+            OPP R0, R0
+            BRA SIGN_ADJ_SIN
+
+        SIN_CASE3:
+            LOAD -7(LB), R1
+            PUSH R1
+            BSR COS_POLY_SIN
+            SUBSP #1
+            OPP R0, R0
+
+        SIGN_ADJ_SIN:
+            LOAD -4(LB), R1
+            CMP #0, R1
+            BEQ SIN_PRINT_RES
+            OPP R0, R0
+            BRA SIN_PRINT_RES
+
+        SIN_POLY_SIN:
+            LOAD #2.800547008519060909748077392578125e-6, R1
+            LOAD -3(LB), R3
+            LOAD #-1.98499110410921275615692138671875e-4, R2
+            FMA R3, R2
+
+            LOAD #8.33337195217609405517578125e-3, R1
+            FMA R3, R2
+
+            LOAD #-0.16666667163372039794921875, R1
+            FMA R3, R2
+
+            LOAD #1.0, R1
+            FMA R3, R2
+
+            LOAD -2(LB), R3
+            MUL R3, R2
+            LOAD R2, R0
+            RTS
+
+        COS_POLY_SIN:
+            LOAD #2.443256744300015270709991455078125e-5, R2
+            LOAD -2(LB), R3
+
+            LOAD #-1.388731063343584537506103515625e-3, R1
+            FMA R3, R2
+
+            LOAD #4.16666455566883087158203125e-2, R1
+            FMA R3, R2
+            LOAD R2, R1
+
+            LOAD #-0.5, R1
+            FMA R3, R2
+
+            LOAD #1.0, R1
+            FMA R3, R2
+
+            LOAD R2, R0
+            
+            RTS
+
+        SIN_END : 
+            LOAD #0.0, R0
+
+        SIN_PRINT_RES :
+            RTS
+    
+code.Math.cos:
+
+        ; Beginning of main instructions:
+    
+            ; ==========================
+            ; if (x < 0) x = -x
+            ; ==========================
+            LOAD -3(LB), R2
+            CMP #0.0, R2
+            SLT R3
+            CMP #0, R3
+            BEQ COS_X_POS
+
+            OPP R2, R2
+            STORE R2, -3(LB)
+
+        COS_X_POS:
+
+            ; ==========================
+            ; k = x * 0.6366197723675813
+            ; ==========================
+            LOAD #0.636619772367581343075535, R3
+            MUL R3, R2
+            STORE R2, -4(LB)
+
+            ; ==========================
+            ; Arrondi de k
+            ; ==========================
+            CMP #0.0, R2
+            SGE R3
+            CMP #0, R3
+            BEQ K_NEG
+
+            LOAD #0.5, R1
+            ADD R1, R2
+            BRA K_CAST
+
+        K_NEG:
+            LOAD #-0.5, R1
+            ADD R1, R2
+
+        K_CAST:
+            INT R2, R2
+            FLOAT R2, R2
+            STORE R2, -4(LB)
+
+            ; ==========================
+            ; r = x - k*pi/2 + k*eps
+            ; ==========================
+            LOAD -3(LB), R1
+            LOAD #-1.57079637050628662109375, R4
+            FMA R2, R4              ; R4 = x - k*pi/2
+
+            LOAD R4, R1
+            LOAD #4.371138828673792886547744274139404296875e-8, R4
+            FMA R2, R4              ; R4 = r
+            STORE R4, -5(LB)
+
+            ; ==========================
+            ; v = k % 4
+            ; ==========================
+            LOAD -4(LB), R1
+            INT R1, R1
+            LOAD R1, R2
+            SHR R2
+            SHR R2
+            SHL R2
+            SHL R2
+            SUB R2, R1
+            STORE R1, -7(LB)
+
+            ; ==========================
+            ; r2 = r * r
+            ; ==========================
+            LOAD -5(LB), R2
+            MUL R2, R2
+            STORE R2, -6(LB)
+
+            ; ==========================
+            ; Dispatch selon v
+            ; ==========================
+            LOAD -7(LB), R1
+            CMP #0, R1
+            BEQ CASE0
+            CMP #1, R1
+            BEQ CASE1
+            CMP #2, R1
+            BEQ CASE2
+            CMP #3, R1
+            BEQ CASE3
+            BRA COS_END
+
+            CASE0:
+            LOAD -6(LB), R1
+            PUSH R1
+            BSR COS_POLY
+            SUBSP #1
+            BRA COS_PRINT
+
+            CASE1:
+            LOAD -6(LB), R2
+            PUSH R2
+            LOAD -5(LB), R1
+            PUSH R1
+            BSR SIN_POLY
+            SUBSP #2
+            OPP R0, R0              ; -resSin
+            BRA COS_PRINT
+
+            CASE2:
+            LOAD -6(LB), R1
+            PUSH R1
+            BSR COS_POLY
+            ;LOAD -9(LB), R0
+            SUBSP #1
+            OPP R0, R0              ; -resCos
+            BRA COS_PRINT
+
+            CASE3:
+            LOAD -6(LB), R2
+            PUSH R2
+            LOAD -5(LB), R1
+            PUSH R1
+            BSR SIN_POLY
+            SUBSP #2
+            BRA COS_PRINT
+
+
+        SIN_POLY :
+            ; ==========================
+            ; resSin (polynôme de sin)
+            ; ==========================
+            LOAD #2.800547008519060909748077392578125e-6, R1
+            LOAD -3(LB), R3
+            LOAD #-1.98499110410921275615692138671875e-4, R2
+            FMA R3, R2
+
+            LOAD #8.33337195217609405517578125e-3, R1
+            FMA R3, R2
+
+            LOAD #-0.16666667163372039794921875, R1
+            FMA R3, R2
+
+            LOAD #1.0, R1
+            FMA R3, R2
+
+            LOAD -2(LB), R3          ; r
+            MUL R3, R2
+            LOAD R2, R0
+            RTS
+
+        COS_POLY :
+            ; ==========================
+            ; resCos (polynôme de cos)
+            ; ==========================
+            LOAD #2.443256744300015270709991455078125e-5, R2
+            LOAD -2(LB), R3
+
+            LOAD #-1.388731063343584537506103515625e-3, R1
+            FMA R3, R2
+
+            LOAD #4.16666455566883087158203125e-2, R1
+            FMA R3, R2
+
+            LOAD #-0.5, R1
+            FMA R3, R2
+
+            LOAD #1.0, R1
+            FMA R3, R2
+            LOAD R2, R0
+            RTS
+            
+
+        COS_END:
+            LOAD #0.0, R0
+
+        COS_PRINT:
+            RTS
+    
+code.Math.atan:
+
+        ; Beginning of main instructions:
+        ; ===============================
+        ; atan(x) - Implémentation complète
+        ; ===============================
+
+        ; neg = false
+        LOAD #0, R1
+        STORE R1, -11(LB)
+
+        ; -------------------------------
+        ; if (x < 0)
+        ; -------------------------------
+        LOAD -3(LB), R2
+        CMP #0.0, R2
+        SLT R3
+        CMP #0, R3
+        BEQ ATAN_X_POS
+
+        OPP R2, R2
+        STORE R2, -3(LB)
+
+        LOAD #1, R1
+        STORE R1, -11(LB)
+
+        ATAN_X_POS:
+
+        ; -------------------------------
+        ; if (x <= 1.0)
+        ; -------------------------------
+        LOAD -3(LB), R2
+        CMP #0x1.0p0, R2
+        SLE R3
+        CMP #0, R3
+        BEQ X_GT_1
+
+        ; ===== CAS |x| <= 1 =====
+
+        ; x2 = x*x
+        LOAD -3(LB), R2
+        MUL R2, R2
+        STORE R2, -6(LB)
+
+        ; p = polynôme P(x2)
+        LOAD #0.05503292, R2
+        LOAD -6(LB), R3
+
+        LOAD #-0.16182011, R1
+        FMA R3, R2
+
+        LOAD #0.16252689, R1
+        FMA R3, R2
+
+        LOAD #-0.02731802, R1
+        FMA R3, R2
+
+        LOAD #-0.1054397, R1
+        FMA R3, R2
+
+        LOAD #0.19565304, R1
+        FMA R3, R2
+
+        LOAD #-0.33318959, R1
+        FMA R3, R2
+
+        STORE R2, -9(LB)
+
+        ; res = x + x*x2*p
+        LOAD -3(LB), R1
+        LOAD -6(LB), R3
+        MUL R1, R3
+        LOAD -9(LB), R4
+        FMA R3, R4
+        STORE R4, -5(LB)
+
+        BRA ATAN_END
+
+        ; ===== CAS x > 1 =====
+        X_GT_1:
+
+        ; y = 1/x
+        LOAD #0x1.0p0, R2
+        LOAD -3(LB), R3
+        DIV R3, R2
+        STORE R2, -4(LB)
+
+        ; y2 = y*y
+        LOAD -4(LB), R2
+        MUL R2, R2
+        STORE R2, -7(LB)
+
+        ; q = polynôme Q(y2)
+        LOAD #-0.06155182, R2
+        LOAD -7(LB), R3
+
+        LOAD #0.18379633, R1
+        FMA R3, R2
+
+        LOAD #-0.19430663, R1
+        FMA R3, R2
+
+        LOAD #0.05846937, R1
+        FMA R3, R2
+
+        LOAD #0.07056377, R1
+        FMA R3, R2
+
+        LOAD #-0.13813491, R1
+        FMA R3, R2
+
+        LOAD #0.1998436, R1
+        FMA R3, R2
+
+        STORE R2, -10(LB)
+
+        ; corr = y - y^3/3 + y^5*q
+        LOAD -4(LB), R2
+        LOAD -7(LB), R3
+        MUL R3, R2          ; y^3
+        PUSH R2             ; sauvegarde y^3  dans 0(SP)
+        DIV #0x1.8p1, R2    ; /3
+
+        LOAD -4(LB), R1
+        SUB R2, R1       ; y - y^3/3
+
+        LOAD -7(LB), R4
+        MUL 0(SP), R4    ; y^5
+        LOAD -10(LB), R5
+        FMA R4, R5     ; y - y^3/3 + y^5*q
+        STORE R5, -8(LB)
+
+        ; res = pi/2 - corr
+        LOAD #0x1.921fb54442d18p+0, R2
+        LOAD -8(LB), R3
+        SUB R3, R2
+        STORE R2, -5(LB)
+
+        ; -------------------------------
+        ; if (neg) res = -res
+        ; -------------------------------
+        ATAN_END:
+        LOAD -11(LB), R1
+        CMP #0, R1
+        BEQ ATAN_PRINT_RES
+
+        LOAD -5(LB), R2
+        OPP R2, R2
+        STORE R2, -5(LB)
+
+        ; -------------------------------
+        ; affichage
+        ; -------------------------------
+        ATAN_PRINT_RES:
+        
+        LOAD -5(LB), R0
+        RTS
+    
+code.Math.asin:
+
+        ; Beginning of main instructions:
+
+            ; ===============================
+            ; asin(x) 
+            ; ===============================
+
+            ; -------------------------------
+            ; test domaine |x| <= 1
+            ; -------------------------------
+            ; if (x > 1.0)
+            LOAD -3(LB), R2
+            CMP #1.0, R2
+            SGT R3
+            CMP #0, R3
+            BNE ASIN_ERROR
+
+            ; if (x < -1.0)
+            LOAD -3(LB), R2
+            CMP #-1.0, R2
+            SLT R3
+            CMP #0, R3
+            BNE ASIN_ERROR
+
+            ; -------------------------------
+            ; neg = 0
+            ; -------------------------------
+            LOAD #0, R1
+            STORE R1, -10(LB)
+
+            ; -------------------------------
+            ; if (x < 0)
+            ; -------------------------------
+            LOAD -3(LB), R2
+            CMP #0.0, R2
+            SLT R3
+            CMP #0, R3
+            BEQ ASIN_X_POS
+
+            OPP R2, R2
+            STORE R2, -3(LB)
+
+            LOAD #1, R1
+            STORE R1, -10(LB)
+
+        ASIN_X_POS:
+
+            ; -------------------------------
+            ; if (x <= 0.5)
+            ; -------------------------------
+            LOAD -3(LB), R2
+            CMP #0.5, R2
+            SLE R3
+            CMP #0, R3
+            BEQ X_GT_HALF
+
+            ; ===== CAS |x| <= 0.5 =====
+
+            ; x2 = x * x
+            LOAD -3(LB), R2
+            MUL R2, R2
+            STORE R2, -4(LB)
+
+            ; p = polynôme P(x2)
+            LOAD #3.4441731870174407958984375e-2, R2
+            LOAD -4(LB), R3
+
+            LOAD #1.664256118237972259521484375e-2, R1
+            FMA R3, R2
+
+            LOAD #3.12243886291980743408203125e-2, R1
+            FMA R3, R2
+
+            LOAD #4.45862747728824615478515625e-2, R1
+            FMA R3, R2
+
+            LOAD #7.50015079975128173828125e-2, R1
+            FMA R3, R2
+
+            LOAD #0.1666666567325592041015625, R1
+            FMA R3, R2
+
+            STORE R2, -5(LB)
+
+            ; res = x + x * x2 * p
+            LOAD -3(LB), R1
+            LOAD -4(LB), R3
+            MUL R1, R3          ; x*x2
+            LOAD -5(LB), R4
+            FMA R3, R4          ; x*x2*p + x
+            STORE R4, -11(LB)
+
+            BRA ASIN_END
+
+            ; ===== CAS 0.5 < x <= 1 =====
+        X_GT_HALF:
+
+            ; u = 1 - x
+            LOAD #1.0, R2
+            LOAD -3(LB), R3
+            SUB R3, R2
+            STORE R2, -6(LB)
+
+            ; a = 2*u
+            LOAD #2.0, R3
+            MUL R3, R2
+            STORE R2, -7(LB)
+
+            ; s = 1
+            LOAD #1.0, R2
+            STORE R2, -8(LB)
+
+            ; ---- Newton sqrt(a) : 4 itérations ----
+
+            ; s = 0.5*(s + a/s)
+            LOAD -7(LB), R3
+            DIV R2, R3
+            ADD R3, R2
+            MUL #0.5, R2
+            STORE R2, -8(LB)
+
+            ; itération 2
+            LOAD -7(LB), R3
+            DIV R2, R3
+            ADD R3, R2
+            MUL #0.5, R2
+            STORE R2, -8(LB)
+
+            ; itération 3
+            LOAD -7(LB), R3
+            DIV R2, R3
+            ADD R3, R2
+            MUL #0.5, R2
+            STORE R2, -8(LB)
+
+            ; itération 4
+            LOAD -7(LB), R3
+            DIV R2, R3
+            ADD R3, R2
+            MUL #0.5, R2
+            STORE R2, -8(LB)
+
+            ; ---- r(u) ----
+            LOAD #0.0013274972, R2
+            LOAD -6(LB), R3
+
+            LOAD #1.4921810e-03, R1
+            FMA R3, R2
+
+            LOAD #5.6961202e-03, R1
+            FMA R3, R2
+
+            LOAD #1.8734945e-02, R1
+            FMA R3, R2
+
+            LOAD #8.3334103e-02, R1
+            FMA R3, R2
+
+            LOAD #-9.3774277e-09, R1
+            FMA R3, R2
+
+            STORE R2, -9(LB)
+
+            ; res = pi/2 - s*(1+r)
+            LOAD #1.0, R3
+            ADD R3, R2         ; 1+r
+
+            LOAD -8(LB), R4
+            OPP R4, R4
+            LOAD #1.5707963267948966, R1
+            FMA R4, R2
+
+            STORE R2, -11(LB)
+
+            ; -------------------------------
+            ; if (neg) res = -res
+            ; -------------------------------
+        ASIN_END:
+            LOAD -10(LB), R1
+            CMP #0, R1
+            BEQ ASIN_PRINT_RES
+
+            LOAD -11(LB), R2
+            OPP R2, R2
+            STORE R2, -11(LB)
+
+        ASIN_PRINT_RES:
+            LOAD -11(LB), R0
+            RTS
+            
+        ASIN_ERROR:
+            ;WSTR \"Erreur la valeur doit être comprise entre -1 et 1.\"
+            ;WNL
+            ERROR
+    
+code.Math.ulp:
+
+        ; =============================================================================
+        ; FONCTION ULP (Unit in the Last Place)
+        ; =============================================================================
+
+            ; Récupération du paramètre f
+            ; ATTENTION : Dans une méthode, -2(LB) = this, donc param = -3(LB)
+            LOAD -3(LB), R2      
+
+            ; --- 1. Valeur Absolue ---
+            LOAD #0.0, R1
+            CMP R1, R2
+            BGE ULP_CHECK_SUBNORMAL
+            OPP R2, R2           ; R2 = |f|
+
+        ULP_CHECK_SUBNORMAL:
+            ; --- 2. Gestion Subnormaux et Zéro ---
+            ; Seuil normal = 2^-126 (environ 1.17549435e-38)
+            LOAD #0x1.0p-126, R1 
+            CMP R1, R2
+            BGE ULP_INIT_ALGO    ; Si |f| >= Seuil, calcul normal
+
+            ; Cas Subnormal (ou 0.0) -> ULP fixe (2^-149)
+            ; C'est la plus petite valeur positive possible
+            LOAD #0x0.000002p-126, R0 
+            BRA ULP_FIN
+
+            ; --- 3.Recherche de l'exposant ---
+        ULP_INIT_ALGO:
+            LOAD #0x1.0p-23, R3  ; ULP de départ (pour 1.0) -> epsilon machine
+            LOAD #0x1.0p1, R1    ; 2.0
+            LOAD #0x1.0p0, R0    ; 1.0
+
+        ULP_LOOP_DOWN:
+            CMP R1, R2           ; Tant que |f| >= 2.0
+            BLT ULP_LOOP_UP
+            DIV R1, R2           ; f = f / 2
+            MUL R1, R3           ; ulp = ulp * 2
+            BRA ULP_LOOP_DOWN
+
+        ULP_LOOP_UP:
+            CMP R0, R2           ; Tant que |f| < 1.0
+            BGE ULP_FIN_CALCUL
+            MUL R1, R2           ; f = f * 2
+            DIV R1, R3           ; ulp = ulp / 2
+            BRA ULP_LOOP_UP
+
+        ULP_FIN_CALCUL:
+            LOAD R3, R0
+            
+        ULP_FIN:
+        RTS          ; Le résultat (l'ULP calculé) va dans R0
+
+    
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+tas_plein:
+	WSTR "Erreur : le tas est plein, impossible d'allouer de la memoire"
+	WNL
+	ERROR
+dereferencement.null:
+	WSTR "Erreur : Dereferencement null"
+	WNL
+	ERROR

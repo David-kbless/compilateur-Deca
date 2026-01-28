@@ -1,0 +1,128 @@
+// // fibonnacci overflow
+
+
+// class Overflow{
+//     int fib(int n){
+//         if (n <= 1){
+//             return n;
+//         }
+//         else{
+//             return this.fib(n-1) + this.fib(n-2);
+//         }
+//     }
+
+//     void main(){
+//         int result= 0;
+//         result = this.fib(50); // this will cause an overflow for int
+//         println(result);
+//     }
+// }
+
+// {
+//     Overflow o;
+//     o = new Overflow();
+//     o.main();
+// }
+
+
+teste moi ceci : // ============================================
+// SUJET : Programmation Orientée Objet en Deca
+// ============================================
+
+// --------------------------------------------
+// QUESTION 1 : Classe simple et attributs
+// --------------------------------------------
+
+class Point {
+    float x;
+    float y;
+
+    void setPoint(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    float norm2() {
+        return x * x + y * y;
+    }
+
+}
+
+// --------------------------------------------
+// QUESTION 2 : Héritage
+// --------------------------------------------
+
+class ColoredPoint extends Point {
+    int color;
+
+    void setColoredPoint(float x, float y, int c) {
+        ((Point)(this)).setPoint(x, y);
+        color = c;
+    }
+}
+
+// --------------------------------------------
+// QUESTION 3 : Méthodes et this
+// --------------------------------------------
+
+class Rectangle {
+    float width;
+    float height;
+
+    void setRectangle(float w, float h) {
+        width = w;
+        height = h;
+    }
+
+    float area() {
+        return width * height;
+    }
+}
+
+// --------------------------------------------
+// QUESTION 4 : Polymorphisme
+// --------------------------------------------
+
+class Shape {
+    float area() {
+        return 0.0;
+    }
+}
+
+class Square extends Shape {
+    float side;
+
+    void setSquare(float s) {
+        side = s;
+    }
+
+    float area() {
+        //(Shape)(this).area();
+        return side * side;
+    }
+}
+
+
+{
+    Point p = new Point();
+    ColoredPoint cp = new ColoredPoint();
+    Rectangle r = new Rectangle();
+    Shape s = new Shape();
+    Square sq = new Square();
+
+    p.setPoint(3.0, 4.0);
+    println(p.norm2());
+
+    cp.setColoredPoint(1.0, 2.0, 7);
+    println(cp.color);
+    println(cp.norm2());
+
+    r.setRectangle(3.0, 5.0);
+    println(r.area());
+
+    println(s.area()); // 0.0
+
+    sq.setSquare(4.0);
+    println(sq.side);
+    println(sq.area()); // 16.0
+}

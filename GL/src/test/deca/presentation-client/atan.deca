@@ -1,0 +1,8 @@
+#include "Math.decah"
+{
+    Math math = new Math();
+    float x = math.atan(0.5);
+    print("Arc-tangente de 0.5 : ");
+    print(x);
+    print("\n");
+}

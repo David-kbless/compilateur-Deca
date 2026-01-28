@@ -1,0 +1,19 @@
+// Description :
+// Test de while avec un compteur décroissant.
+//
+// Resultats :
+// 5
+// 4
+// 3
+// 2
+// 1
+// 0
+
+{
+    int x;
+    x = 5;
+    while (x >= 0) {
+        println(x);
+        x = x - 1;
+    }
+}

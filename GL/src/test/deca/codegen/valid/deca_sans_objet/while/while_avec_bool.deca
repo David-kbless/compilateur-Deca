@@ -1,0 +1,14 @@
+// Description :
+// Test de while avec un booléen.
+//
+// Resultats :
+// 1
+
+{
+    boolean b;
+    b = true;
+    while (b) {
+        print(1);
+        b = false;
+    }
+}

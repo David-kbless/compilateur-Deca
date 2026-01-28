@@ -1,0 +1,68 @@
+\newpage
+\section{Étape B du compilateur : Vérifications contextuelles}
+
+\subsection{Organisation générale et structures de base}
+
+Dans cette documentation, l’architecture du compilateur \texttt{Deca} est décrite à travers des diagrammes UML représentant les dépendances entre les principales classes. Ces diagrammes permettent de visualiser l’organisation globale sans entrer dans les détails d’implémentation, volontairement laissés à la documentation \texttt{Javadoc}.
+
+Nous commençons par présenter les structures fondamentales sur lesquelles repose la vérification contextuelle.
+
+
+L’environnement des types est centralisé dans la classe \texttt{DecacCompiler}, via un attribut public de type \texttt{EnvironmentType}. Cet environnement encapsule une \texttt{HashMap<Symbol, TypeDefinition>} initialisée avec les types prédéfinis du langage (types primitifs, type \texttt{null}, classe \texttt{Object}). L’ajout de la méthode prédéfinie \texttt{equals} a été réalisé à ce niveau afin de garantir sa visibilité globale et sa cohérence avec le reste du système de types.
+Ce choix permet un accès direct et uniforme aux types tout au long des différentes passes de vérification.
+
+L’environnement des expressions est implémenté par la classe \texttt{EnvironmentExp}, qui repose également sur une \texttt{HashMap<Symbol, ExpDefinition>}. Cette structure garantit :
+\begin{itemize}
+    \item l’unicité des identificateurs dans un environnement donné ;
+    \item un temps de recherche optimal, nécessaire lors de la vérification contextuelle.
+\end{itemize}
+
+Afin de modéliser correctement les portées imbriquées, \texttt{EnvironmentExp} fournit des mécanismes d’empilement et de fusion contrôlée des environnements (\texttt{stack} et \texttt{add}), permettant de représenter les blocs, méthodes et classes de manière hiérarchique.
+
+\subsection{Extension objet et séparation des passes de vérification}
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/1.png}
+        \caption{Partie 1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/2.png}
+        \caption{Partie 2}
+    \end{subfigure}
+
+    \medskip
+
+    \begin{subfigure}{0.6\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/3.png}
+        \caption{Partie 3}
+    \end{subfigure}
+
+    \caption{Diagramme UML de la hiérarchie des classes}
+    \label{fig:uml-hierarchie}
+\end{figure}
+
+Afin de faciliter la compréhension de l’architecture globale du compilateur, nous avons choisi de représenter la hiérarchie des classes à l’aide d’un diagramme UML présenté dans la figure~\ref{fig:uml-hierarchie} plutôt que par une description textuelle exhaustive. Ce choix permet de visualiser plus clairement les relations d’héritage et les dépendances entre les différentes entités, tout en offrant une vue d’ensemble cohérente de l’organisation du code. Toutefois, en raison de la taille et de la densité de cette hiérarchie, le diagramme a été scindé en trois parties distinctes afin de garantir une lisibilité suffisante. Ces trois sous-figures constituent ainsi une représentation complémentaire et continue de la structure globale présentée dans cette section.
+
+L’extension objet du compilateur repose sur l’introduction des hiérarchies abstraites \texttt{AbstractDeclClass}, \texttt{AbstractDeclField}, \texttt{AbstractDeclMethod} et \texttt{AbstractDeclParam}, ainsi que sur les classes de listes associées. Ces structures ont été essentielles pour organiser la vérification contextuelle des programmes orientés objet et pour factoriser le traitement commun des déclarations lors des différentes passes.
+
+Les trois passes de l’étape B sont lancées successivement depuis le nœud \texttt{Program} et propagées récursivement vers \texttt{ListDeclClass} à l’aide de trois méthodes distinctes. Ce choix permet de séparer clairement les responsabilités de chaque passe et de contrôler précisément l’ordre dans lequel les informations sont construites et utilisées.
+
+Pour les méthodes et leurs paramètres, la passe~2 est dédiée à la vérification de la validité des déclarations et des signatures (types de retour, paramètres, redéfinitions). La passe~3 crée ensuite l’environnement local associé à chaque méthode et procède à la vérification de son corps, en s’appuyant sur les informations validées précédemment.
+
+Concernant les champs, leur déclaration est vérifiée lors de la passe~2 afin de garantir la cohérence des types et des visibilités, tandis que leur initialisation est traitée lors de la passe~3, une fois l’ensemble des définitions nécessaires disponibles.
+
+Cette organisation en passes distinctes vise avant tout à respecter le cahier des charges du compilateur, qui impose un cadre strict quant au rôle de chaque passe de vérification. Chaque étape est ainsi limitée à des responsabilités bien définies, garantissant la conformité de l’implémentation avec la structure attendue et facilitant le raisonnement sur la vérification contextuelle.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{assets/class3.png}
+    \caption{Diagramme de classes du package \texttt{tree}}
+    \label{fig:uml-tree}
+\end{figure}
+
+La figure~\ref{fig:uml-tree} représente les quelques fonctions issues de Abstractexpr et AbstractInst qu'on a du ajouter pour le bon fonctionnement de deca objet et conformément au cahier de charge.

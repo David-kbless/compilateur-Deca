@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DeclField.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">DeclField.java</span></div><h1>DeclField.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.context.EnvironmentExp.DoubleDefException;
+import fr.ensimag.deca.context.EnvironmentType;
+import fr.ensimag.deca.context.ExpDefinition;
+import fr.ensimag.deca.context.FieldDefinition;
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.deca.tools.SymbolTable.Symbol;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.GPRegister;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.RegisterOffset;
+import fr.ensimag.ima.pseudocode.instructions.STORE;
+
+import org.apache.commons.lang.Validate;
+
+public class DeclField extends AbstractDeclField {
+    private Visibility v;
+    private AbstractIdentifier type;
+    private final AbstractIdentifier fieldName;
+    private final AbstractInitialization initialization;
+
+
+    public AbstractInitialization getInitialization() {
+<span class="fc" id="L30">        return initialization;</span>
+    }
+    
+
+<span class="fc" id="L34">    public DeclField(AbstractIdentifier fieldName, AbstractInitialization initialization) {</span>
+<span class="fc" id="L35">        Validate.notNull(fieldName);</span>
+<span class="fc" id="L36">        Validate.notNull(initialization);</span>
+
+<span class="fc" id="L38">        this.fieldName = fieldName;</span>
+<span class="fc" id="L39">        this.initialization = initialization;</span>
+<span class="fc" id="L40">    }</span>
+    
+    public void setVisibility(Visibility v) {
+<span class="fc" id="L43">        this.v = v;</span>
+<span class="fc" id="L44">    }</span>
+
+    public void setType(AbstractIdentifier type) {
+<span class="fc" id="L47">        this.type = type;</span>
+<span class="fc" id="L48">    }</span>
+
+    public AbstractIdentifier getType(){
+<span class="nc" id="L51">        return type;</span>
+    }
+
+    public AbstractIdentifier getFieldName() {
+<span class="nc" id="L55">        return fieldName;</span>
+    }
+
+    @Override
+    protected Visibility verifyDeclField(DecacCompiler compiler, ClassDefinition superClass, ClassDefinition currentClass, EnvironmentExp envExpR) throws ContextualError {
+<span class="fc" id="L60">        Type realType = type.verifyType(compiler);</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (realType.isVoid()){</span>
+<span class="fc" id="L62">            throw new ContextualError(&quot;A variable cannot have type void&quot;, type.getLocation()); //implémentation de la condition</span>
+        }
+<span class="fc" id="L64">        EnvironmentExp classEnv = currentClass.getMembers();</span>
+<span class="fc" id="L65">        EnvironmentExp superClassEnv = superClass.getMembers();</span>
+<span class="fc" id="L66">        Symbol fieldNameSymbol = fieldName.getName();</span>
+<span class="fc" id="L67">        ExpDefinition fieldNameDef = classEnv.getLocal(fieldNameSymbol);</span>
+<span class="fc" id="L68">        ExpDefinition superFieldDef = superClassEnv.getLocal(fieldNameSymbol);</span>
+<span class="fc" id="L69">        int index = currentClass.getNumberOfFields() ;  </span>
+        FieldDefinition realFieldDef;
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (fieldNameDef != null) {</span>
+<span class="fc" id="L72">                throw new ContextualError(&quot;The name &quot; + fieldNameSymbol.getName() + &quot; is already used &quot;, fieldName.getLocation());</span>
+            // realFieldDef = fieldNameDef.asFieldDefinition(&quot; Could not convert &quot; + fieldNameDef + &quot; to a FieldDefinition&quot;, getLocation());
+        }
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (superFieldDef != null) {</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">            if (!superFieldDef.isField()) {</span>
+<span class="fc" id="L77">                throw new ContextualError(&quot;The name &quot; + fieldNameSymbol.getName() + &quot;is already used in super class and is not a field &quot;, fieldName.getLocation());</span>
+            }
+        }
+        
+<span class="fc" id="L81">        realFieldDef = new FieldDefinition(realType, getLocation(), v, currentClass, index);</span>
+
+        try {
+<span class="fc" id="L84">            envExpR.declare(fieldNameSymbol, realFieldDef);</span>
+<span class="fc" id="L85">        } catch (DoubleDefException e) {</span>
+            //si elle avait deja été declarée -&gt; contextualerror
+<span class="fc" id="L87">            throw new ContextualError(&quot;Variable &quot; + fieldName.getName() + &quot; is already defined in this scope&quot;,fieldName.getLocation());</span>
+<span class="fc" id="L88">        }</span>
+<span class="fc" id="L89">        currentClass.incNumberOfFields();</span>
+<span class="fc" id="L90">        fieldName.setDefinition(realFieldDef);</span>
+        
+<span class="fc" id="L92">        return v;</span>
+
+    }
+
+    @Override
+    protected void verifyFieldBody(DecacCompiler compiler, ClassDefinition currentClass, EnvironmentExp envExp)
+            throws ContextualError {
+
+                // @safwane !!!!
+                // encore un oublie de ta part et tu sera sanction : 
+                // signé @Ousmane !!
+<span class="fc" id="L103">        FieldDefinition fieldDef = fieldName.getFieldDefinition();</span>
+    
+<span class="fc" id="L105">        Type type = fieldDef.getType();</span>
+<span class="fc" id="L106">        initialization.verifyInitialization(compiler, type, envExp, currentClass);</span>
+<span class="fc" id="L107">    }</span>
+        
+    
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        if (v != null) {</span>
+<span class="fc" id="L113">            v.decompile(s);</span>
+<span class="fc" id="L114">            s.print(&quot; &quot;);</span>
+        }
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">        if (type != null) {</span>
+<span class="fc" id="L117">            type.decompile(s);</span>
+<span class="fc" id="L118">            s.print(&quot; &quot;);</span>
+        }
+<span class="fc" id="L120">        fieldName.decompile(s);</span>
+<span class="fc" id="L121">        s.print(&quot; &quot;);</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        if (!(initialization instanceof NoInitialization)) {</span>
+<span class="fc" id="L123">            s.print(&quot; = &quot;);</span>
+<span class="fc" id="L124">            initialization.decompile(s);</span>
+        }
+<span class="fc" id="L126">        s.print(&quot;;&quot;);</span>
+<span class="fc" id="L127">    }</span>
+
+    @Override
+    protected void codeGenDeclField(DecacCompiler compiler) {
+
+<span class="nc" id="L132">                DVal expr = getInitialization().codeGen(compiler);</span>
+
+                // s'il ya bien une initialisation, alors elle ecrase ce qui est deja dans le champs de ce objet
+<span class="nc bnc" id="L135" title="All 2 branches missed.">                if(expr != null){</span>
+<span class="nc" id="L136">                    compiler.addInstruction(new STORE((GPRegister) expr, new RegisterOffset(getFieldName().getFieldDefinition().getIndex() + 1, Register.getR(2))));</span>
+
+                    // on libere le registre utiliser pour. expr dans ce cas
+<span class="nc" id="L139">                    compiler.libererRegistre();</span>
+                }
+<span class="nc" id="L141">    }</span>
+
+    public int simuleExecutionNbRegistres(DecacCompiler compiler){
+<span class="fc" id="L144">        int nbRegistres = 0;</span>
+<span class="fc" id="L145">        nbRegistres = getInitialization().simuleExecutionNbRegistresField(compiler);</span>
+        
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if(nbRegistres &gt; 0){</span>
+<span class="nc" id="L148">            compiler.simulerLiberationRegistre();</span>
+        }
+
+<span class="fc" id="L151">        return nbRegistres;</span>
+    }
+
+    @Override
+    protected void prettyPrintChildren(java.io.PrintStream s, String prefix) {
+<span class="fc" id="L156">        fieldName.prettyPrint(s, prefix, false);</span>
+        // Print the initialization if it exists
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        if (initialization != null) {</span>
+<span class="fc" id="L159">            initialization.prettyPrint(s, prefix, true);</span>
+        }
+<span class="fc" id="L161">    }</span>
+
+    @Override
+    protected void iterChildren(TreeFunction f) {
+<span class="nc" id="L165">        fieldName.iter(f);</span>
+<span class="nc" id="L166">        initialization.iter(f);</span>
+<span class="nc" id="L167">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,11 @@
+// Description:
+//   utilisation d'une classe non definie
+// Resultats:
+//    Ligne 10: classe A inconnue
+//
+// Historique:
+//    cree le 10/01/2026
+
+{
+    A a = new A();
+}

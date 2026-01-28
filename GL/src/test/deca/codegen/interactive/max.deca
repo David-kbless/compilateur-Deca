@@ -1,0 +1,11 @@
+{
+    int a;
+    int b;
+    a = readInt();
+    b = readInt();
+    if (a > b) {
+        print(a);
+    } else {
+        print(b);
+    }
+}

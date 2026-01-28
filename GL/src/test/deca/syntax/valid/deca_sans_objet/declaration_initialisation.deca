@@ -1,0 +1,8 @@
+// Description :
+//  Teste les affectations simples sans objet.
+//
+// Resultats :
+// OK
+{
+    int i = 3;
+}

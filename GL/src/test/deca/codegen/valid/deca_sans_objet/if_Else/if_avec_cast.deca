@@ -1,0 +1,13 @@
+// Description :
+// Test de if avec un cast.
+//
+// Resultats :
+// 1
+
+{
+    float x;
+    x = 3.2;
+    if ((int)(x) == 3) {
+        print(1);
+    }
+}

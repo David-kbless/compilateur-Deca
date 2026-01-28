@@ -1,0 +1,10 @@
+// Description :
+//  Teste la déclaration d'une classe avec une méthode en assembleur.
+//
+// Resultats :
+// OK
+class A {
+    int foo() asm("LOAD #0, R0");
+}
+{
+}

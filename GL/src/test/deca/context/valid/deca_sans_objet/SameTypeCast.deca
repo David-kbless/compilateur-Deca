@@ -1,0 +1,8 @@
+// Description:
+//    Cast redondant.
+// Resultats:
+//    Succès (Passe 3)
+{
+    int x = (int)(5);
+    float f = (float)( (float)(1.5) );
+}

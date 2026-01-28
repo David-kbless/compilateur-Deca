@@ -1,0 +1,240 @@
+; start main program
+	TSTO #17
+	BOV stack_overflow_error
+	ADDSP #14
+; Construction de la VTable de de Object
+	LOAD #null, R0	;     // On garde Dans R0 l'addr de la classe Object pour eviter de le loader a chaque fois !! 
+	STORE R0, 1(GB)
+	LOAD code.Object.equals, R1	;     // On garde Dans R1 le label 'code.Object.equals' pour la meme raison 
+	STORE R1, 2(GB)
+; Construction de la VTable de A
+	LEA 1(GB), R2
+	STORE R2, 3(GB)
+	STORE R1, 4(GB)
+	LOAD code.A.getX, R2
+	STORE R2, 5(GB)
+; Construction de la VTable de B
+	LEA 3(GB), R2
+	STORE R2, 6(GB)
+	STORE R1, 7(GB)
+	LOAD code.A.getX, R2
+	STORE R2, 8(GB)
+	LOAD code.B.getY, R2
+	STORE R2, 9(GB)
+	LOAD code.B.fct, R2
+	STORE R2, 10(GB)
+; Construction de la VTable de Q
+	LEA 1(GB), R2
+	STORE R2, 11(GB)
+	STORE R1, 12(GB)
+	LOAD code.Q.abs, R2
+	STORE R2, 13(GB)
+; Variable Declarations : 
+; Main program
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	NEW #2, R2
+	BOV tas_plein
+	LEA 3(GB), R0
+	STORE R0, 0(R2)
+	PUSH R2
+	BSR init.A
+	POP R2
+	POP R4
+	POP R3
+	SUBSP #1
+	STORE R2, 14(GB)
+; Beginning of main instructions:
+	LOAD 14(GB), R2
+	CMP #null, R2
+	BEQ dereferencement.null
+	LOAD 1(R2), R2
+	LOAD R2, R1
+	WINT
+	WNL
+	LOAD #15, R2
+	LOAD 14(GB), R3
+	CMP #null, R3
+	BEQ dereferencement.null
+	STORE R2, 1(R3)
+	LOAD 14(GB), R3
+	CMP #null, R3
+	BEQ dereferencement.null
+	LOAD 1(R3), R3
+	LOAD R3, R1
+	WINT
+	WNL
+	WSTR "Hello World!"
+	WNL
+	HALT
+; end main program
+init.A:
+	TSTO #1
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #0, R0
+	STORE R0, 1(R2)
+	LOAD #18, R3
+	LOAD #17, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #16, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #15, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #14, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #13, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #12, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #11, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #10, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #9, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #8, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #7, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #6, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #5, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #4, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #3, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #2, R4
+	ADD R3, R4
+	LOAD R4, R3
+	LOAD #1, R4
+	ADD R3, R4
+	LOAD R4, R3
+	STORE R3, 1(R2)
+	RTS
+init.B:
+	TSTO #5
+	BOV stack_overflow_error
+	LOAD -2(LB), R2
+	LOAD #null, R3
+	STORE R3, 2(R2)
+	LOAD #0x0.0p0, R1
+	STORE R1, 3(R2)
+	LOAD #0, R0
+	STORE R0, 4(R2)
+	STORE R0, 5(R2)
+	PUSH R2
+	BSR init.A
+	POP R2
+	LOAD #3, R3
+	STORE R3, 5(R2)
+	RTS
+init.Q:
+	LOAD -2(LB), R2
+	RTS
+code.Object.equals:
+	LOAD -2(LB), R0
+	CMP -3(LB), R0
+	SEQ R1
+	RTS
+code.A.getX:
+	TSTO #2
+	BOV stack_overflow_error
+	PUSH R2
+	LOAD -2(LB), R0
+	LOAD 1(R0), R2
+	LOAD R2, R0
+	BRA fin.A.getX
+	BRA absence_return_error
+fin.A.getX:
+	POP R2
+	RTS
+code.B.getY:
+	TSTO #3
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	PUSH R4
+	LOAD #5, R2
+	LOAD #2, R3
+	ADD R2, R3
+	LOAD R3, R2
+	LOAD -2(LB), R0
+	STORE R2, 4(R0)
+	LOAD -2(LB), R0
+	LOAD 4(R0), R3
+	LOAD R3, R0
+	BRA fin.B.getY
+	BRA absence_return_error
+fin.B.getY:
+	POP R4
+	POP R3
+	POP R2
+	RTS
+code.B.fct:
+	WSTR "Hello World!"
+	WNL
+fin.B.fct:
+	RTS
+code.Q.abs:
+	TSTO #5
+	BOV stack_overflow_error
+	PUSH R2
+	PUSH R3
+	LOAD #0x0.0p0, R3
+	LOAD -3(LB), R4
+	CMP R3, R4
+	SLT R4
+	LOAD R4, R3
+	CMP #0, R3
+	BEQ E_Sinon.1
+	LOAD -3(LB), R2
+	OPP R2, R2
+	BOV overflow_error
+	LOAD R2, R0
+	BRA fin.Q.abs
+	BRA E_Fin_if.1
+E_Sinon.1:
+E_Fin_if.1:
+	BRA absence_return_error
+fin.Q.abs:
+	POP R3
+	POP R2
+	RTS
+stack_overflow_error:
+	WSTR "Error: Stack Overflow"
+	WNL
+	ERROR
+overflow_error:
+	WSTR "Error: Overflow sur Float"
+	WNL
+	ERROR
+tas_plein:
+	WSTR "Erreur : le tas est plein, impossible d'allouer de la memoire"
+	WNL
+	ERROR
+absence_return_error:
+	WSTR "Erreur : Absence de return dans le corps d'une methode "
+	WNL
+	ERROR
+dereferencement.null:
+	WSTR "Erreur : Dereferencement null"
+	WNL
+	ERROR

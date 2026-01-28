@@ -1,0 +1,11 @@
+// Description:
+//    Accès à un champ protégé défini deux niveaux plus haut.
+// Resultats:
+//    Succès (Passe 3)
+class GrandPere { protected int secret = 42; }
+class Pere extends GrandPere {}
+class Fils extends Pere {
+    void m() {
+        println(this.secret); // OK
+    }
+}

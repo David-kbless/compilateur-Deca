@@ -1,0 +1,13 @@
+// Description :
+// Test de cast explicite de flottant vers entier.
+//
+// Resultats :
+// 3
+
+{
+    int x;
+    float y;
+    y = 3.7;
+    x = (int) (y);
+    print(x);
+}

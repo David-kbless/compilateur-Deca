@@ -1,0 +1,12 @@
+// Description :
+// test du mot-cle if
+//
+// Resultat :
+// ok
+
+{
+if (true) {
+    println("test du mot-cle if");
+
+}
+}

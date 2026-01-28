@@ -1,0 +1,9 @@
+// Description :
+//  test mauvais cast
+//
+// Resultat :
+// Erreur syntaxique
+// Ligne 8 : caractère inattendu '('
+{
+    (int 3);
+}

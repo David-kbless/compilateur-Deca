@@ -1,0 +1,12 @@
+// Description :
+// test de l operateur ==
+//
+// Resultat :
+// ok
+{
+println("test de l operateur ==");
+
+if (1 == 1) {
+}
+
+}

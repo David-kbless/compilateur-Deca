@@ -1,0 +1,9 @@
+// Description :
+//  Teste les instructions d'affichage print et println.
+//
+// Resultats :
+// OK
+{
+    print(1, 2, 3);
+    println("hello");
+}

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntLiteral.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">IntLiteral.java</span></div><h1>IntLiteral.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.ima.pseudocode.DVal;
+import fr.ensimag.ima.pseudocode.ImmediateInteger;
+
+import java.io.PrintStream;
+
+
+/**
+ * Integer literal
+ *
+ * @author gl54
+ * @date 01/01/2026
+ */
+public class IntLiteral extends AbstractExpr {
+    private final long value;
+
+<span class="fc" id="L24">    public IntLiteral(long value) {</span>
+<span class="fc" id="L25">        this.value = value;</span>
+<span class="fc" id="L26">    }</span>
+
+    public int getValue() {
+<span class="fc" id="L29">        return (int) value;</span>
+    }
+
+    @Override
+    public Type verifyExpr(DecacCompiler compiler, EnvironmentExp localEnv,
+            ClassDefinition currentClass) throws ContextualError {
+
+        // Verification of the the 3é signed bits limits
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        if (value &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L38">            throw new ContextualError(&quot;Literal entier trop grand : &quot; + value + </span>
+<span class="nc" id="L39">                &quot; (max: &quot; + Integer.MAX_VALUE + &quot;)&quot;, getLocation());</span>
+        }
+        // Managing of the negative case too for more security
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        if (value &lt; Integer.MIN_VALUE) {</span>
+<span class="nc" id="L43">             throw new ContextualError(&quot;Literal entier trop petit : &quot; + value + </span>
+<span class="nc" id="L44">                &quot; (min: &quot; + Integer.MIN_VALUE + &quot;)&quot;, getLocation());</span>
+        }
+<span class="fc" id="L46">        Type t = compiler.environmentType.INT;</span>
+<span class="fc" id="L47">        this.setType(t);</span>
+<span class="fc" id="L48">        return t;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L53">        return Integer.toString((int) value);</span>
+    }
+
+    @Override
+    String prettyPrintNode() {
+<span class="fc" id="L58">        return &quot;Int (&quot; + getValue() + &quot;)&quot;;</span>
+    }
+
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="fc" id="L63">        s.print(Integer.toString((int) value));</span>
+<span class="fc" id="L64">    }</span>
+
+    @Override
+    protected void iterChildren(TreeFunction f) {
+        // leaf node =&gt; nothing to do
+<span class="fc" id="L69">    }</span>
+
+    @Override
+    protected void prettyPrintChildren(PrintStream s, String prefix) {
+        // leaf node =&gt; nothing to do
+<span class="fc" id="L74">    }</span>
+
+    @Override
+    protected DVal codeGenInst(DecacCompiler compiler) {
+        
+        // on retourne un immediate integer
+<span class="fc" id="L80">        return new ImmediateInteger(getValue());</span>
+    }
+    
+    @Override
+    public int simuleExecutionNbRegistres(DecacCompiler compiler){
+<span class="fc" id="L85">        return 0;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

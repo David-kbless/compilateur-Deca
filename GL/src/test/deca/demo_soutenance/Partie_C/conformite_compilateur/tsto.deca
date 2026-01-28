@@ -1,0 +1,28 @@
+// commande de compilation :
+//    decac src/test/deca/demo_soutenance/Partie_C/conformite_compilateur/tsto.deca
+//    ima src/test/deca/demo_soutenance/Partie_C/conformite_compilateur/tsto.ass
+
+
+
+// Description :
+//    Test statique pour observer le calcul du TSTO.
+//    On combine variables locales, sauvegardes de registres et appels imbriqués.
+
+class Demo {
+    int calcul(int a, int b) {
+        // 4 variables locales : +4 places
+        int v1 = 1; int v2 = 2; int v3 = 3; int v4 = 4;
+
+        // Une expression complexe pour forcer l'utilisation de registres
+        // Si le gencode utilise R2, R3, R4, R5 : +4 PUSH
+        v1 = (a + b) * (a - b) + (v1 * v2);
+
+        // Un appel de méthode : nécessite de la place pour les paramètres
+        // (this + 2 arguments) : +3 places
+        return this.autre(v1, v2);
+    }
+
+    int autre(int x, int y) {
+        return x + y;
+    }
+}

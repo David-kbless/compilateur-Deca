@@ -1,0 +1,12 @@
+// Description: vérifie que le cast est bien effectué
+//
+// Résultats:
+// succès 
+
+class A{}
+class B extends A{}
+{
+    A a = new A();
+    B b = new B();
+    a = (A) (b); 
+}

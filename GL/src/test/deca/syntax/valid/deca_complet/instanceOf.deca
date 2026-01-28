@@ -1,0 +1,14 @@
+// Description :
+//  Teste l'opérateur instanceof avec héritage de classes.
+//
+// Resultats :
+// OK
+class A {}
+class B extends A {}
+
+{
+    A a = new B();
+    if (a instanceof B) {
+        println(5);
+    }
+}

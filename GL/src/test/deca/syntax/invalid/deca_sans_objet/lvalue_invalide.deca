@@ -1,0 +1,9 @@
+// Description :
+//  test lvalue invalide
+//
+// Resultat :
+// Erreur syntaxique
+// Ligne 8 : caractère inattendu '='
+{
+    (a + 1) = 3;
+}

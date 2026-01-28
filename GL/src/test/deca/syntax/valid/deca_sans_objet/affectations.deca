@@ -1,0 +1,15 @@
+// Description :
+// Teste les affectations simples et chaînées sans objet.
+//
+// Resultats :
+// OK
+
+{
+    // simple
+    int a, b;
+    int x;
+    x = 3;
+
+    // chaînée
+    a = b = 4;
+}

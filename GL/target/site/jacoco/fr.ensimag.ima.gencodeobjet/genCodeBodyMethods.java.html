@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>genCodeBodyMethods.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.ima.gencodeobjet</a> &gt; <span class="el_source">genCodeBodyMethods.java</span></div><h1>genCodeBodyMethods.java</h1><pre class="source lang-java linenums">package fr.ensimag.ima.gencodeobjet;
+
+import java.lang.reflect.Method;
+import java.util.List;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.MethodDefinition;
+import fr.ensimag.deca.tree.AbstractDeclClass;
+import fr.ensimag.deca.tree.AbstractDeclMethod;
+import fr.ensimag.deca.tree.AbstractDeclVar;
+import fr.ensimag.deca.tree.DeclClass;
+import fr.ensimag.deca.tree.DeclMethod;
+import fr.ensimag.deca.tree.DeclVar;
+import fr.ensimag.ima.pseudocode.InlinePortion;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.ima.pseudocode.Register;
+import fr.ensimag.ima.pseudocode.RegisterOffset;
+import fr.ensimag.ima.pseudocode.instructions.ADDSP;
+import fr.ensimag.ima.pseudocode.instructions.BOV;
+import fr.ensimag.ima.pseudocode.instructions.BRA;
+import fr.ensimag.ima.pseudocode.instructions.CMP;
+import fr.ensimag.ima.pseudocode.instructions.LOAD;
+import fr.ensimag.ima.pseudocode.instructions.POP;
+import fr.ensimag.ima.pseudocode.instructions.PUSH;
+import fr.ensimag.ima.pseudocode.instructions.RTS;
+import fr.ensimag.ima.pseudocode.instructions.SEQ;
+import fr.ensimag.ima.pseudocode.instructions.TSTO;
+
+public class genCodeBodyMethods {
+
+
+<span class="fc" id="L32">    public genCodeBodyMethods(DecacCompiler compiler, List&lt;AbstractDeclClass&gt; classes){</span>
+<span class="fc" id="L33">        genCodeEqualsObject(compiler);</span>
+<span class="fc" id="L34">        genCodeClassBodyMethods(compiler, classes);</span>
+<span class="fc" id="L35">    }</span>
+
+    // on genere le code de la methode equals de la classe Object
+    public static void genCodeEqualsObject(DecacCompiler compiler){
+        // ajout du label avant tout:
+<span class="fc" id="L40">        compiler.addLabel(new Label(&quot;code.Object.equals&quot;));  </span>
+<span class="fc" id="L41">        compiler.addInstruction(new LOAD(new RegisterOffset(-2, Register.LB), Register.R0)); // chargement de this.</span>
+<span class="fc" id="L42">        compiler.addInstruction(new CMP(new RegisterOffset(-3, Register.LB), Register.R0)); // on compare this avec l'objet en parm (à -3(LB) du coup !)</span>
+<span class="fc" id="L43">        compiler.addInstruction(new SEQ(Register.R1));                      // puis on ret le res de la cmp</span>
+<span class="fc" id="L44">        compiler.addInstruction(new RTS());</span>
+<span class="fc" id="L45">    }</span>
+
+    public void genCodeClassBodyMethods(DecacCompiler compiler, List&lt;AbstractDeclClass&gt; classes){
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        for(AbstractDeclClass abstractClass : classes){</span>
+<span class="nc" id="L49">            DeclClass classe = (DeclClass)abstractClass;</span>
+<span class="nc" id="L50">            genCodeBodyMethod(compiler, classe);</span>
+<span class="nc" id="L51">        }</span>
+<span class="fc" id="L52">    }</span>
+
+
+    private void genCodeBodyMethod(DecacCompiler compiler, DeclClass classe){
+        
+        // on parcours toutes les methodes de la classes 
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        for(AbstractDeclMethod abstractMethod : classe.getMethods().getList()){</span>
+<span class="nc" id="L59">            DeclMethod method = (DeclMethod)abstractMethod;</span>
+<span class="nc" id="L60">            MethodDefinition methodDef = method.getName().getMethodDefinition();</span>
+
+<span class="nc" id="L62">            methodDef.setLabelDebut(new Label(&quot;code.&quot; + classe.getName().getName().getName() + &quot;.&quot; + method.getName().getName().getName()));</span>
+<span class="nc" id="L63">            methodDef.setLabelFin(new Label(&quot;fin.&quot; + classe.getName().getName().getName() + &quot;.&quot; + method.getName().getName().getName()));</span>
+
+            
+<span class="nc" id="L66">            compiler.addLabel(methodDef.getLabelDebut());</span>
+
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (method.getAsmCode() != null) {</span>
+                // On retire les guillemets au début et à la fin de la String asm
+<span class="nc" id="L70">                String rawAsm = method.getAsmCode().substring(1, method.getAsmCode().length() - 1);</span>
+
+                // On ecrit le code asm brut
+<span class="nc" id="L73">                compiler.add(new InlinePortion(rawAsm)); </span>
+<span class="nc" id="L74">                continue; // On passe à la méthode suivante, plus rien a faire après !! </span>
+            }
+            // on informe le compilateur du label qui sera ecrit plus tard : 
+<span class="nc" id="L77">            compiler.setCurrentLabel(methodDef.getLabelFin());</span>
+
+            // on test la pile : 
+<span class="nc" id="L80">            int max = method.getNbMaxRegUtilises();</span>
+<span class="nc" id="L81">            int nbLocalVar = method.getLocalVars().getList().size();</span>
+
+<span class="nc" id="L83">            int d1 = max - 1 + nbLocalVar;</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">            if(d1 &gt; 0){</span>
+<span class="nc" id="L85">                compiler.addInstruction(new TSTO(d1));</span>
+<span class="nc" id="L86">                compiler.addInstruction(new BOV(new Label(&quot;stack_overflow_error&quot;)));</span>
+            }
+            
+
+<span class="nc" id="L90">            int localOffset = 1; </span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        for (AbstractDeclVar abstractVar : method.getLocalVars().getList()) {</span>
+<span class="nc" id="L92">            DeclVar var = (DeclVar) abstractVar;</span>
+            // On dit que cette variable est à 1(LB), puis 2(LB), etc.
+<span class="nc" id="L94">            var.getVarName().getExpDefinition().setOperand(new RegisterOffset(localOffset, Register.LB));</span>
+<span class="nc" id="L95">            localOffset++;</span>
+<span class="nc" id="L96">        }</span>
+
+        // IMPORTANT : Tu dois aussi réserver la place sur la pile !
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (nbLocalVar &gt; 0) {</span>
+<span class="nc" id="L100">            compiler.addInstruction(new ADDSP(nbLocalVar));</span>
+        }
+            
+            // on sauvegarde les registre utilisé
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            for(int i = 2; i &lt;= max ; i++){</span>
+<span class="nc" id="L105">                compiler.addInstruction(new PUSH(Register.getR(i)));</span>
+            }
+
+
+            // on genere ensuite le body
+            // on s'assure d'avoir remis a zero le gestionnaire de registre pour eviter d'utiliser le tas
+<span class="nc" id="L111">            compiler.resetGestionnaireRegistres(false);</span>
+<span class="nc" id="L112">            method.getBody().codeGenListInst(compiler);</span>
+
+
+            // gestion de l'overflow avec une methode retournant un truc mais pas tout le temps : 
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            if(!method.isVoid()){</span>
+<span class="nc" id="L117">                compiler.addInstruction(new BRA(new Label(&quot;absence_return_error&quot;)));</span>
+<span class="nc" id="L118">                compiler.addAbsenceReturnLabel();</span>
+            }
+            
+<span class="nc" id="L121">            compiler.addLabel(methodDef.getLabelFin());</span>
+
+            // restaurations des registres pushés: 
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            for(int i = max; i &gt;= 2; i--){</span>
+<span class="nc" id="L125">                compiler.addInstruction(new POP(Register.getR(i)));</span>
+            }
+
+            // liberation de l'espace des variables locales
+<span class="nc bnc" id="L129" title="All 2 branches missed.">            if (nbLocalVar &gt; 0) {</span>
+<span class="nc" id="L130">                compiler.addInstruction(new fr.ensimag.ima.pseudocode.instructions.SUBSP(nbLocalVar));</span>
+            }
+
+
+<span class="nc" id="L134">            compiler.addInstruction(new RTS());</span>
+
+
+<span class="nc" id="L137">        }</span>
+<span class="nc" id="L138">    }</span>
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

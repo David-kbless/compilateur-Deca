@@ -1,0 +1,20 @@
+// Description:
+//    test de déclaration d'une methode
+//
+// Resultats:
+//    Ok
+//
+// Historique:
+//    cree le 01/01/2026
+
+class A {
+    int x;
+
+    void add_x(int y) {
+        x = x + y;
+    }
+}
+
+{
+
+}

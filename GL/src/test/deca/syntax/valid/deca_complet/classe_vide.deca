@@ -1,0 +1,9 @@
+// Description :
+//  Teste la déclaration d'une classe vide.
+//
+// Resultats :
+// OK
+class A {
+}
+{
+}

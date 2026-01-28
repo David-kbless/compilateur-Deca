@@ -1,0 +1,12 @@
+// Description :
+//  Teste la déclaration d'une classe avec une méthode ayant un corps.
+//
+// Resultats :
+// OK
+class A {
+    int foo() {
+        return 1;
+    }
+}
+{
+}

@@ -1,0 +1,11 @@
+// Description :
+//  Teste les boucles while sans objet.
+//
+// Resultats :
+// OK
+{
+    int i = 0;
+    while (i < 10) {
+        i = i + 1;
+    }
+}

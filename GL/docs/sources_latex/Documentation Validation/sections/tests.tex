@@ -1,0 +1,109 @@
+\section{Descriptif des tests}
+
+\subsection{Types de tests}
+Notre stratégie de validation repose sur une combinaison de tests unitaires et de tests système pour assurer la qualité et la robustesse de chaque composant du compilateur.
+
+\subsubsection{Tests Unitaires}
+Les tests unitaires sont écrits en Java avec JUnit 5 et Mockito. Ils se trouvent dans le répertoire \texttt{src/test/java/fr/ensimag/deca/}. Ces tests valident le comportement de classes individuelles de manière isolée. Par exemple, ils vérifient la logique de bas niveau des symboles, des types, et des structures de données internes.
+
+\subsubsection{Tests Système}
+Les tests système, également appelés tests de bout-en-bout, valident le comportement global du compilateur. Ils sont constitués de programmes Deca (\texttt{.deca}) situés dans le répertoire \texttt{src/test/deca/}. Ces tests sont exécutés par des scripts shell qui invoquent le compilateur \texttt{decac}, puis comparent la sortie avec un résultat attendu.
+
+Ces tests système sont catégorisés comme suit:
+\begin{itemize}
+    \item \textbf{Tests de syntaxe}: Vérifient que l'analyseur lexical et syntaxique accepte les programmes valides et rejette les programmes invalides.
+    \item \textbf{Tests contextuels}: S'assurent que l'analyse sémantique détecte correctement les erreurs de types, les variables non déclarées, etc.
+    \item \textbf{Tests de génération de code}: Compilent des programmes Deca, exécutent le code assembleur IMA résultant, et vérifient que la sortie est conforme aux attentes. Cette catégorie inclut :
+    \begin{itemize}
+        \item \textbf{Tests valides}: Programmes corrects dont on vérifie l'exécution.
+        \item \textbf{Tests invalides}: Programmes qui doivent provoquer une erreur à l'exécution (ex: division par zéro).
+        \item \textbf{Tests interactifs}: Programmes nécessitant une entrée de l'utilisateur.
+        \item \textbf{Tests de performance}: Évaluent le comportement du compilateur sur des programmes plus complexes.
+    \end{itemize}
+    \item \textbf{Tests d'options du compilateur}: Valident le comportement des différentes options du compilateur (ex: \texttt{-n}, \texttt{-p}, \texttt{-r}).
+\end{itemize}
+
+\subsection{Organisation des tests}
+L'organisation des tests dans le dépôt Git est conçue pour être claire et extensible. Le répertoire principal \texttt{src/test/} est divisé en sous-répertoires qui reflètent les différentes étapes de la validation.
+
+La structure est la suivante :
+\begin{verbatim}
+src/test/
+|-- deca/
+|   |-- codegen/
+|   |   |-- interactive/
+|   |   |-- invalid/
+|   |   |-- perf/
+|   |   `-- valid/
+|   |-- compiler_option/
+|   |-- context/
+|   |-- syntax/
+|-- java/
+|   `-- fr/ensimag/deca/  (Tests unitaires)
+`-- script/ (Scripts de lancement des tests)
+\end{verbatim}
+
+Chaque répertoire de tests système (\texttt{syntax}, \texttt{context}, \texttt{codegen}) contient des sous-répertoires \texttt{valid/} et \texttt{invalid/} pour séparer les cas de test qui doivent réussir de ceux qui doivent échouer.
+
+\subsection{Objectifs des tests}
+L'objectif principal est de couvrir chaque fonctionnalité du langage Deca et chaque passe du compilateur.
+\begin{itemize}
+    \item \textbf{Analyse Lexicale et Syntaxique}: L'objectif est de garantir que le compilateur reconnaît correctement la grammaire Deca. Les tests valides assurent que tous les aspects de la syntaxe sont pris en charge, tandis que les tests invalides vérifient que les erreurs de syntaxe sont bien détectées et signalées.
+    \item \textbf{Analyse Contextuelle}: Ces tests visent à valider la correction sémantique des programmes Deca. Ils s'assurent que les règles de portée, de type, et d'héritage sont correctement appliquées.
+    \item \textbf{Génération de Code}: L'objectif est de s'assurer que le code assembleur généré est correct et s'exécute comme prévu. Cela inclut la gestion de la mémoire, les opérations arithmétiques, les structures de contrôle et les appels de méthode. Les tests d'erreurs à l'exécution (comme la division par zéro) sont également cruciaux pour valider la robustesse du code généré.
+\end{itemize}
+Ces objectifs sont atteints en créant une base de tests exhaustive pour chaque fonctionnalité, en s'assurant que les cas nominaux et les cas limites sont couverts.
+
+\section{Les scripts de tests}
+
+\subsection{Comment faire passer tous les tests}
+L'ensemble de la suite de tests peut être exécuté de manière centralisée grâce à Maven. La commande suivante, lancée à la racine du projet, compile le projet et exécute tous les tests (unitaires et système) :
+\begin{verbatim}
+mvn test
+\end{verbatim}
+Le fichier \texttt{pom.xml} est configuré pour utiliser le plugin \texttt{exec-maven-plugin} afin de lancer les différents scripts de test shell pendant la phase de test de Maven.
+
+Il est également possible de lancer les tests pour une passe spécifique en utilisant directement les scripts shell situés dans \texttt{src/test/script/}:
+\begin{itemize}
+    \item \texttt{./src/test/script/test-synt.sh}: Lance les tests de l'analyseur syntaxique.
+    \item \texttt{./src/test/script/test-context.sh}: Lance les tests de l'analyseur contextuel.
+    \item \texttt{./src/test/script/gencode-tests-exaustifs.sh}: Lance les tests de génération de code.
+\end{itemize}
+
+
+\section{Résultats de Jacoco}
+Nous utilisons Jacoco pour mesurer la couverture de notre code par les tests. Le plugin Maven de Jacoco est configuré dans le \texttt{pom.xml}.
+
+Pour générer le rapport de couverture, il faut exécuter la commande Maven suivante :
+\begin{verbatim}
+mvn jacoco:report
+\end{verbatim}
+
+Oubien : 
+
+\begin{verbatim}
+mvn verify -Djacoco.skip=false
+\end{verbatim}
+
+Le rapport est ensuite disponible dans le répertoire \texttt{target/site/jacoco/index.html}. Ce rapport nous permet d'identifier les parties du code qui ne sont pas suffisamment testées et d'ajouter de nouveaux tests pour améliorer la couverture.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{assets/jacoco.png}
+    \caption{Rapport de couverture de code Jacoco. On observe une bonne couverture des passes principales du compilateur, notamment la génération de code, l'analyse contextuelle et la syntaxe. Les parties moins couvertes correspondent souvent à du code généré par ANTLR dont nous ne pouvons tester même avec JUnit.}
+    \label{fig:jacoco}
+\end{figure}
+
+\section{Démarche d'Optimisation et Corrections de Bugs}
+Un effort particulier a été consacré à l'optimisation du code généré, notamment sur l'utilisation des registres. Par exemple, pour éviter de charger inutilement une valeur immédiate dans un registre lorsqu'elle est utilisée comme seconde opérande, nous avons modifié la génération de code pour utiliser directement les instructions avec opérandes immédiates (par exemple \texttt{ADD #valeur, Ri}).
+
+Cette démarche d'optimisation a eu un impact significatif sur la base de code existante. Elle a nécessité de nombreuses corrections, modifications et adaptations dans la passe de génération de code. Un audit complet du code a été entrepris pour garantir la robustesse de ces nouvelles implémentations.
+
+Cependant, le rendu final du projet a été effectué avant la fin de cet audit exhaustif. De ce fait, certains bugs ont été identifiés après le rendu, puis corrigés. Cette démarche de transparence et de correction continue est essentielle à nos yeux. Parmi les bugs notables, on peut citer :
+\begin{itemize}
+    \item \textbf{Écrasement du registre R0} : Lors de calculs complexes impliquant des appels de méthode, comme \texttt{int x = A.getX() / 3;}, le registre \texttt{R0} (utilisé pour les valeurs de retour) pouvait être écrasé prématurément. Ce bug a été corrigé en s'assurant de sauvegarder la valeur de retour avant d'effectuer d'autres opérations.
+    \item \textbf{Réinitialisation du gestionnaire de registres} : Le gestionnaire de registres n'était pas réinitialisé après la génération de code pour la déclaration des variables dans le \texttt{main}. Cela provoquait des erreurs dans l'allocation des registres pour les instructions suivantes.
+    \item \textbf{Estimation de la taille de la pile} : Notre estimation initiale de la taille de la pile pour les appels de fonction était incorrecte, car nous avions sous-estimé le comportement de l'instruction \texttt{BSR}, qui effectue deux empilements (adresse de retour et base du tas). L'estimation a été mise à jour pour refléter ce comportement, garantissant ainsi une allocation de pile correcte.
+    \item \textbf{Appel de méthode sans \texttt{this}} : Initialement, notre compilateur exigeait l'utilisation explicite du mot-clé \texttt{this} pour appeler une méthode à l'intérieur de sa propre classe (ex: \texttt{this.maMethode()}). Cette contrainte a été levée ; le compilateur gère désormais correctement les appels implicites (ex: \texttt{maMethode()}), ce qui rend le code plus intuitif et aligné avec les standards de la programmation orientée objet.
+\end{itemize}
+

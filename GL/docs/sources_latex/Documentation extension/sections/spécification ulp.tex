@@ -1,0 +1,119 @@
+\section{Fonction ulp}
+
+Afin de quantifier la pertinence des approximations implémentées pour les fonctions trigonométriques (\texttt{sin}, \texttt{cos}, etc.), il est nécessaire de mesurer l'erreur non pas en valeur absolue, mais en "distance binaire" entre le résultat obtenu et le résultat théorique attendu. Ce service est assuré par la fonction ULP .
+
+\subsection{Spécification de la fonction \texttt{ulp}}
+
+La fonction \texttt{ulp(x)} retourne la distance entre le flottant $x$ et le flottant le plus proche distinct de $x$. Cette mesure permet d'évaluer la précision des bits de poids faible de la mantisse, indépendamment de l'ordre de grandeur de $x$.
+
+L'implémentation repose sur la manipulation directe de la représentation binaire IEEE 754 simple précision (32 bits), évitant ainsi les erreurs potentielles liées aux opérations arithmétiques flottantes classiques.
+
+\subsection{Décomposition binaire IEEE 754}
+
+Un nombre flottant simple précision est stocké sous la forme d'un entier de 32 bits structuré comme suit :
+
+\begin{itemize}
+    \item \textbf{Bit 31} : Signe ($S$).
+    \item \textbf{Bits 30-23} : Exposant biaisé ($E$), sur 8 bits.
+    \item \textbf{Bits 22-0} : Mantisse ($M$), sur 23 bits.
+\end{itemize}
+
+L'algorithme débute par l'extraction brute des bits (\texttt{floatToRawIntBits}) et l'isolation des composantes :
+
+\[
+E = (\text{bits} \gg 23) \ \& \ 255
+\]
+\[
+M = \text{bits} \ \& \ 8388607 \quad (\text{soit } 2^{23}-1)
+\]
+
+\subsection{Algorithme de calcul}
+
+L'algorithme distingue trois cas fondamentaux selon la valeur de l'exposant $E$ et de la mantisse $M$.
+
+\subsubsection{1. Cas des valeurs spéciales (NaN et Infini)}
+
+Si l'exposant est maximal ($E = 255$) :
+
+\begin{itemize}
+    \item Si $M = 0$, le nombre est $\pm \infty$.
+    \item Si $M \neq 0$, le nombre est \texttt{NaN} (Not a Number).
+\end{itemize}
+
+Dans ces cas, la notion de distance est indéfinie ou singulière. La fonction retourne alors la valeur d'entrée inchangée.
+
+\subsubsection{2. Cas des nombres dénormalisés et du zéro}
+
+Si l'exposant est nul ($E = 0$) :
+
+\begin{itemize}
+    \item Le nombre est soit $0$, soit un nombre subnormal (très proche de 0).
+    \item Dans cette zone, l'écart entre deux nombres représentables est constant et correspond à la plus petite valeur positive possible : $2^{-149}$.
+\end{itemize}
+
+L'algorithme retourne alors la valeur correspondant au motif binaire \texttt{0x00000001}, soit :
+
+\[
+\text{ulp}(x) = 2^{-149} \approx 1.4 \times 10^{-45}
+\]
+
+\subsubsection{3. Cas des nombres normalisés}
+
+Pour les cas standards ($0 < E < 255$), la valeur de l'ulp dépend uniquement de l'exposant.
+Mathématiquement, pour un nombre d'exposant $e$ (où $e = E - 127$), la précision est donnée par :
+
+\[
+\text{ulp}(x) = 2^{e - 23}
+\]
+
+L'implémentation calcule cette valeur par manipulation d'exposant :
+
+\begin{itemize}
+    \item On calcule un nouvel exposant cible : $E' = E - 23$.
+    \item Si $E' > 0$, on construit le flottant ayant $E'$ comme exposant et une mantisse nulle. Cela revient à effectuer l'opération $2^{E - 127 - 23}$.
+    \item Si $E' \le 0$, le résultat tombe dans le domaine des nombres dénormalisés. On effectue alors un décalage de bits pour positionner correctement le bit à 1 dans la zone de la mantisse, simulant la perte de précision graduelle.
+\end{itemize}
+
+\subsection{Implémentation de référence}
+
+La logique décrite ci-dessus est implémentée par la fonction suivante, servant de référence pour la validation des routines assembleur :
+
+\begin{verbatim}
+public static float upl(float f){
+        int bits = Float.floatToRawIntBits(f); //int est codé sur 32 bits donc suffit
+        int E = ((bits >> 23) & 0xFF); // 0xFF représente des 1 sur 8 bits
+
+        int mantisse = bits & 0x7FFFFF; // 0x7FFFFF represente des 1 sur 23 bits
+        boolean isSubnormal = (E == 0);
+        boolean isInfinity = (E == 0xFF) && (mantisse == 0);
+        boolean isNaN = (E == 0xFF) && (mantisse != 0);
+        if (isNaN || isInfinity){
+            return f;
+        }
+        else if (isSubnormal){
+            return Float.intBitsToFloat(0x00000001);  // on renvoie 2^(-149) ou -149 = -126 -23
+        }
+        //on traite le cas des nombres normaux
+        int expResultat = E - 23;
+        if (expResultat > 0){ // l'ulp est normal
+            int resultatBits = (expResultat<<23);
+            return  Float.intBitsToFloat(resultatBits);
+        }
+        else{// l 'ulp est subnormal'
+            int rang = E - 1;
+            return Float.intBitsToFloat(1<<rang);
+        }
+    }
+\end{verbatim}
+
+\section{Références}
+
+\begin{itemize}
+    \item \textbf{Précision ULP et Bibliothèques Mathématiques} : \\
+    ARM Developer Hub. "Understanding Unit in the Last Place (ULP)". \\
+    \url{https://learn.arm.com/learning-paths/servers-and-cloud-computing/multi-accuracy-libamath/ulp/}
+
+    \item \textbf{Format IEEE 754 Simple Précision} : \\
+    Wikipedia contributors. "Single-precision floating-point format". \\
+    \url{https://en.wikipedia.org/wiki/Single-precision_floating-point_format}
+\end{itemize}

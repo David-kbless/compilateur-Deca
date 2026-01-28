@@ -1,0 +1,25 @@
+//  Mix float/int --
+//  Branches rares --
+//  Cast dynamique --
+//  Accumulation d’erreurs flottantes --
+
+{
+    int i;
+    float x;
+    float y;
+
+    i = 0;
+    x = 1.0;
+    y = 0.0;
+
+    while (i < 500000) {
+        x = x * 1.000001;
+        y = y + x / (float)(i + 1);
+        if (y > 1000.0) {
+            y = y / 2.0;
+        }
+        i = i + 1;
+    }
+
+    println(y);
+}

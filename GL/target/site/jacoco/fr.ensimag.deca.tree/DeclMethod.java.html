@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DeclMethod.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.deca.tree</a> &gt; <span class="el_source">DeclMethod.java</span></div><h1>DeclMethod.java</h1><pre class="source lang-java linenums">package fr.ensimag.deca.tree;
+
+import java.io.PrintStream;
+import fr.ensimag.deca.context.ClassDefinition;
+import fr.ensimag.deca.context.ClassType;
+import fr.ensimag.deca.context.Signature;
+
+import fr.ensimag.deca.DecacCompiler;
+import fr.ensimag.deca.context.ContextualError;
+import fr.ensimag.deca.context.EnvironmentExp;
+import fr.ensimag.deca.context.EnvironmentType;
+import fr.ensimag.deca.context.ExpDefinition;
+import fr.ensimag.deca.context.MethodDefinition;
+import fr.ensimag.deca.context.Type;
+import fr.ensimag.deca.context.TypeDefinition;
+import fr.ensimag.deca.tools.IndentPrintStream;
+import fr.ensimag.deca.tools.SymbolTable.Symbol;
+import fr.ensimag.ima.pseudocode.Label;
+import fr.ensimag.deca.context.EnvironmentExp.DoubleDefException;
+import org.apache.commons.lang.Validate;
+
+
+
+public class DeclMethod extends AbstractDeclMethod {
+    private final Visibility visibility;
+    private final AbstractIdentifier type;
+    private final AbstractIdentifier name;
+    private final ListDeclParam params;
+    private final ListDeclVar localVars;
+    private final ListInst body;
+    private final String asmCode;
+<span class="fc" id="L32">    private int nbMaxRegUtilises = 0;</span>
+   
+
+    public DeclMethod(Visibility v, AbstractIdentifier type, AbstractIdentifier name,
+<span class="fc" id="L36">                      ListDeclParam params, ListDeclVar localVars, ListInst body) {</span>
+<span class="fc" id="L37">        this.visibility = v;</span>
+<span class="fc" id="L38">        this.type = type;</span>
+<span class="fc" id="L39">        this.name = name;</span>
+<span class="fc" id="L40">        this.params = params;</span>
+<span class="fc" id="L41">        this.localVars = localVars;</span>
+<span class="fc" id="L42">        this.body = body;</span>
+<span class="fc" id="L43">        this.asmCode = null;</span>
+<span class="fc" id="L44">    }</span>
+
+    public DeclMethod(Visibility v, AbstractIdentifier type, AbstractIdentifier name,
+                      ListDeclParam params, ListDeclVar localVars, ListInst body,
+<span class="fc" id="L48">                      String asmCode) {</span>
+<span class="fc" id="L49">        this.visibility = v;</span>
+<span class="fc" id="L50">        this.type = type;</span>
+<span class="fc" id="L51">        this.name = name;</span>
+<span class="fc" id="L52">        this.params = params;</span>
+<span class="fc" id="L53">        this.localVars = localVars;</span>
+<span class="fc" id="L54">        this.body = body;</span>
+<span class="fc" id="L55">        this.asmCode = asmCode;</span>
+<span class="fc" id="L56">    }</span>
+
+    @Override
+    public void decompile(IndentPrintStream s) {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (asmCode != null) {</span>
+<span class="nc" id="L61">            s.print(&quot;asm(&quot;);</span>
+<span class="nc" id="L62">            s.print(asmCode);</span>
+<span class="nc" id="L63">            s.println(&quot;);&quot;);</span>
+        } else {
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (visibility != null) {</span>
+<span class="nc" id="L66">                visibility.decompile(s);</span>
+<span class="nc" id="L67">                s.print(&quot; &quot;);</span>
+            }
+<span class="nc" id="L69">            s.print(&quot; &quot;);</span>
+<span class="nc" id="L70">            type.decompile(s);</span>
+<span class="nc" id="L71">            s.print(&quot; &quot;);</span>
+<span class="nc" id="L72">            name.decompile(s);</span>
+<span class="nc" id="L73">            s.print(&quot;(&quot;);   </span>
+<span class="nc" id="L74">            params.decompile(s);</span>
+<span class="nc" id="L75">            s.println(&quot;) {&quot;);</span>
+<span class="nc" id="L76">            s.indent();</span>
+<span class="nc" id="L77">            localVars.decompile(s);</span>
+<span class="nc" id="L78">            body.decompile(s);</span>
+<span class="nc" id="L79">            s.unindent();</span>
+<span class="nc" id="L80">            s.println(&quot;}&quot;);</span>
+        }
+<span class="nc" id="L82">    }</span>
+
+    public boolean isVoid() {
+        // On récupère le type associé à l'identificateur du type de retour
+<span class="nc" id="L86">        return this.name.getMethodDefinition().getType().isVoid();</span>
+    }
+
+    // Getters
+    public AbstractIdentifier getType() {
+<span class="nc" id="L91">        return type;</span>
+    }
+
+    public AbstractIdentifier getName() {
+<span class="fc" id="L95">        return name;</span>
+    }
+
+    public ListDeclParam getParams() {
+<span class="nc" id="L99">        return params;</span>
+    }
+
+    public ListDeclVar getLocalVars() {
+<span class="nc" id="L103">        return localVars;</span>
+    }
+
+    public ListInst getBody() {
+<span class="nc" id="L107">        return body;</span>
+    }
+
+    public String getAsmCode() {
+<span class="nc" id="L111">        return asmCode;</span>
+    }
+
+    public Visibility getVisibility() {
+<span class="nc" id="L115">        return visibility;</span>
+    }
+
+    public int getNbMaxRegUtilises() {
+<span class="nc" id="L119">        return nbMaxRegUtilises;</span>
+    }
+
+    
+
+    @Override
+    protected EnvironmentExp verifyDeclMethodMembers(DecacCompiler compiler, ClassDefinition currentClass, int index)
+            throws ContextualError {
+<span class="fc" id="L127">        Type realType = type.verifyType(compiler);</span>
+<span class="fc" id="L128">        Symbol methodName = name.getName();</span>
+<span class="fc" id="L129">        Signature sig = params.verifyListDeclParam(compiler);</span>
+        
+<span class="fc" id="L131">        ClassDefinition superClass = currentClass.getSuperClass();</span>
+<span class="fc" id="L132">        int finalIndex = index; // On garde l'index passé par défaut</span>
+
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        if (superClass != null){</span>
+<span class="fc" id="L135">            ExpDefinition def = superClass.getMembers().get(methodName);</span>
+<span class="fc" id="L136">            MethodDefinition superMethod = null;</span>
+            
+<span class="fc bfc" id="L138" title="All 2 branches covered.">            if (def != null) {</span>
+                // CAS REDÉFINITION (Override) : on cast et on récupère l'index
+<span class="fc" id="L140">                superMethod = def.asMethodDefinition(</span>
+                    &quot;L'identificateur &quot; + methodName + &quot; n'est pas une méthode.&quot;, 
+<span class="fc" id="L142">                    this.getLocation()</span>
+                );
+<span class="fc" id="L144">                finalIndex = superMethod.getIndex();</span>
+                
+            }
+<span class="fc bfc" id="L147" title="All 2 branches covered.">            if (superMethod != null) {</span>
+                // Si c'est un override, on REPREND l'index du parent !
+<span class="fc" id="L149">                finalIndex = superMethod.getIndex();</span>
+            }
+            
+<span class="fc" id="L152">            EnvironmentExp envExpSuper = superClass.getMembers();</span>
+<span class="fc" id="L153">            ExpDefinition superDef = envExpSuper.get(methodName);</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">            if (superDef != null){</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">                if(!superDef.isMethod()){</span>
+<span class="nc" id="L156">                    throw new ContextualError(&quot;Method &quot; + methodName + &quot; is not a method in the superClass&quot;, getLocation());</span>
+                }
+<span class="fc" id="L158">                MethodDefinition superMethodDef = superDef.asMethodDefinition(&quot;could not convert to MethodDefinition&quot;, getLocation());</span>
+                
+                // --- AJOUT : Gestion de l'index pour la redéfinition ---
+<span class="fc" id="L161">                finalIndex = superMethodDef.getIndex(); </span>
+                
+<span class="fc" id="L163">                Signature superSig = superMethodDef.getSignature();</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">                if (!sig.equals(superSig)){</span>
+<span class="fc" id="L165">                    throw new ContextualError(&quot;Method &quot; + methodName + &quot; has a different signature than in superclass&quot;, getLocation());</span>
+                }
+<span class="fc" id="L167">                Type type2 = superMethodDef.getType();</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">                if (!realType.sameType(type2)) {</span>
+<span class="nc bnc" id="L169" title="All 4 branches missed.">                    if (!(realType.isClass()&amp;&amp; ((ClassType) realType).isSubClassOf((ClassType) type2))) {</span>
+<span class="nc" id="L170">                        throw new ContextualError(&quot;Method &quot; + methodName+ &quot; has incompatible return type with superclass&quot;,getLocation());</span>
+                    }
+                }
+            }
+        }
+        
+        // On utilise finalIndex (soit le nouveau, soit celui du parent si override)
+<span class="fc" id="L177">        MethodDefinition methodDef = new MethodDefinition(realType, getLocation(), sig, finalIndex);</span>
+
+<span class="fc" id="L179">        currentClass.setMethod(finalIndex, methodDef); // Enregistre dans la TreeMap</span>
+<span class="fc" id="L180">        methodDef.setLabel(new Label(&quot;code.&quot; + currentClass.getType().getName().getName() + &quot;.&quot; + methodName.getName()));</span>
+
+        try {
+<span class="fc" id="L183">            EnvironmentExp envExp = new EnvironmentExp(null);</span>
+<span class="fc" id="L184">            envExp.declare(methodName, methodDef);</span>
+<span class="fc" id="L185">            name.setDefinition(methodDef);</span>
+<span class="fc" id="L186">            return envExp;</span>
+<span class="nc" id="L187">        } catch (DoubleDefException e) {</span>
+<span class="nc" id="L188">            return null; // ou gérer l'erreur selon le style de Safwane</span>
+        }
+    }
+
+    @Override
+    protected void verifyMethodBody(DecacCompiler compiler, EnvironmentExp envExp, ClassDefinition currentClass)
+            throws ContextualError {
+        // Implementation of the verification logic for the method body
+        // This is a placeholder; actual implementation would depend on the compiler's context
+<span class="fc" id="L197">        EnvironmentExp envExpParams = params.verifyListDeclParamBody(compiler);</span>
+<span class="fc" id="L198">        Type returnType = type.verifyType(compiler);</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        if (asmCode != null) {</span>
+            // If the method is defined using asm, we skip body verification
+<span class="nc" id="L201">            return;</span>
+        }
+<span class="fc" id="L203">        localVars.verifyListDeclVariable(compiler, envExpParams, currentClass);</span>
+<span class="fc" id="L204">        body.verifyListInst(compiler, EnvironmentExp.stack(envExpParams, envExp), currentClass, returnType);</span>
+<span class="fc" id="L205">        nbMaxRegUtilises = body.simuleExecutionNbRegistres(compiler);</span>
+        
+<span class="fc" id="L207">    }</span>
+
+    @Override
+    protected void codeGenMethod(DecacCompiler compiler) {
+        // Implementation of the code generation logic for the method declaration
+        // This is a placeholder; actual implementation would depend on the compiler's context
+<span class="nc" id="L213">        throw new UnsupportedOperationException(&quot;Unimplemented method 'verifyMethodBody'&quot;);</span>
+    }
+
+    @Override
+    protected void prettyPrintChildren(PrintStream s, String prefix) {
+<span class="fc" id="L218">        type.prettyPrint(s, prefix, false);</span>
+<span class="fc" id="L219">        name.prettyPrint(s, prefix, false);</span>
+<span class="fc" id="L220">        params.prettyPrint(s, prefix, false);</span>
+<span class="fc" id="L221">        localVars.prettyPrint(s, prefix, false);</span>
+<span class="fc" id="L222">        body.prettyPrint(s, prefix, true);</span>
+<span class="fc" id="L223">    }</span>
+
+    @Override
+    protected void iterChildren(TreeFunction f) {
+<span class="nc" id="L227">        type.iter(f);</span>
+<span class="nc" id="L228">        name.iter(f);</span>
+<span class="nc" id="L229">        params.iter(f);</span>
+<span class="nc" id="L230">        localVars.iter(f);</span>
+<span class="nc" id="L231">        body.iter(f);</span>
+<span class="nc" id="L232">    }</span>
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

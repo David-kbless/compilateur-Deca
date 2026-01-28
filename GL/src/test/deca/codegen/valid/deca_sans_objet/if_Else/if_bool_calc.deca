@@ -1,0 +1,15 @@
+// Description :
+// Test de if avec un calcul booléen.
+//
+// Resultats :
+// 2
+
+{
+    int x;
+    boolean b;
+    x = 2;
+    b = x > 1;
+    if (b) {
+        print(x);
+    }
+}

@@ -1,0 +1,12 @@
+// Description :
+//  Teste les comparaisons < sans objet.
+//
+// Resultats :
+// OK
+{
+    int x = 1;
+    int y = 4;
+    if (x < y) {
+        println(4);
+    }
+}

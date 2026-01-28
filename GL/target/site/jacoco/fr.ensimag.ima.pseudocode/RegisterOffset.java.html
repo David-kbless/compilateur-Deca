@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegisterOffset.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Deca Compiler</a> &gt; <a href="index.source.html" class="el_package">fr.ensimag.ima.pseudocode</a> &gt; <span class="el_source">RegisterOffset.java</span></div><h1>RegisterOffset.java</h1><pre class="source lang-java linenums">package fr.ensimag.ima.pseudocode;
+
+/**
+ * Operand representing a register indirection with offset, e.g. 42(R3).
+ *
+ * @author Ensimag
+ * @date 01/01/2026
+ */
+public class RegisterOffset extends DAddr {
+    public int getOffset() {
+<span class="nc" id="L11">        return offset;</span>
+    }
+    public Register getRegister() {
+<span class="nc" id="L14">        return register;</span>
+    }
+    private final int offset;
+    private final Register register;
+    public RegisterOffset(int offset, Register register) {
+<span class="fc" id="L19">        super();</span>
+<span class="fc" id="L20">        this.offset = offset;</span>
+<span class="fc" id="L21">        this.register = register;</span>
+<span class="fc" id="L22">    }</span>
+    @Override
+    public String toString() {
+<span class="fc" id="L25">        return offset + &quot;(&quot; + register + &quot;)&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

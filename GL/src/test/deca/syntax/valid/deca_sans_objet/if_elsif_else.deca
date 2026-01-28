@@ -1,0 +1,16 @@
+// Description :
+//  Teste les structures if-elsif-else sans objet.
+//
+// Resultats :
+// OK
+{
+    if (x < 0) {
+        print("negatif");
+    } else if (x == 0) {
+        print("zero");
+    } else if (x >= 4) {
+        println("x >= 4");
+    } else {
+        print("positif");
+    }
+}

@@ -1,0 +1,13 @@
+// Description:
+//   test des operations arithmetiques avec des println multiples
+//
+// Resultats:
+//    Ok
+//
+{
+    int x;
+    
+    x = readInt();
+
+    println(0.5 * (x * x));
+}
